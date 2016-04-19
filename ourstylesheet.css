@@ -96,7 +96,7 @@ p {
 }
 
 footer p {
-  color: #f2f2f2;
+  color: #0297DB;
 }
 
 a {
@@ -279,12 +279,7 @@ Full-Width Styles
 }
 
 #header_wrap {
-  background: #738C6E;
-  background: -moz-linear-gradient(top, #373737, #738C6E);
-  background: -webkit-linear-gradient(top, #373737, #738C6E);
-  background: -ms-linear-gradient(top, #373737, #738C6E);
-  background: -o-linear-gradient(top, #373737, #122011);
-  background: linear-gradient(top, #373737, #738C6E);
+  background: #0297DB;
 }
 
 #header_wrap .inner {
