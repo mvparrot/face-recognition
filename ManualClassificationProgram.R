@@ -3,6 +3,8 @@
 #setwd() to your github repository before running
 #In this repository, create a folder called "images" and store your images there.
 
+workerID = ""
+
 require(imager)
 require(shiny)
 require(shinyjs)
@@ -100,19 +102,27 @@ server <- function(input, output, session) {
     stop("Use setwd() to the github repository, with images in a folder called 'images'")
   }
   v <- try(
-    reactiveValues(imagelist = dir("images")[-ifelse(length(match(na.omit(read.csv("ManualClassifiedScenes.csv")[,"file"]), dir("images")))!=0, match(na.omit(read.csv("ManualClassifiedScenes.csv")[,"file"]), dir("images")), 1:length(dir("images")))],
+    reactiveValues(imagelist = dir("images")[-match(unique(na.omit(read.csv("ManualClassifiedScenes.csv")[,"file"])), dir("images"))],
                    counter = 0, 
                    facedata = rep(NA, 11),
-                   saveddataface = read.csv("ManualClassifiedFaces.csv"),
-                   saveddatascene = read.csv("ManualClassifiedScenes.csv"))
+                   saveddataface = read.csv(paste0("ManualClassifiedFaces", workerID, ".csv")),
+                   saveddatascene = read.csv(paste0("ManualClassifiedScenes", workerID, ".csv")))
   )
   if(class(v) == "try-error"){
-    runjs("alert('Previously classified images not found.')")
+    message("WARNING: Previously classified images not found.")
     v <- reactiveValues(imagelist = dir("images"),
                         counter = 0,
                         facedata = rep(NA, 11),
                         saveddataface = NULL,
                         saveddatascene = NULL)
+  }
+  if(isolate(length(v$imagelist)) == 0){
+    message("NOTE: Starting new classification")
+    v <- reactiveValues(imagelist = dir("images"),
+                   counter = 0, 
+                   facedata = rep(NA, 11),
+                   saveddataface = read.csv(paste0("ManualClassifiedFaces", workerID, ".csv")),
+                   saveddatascene = read.csv(paste0("ManualClassifiedScenes", workerID, ".csv")))
   }
   
   observe({
@@ -136,13 +146,13 @@ server <- function(input, output, session) {
         
         
         #Save scene info
-        write.csv(v$saveddatascene, file=paste0("ManualClassifiedScenes.csv"), row.names = FALSE)
-        write.csv(v$saveddatascene, file=paste0("datahistory/ManualClassifiedScenes_", Sys.Date(), ":", as.POSIXlt(Sys.time())$hour, ".csv"), row.names = FALSE)
+        write.csv(v$saveddatascene, file=paste0("ManualClassifiedScenes", workerID, ".csv"), row.names = FALSE)
+        write.csv(v$saveddatascene, file=paste0("datahistory/ManualClassifiedScenes", workerID, "_", Sys.Date(), ":", as.POSIXlt(Sys.time())$hour, ".csv"), row.names = FALSE)
         
         #Save face info
         if(!is.null(v$saveddataface)){
-          write.csv(v$saveddataface, file=paste0("ManualClassifiedFaces.csv"), row.names = FALSE)
-          write.csv(v$saveddataface, file=paste0("datahistory/ManualClassifiedFaces_", Sys.Date(), ":", as.POSIXlt(Sys.time())$hour, ".csv"), row.names = FALSE)
+          write.csv(v$saveddataface, file=paste0("ManualClassifiedFaces", workerID, ".csv"), row.names = FALSE)
+          write.csv(v$saveddataface, file=paste0("datahistory/ManualClassifiedFaces", workerID, "_", Sys.Date(), ":", as.POSIXlt(Sys.time())$hour, ".csv"), row.names = FALSE)
         }
         #v$imagedata <- rep(NA, 4)
         v$facedata <- rep(NA, 11) 
@@ -192,7 +202,7 @@ server <- function(input, output, session) {
   })
   
   output$info <- renderText({
-    paste0("Image ", v$counter, "/", length(v$imagelist))
+    paste0("Image ", v$counter, "/", length(v$imagelist), " (", v$imagelist[v$counter], ")")
   })
 }
 
