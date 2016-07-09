@@ -1,4 +1,5 @@
-to# Starting script for SkyBiometry API
+library(jsonlite) # Adding jsonlite for parsing
+# Starting script for SkyBiometry API
 api_key <- "2411ca5a7294462b9923e6ef7f97eb24"
 api_secret <- "f57d0bc3b0eb427389f6c890700b4749"
 
@@ -19,4 +20,6 @@ requests <- the_request(image_urls)
 
 test <- lapply(requests, readLines)
 
-strsplit(test[[1]], ":") # Example of parsing start
+
+# Initial parsing attempt
+parse_json <- lapply(test, fromJSON)
