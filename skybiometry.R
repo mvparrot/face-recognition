@@ -1,4 +1,5 @@
 library(jsonlite) # Adding jsonlite for parsing
+library(imager)
 # Starting script for SkyBiometry API
 api_key <- "2411ca5a7294462b9923e6ef7f97eb24"
 api_secret <- "f57d0bc3b0eb427389f6c890700b4749"
@@ -59,10 +60,19 @@ getFacesSkyBiometry <- function(a){
     cbind(url = a$photos$url, a$photos$tags[[1]])
   }
   else{
-    NA
+    data.frame(url = NA, label=NA, confirmed = NA, manual=NA, width=NA, height=NA, yaw=NA, roll=NA,
+               pitch = NA, attributes.face.value = NA, attributes.face.confidence = NA, points = NA, similarities = NA,
+               tid = NA, recognizable = NA, center.x = NA, center.y = NA)
   }
   
 }
 
+do.call(rbind,parsedFaces)
 
-parsedFaces <- lapply(parse_json, getFacesSkyBiometry)
+
+mytest <- forecast:::datamat(a$photos$tags[[1]])
+
+colnames(mytest) <- names(unlist(a$photos$tags[[1]][1,]))
+
+View(mytest)
+NCOL(mytest)
