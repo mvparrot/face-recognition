@@ -1,6 +1,7 @@
 library(jsonlite) # Adding jsonlite for parsing
 library(imager)
 library(forecast)
+library(httr)
 
 # Starting script for SkyBiometry API
 api_key <- "2411ca5a7294462b9923e6ef7f97eb24"
@@ -15,7 +16,16 @@ image_urls <- c(
   "http://mitchelloharawild.com/tennis/2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0003.png",
   "http://mitchelloharawild.com/tennis/2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0020.png"
 )
+
 request_pattern <- "http://api.skybiometry.com/fc/faces/detect.json?api_key=KEY&api_secret=SECRET&urls=IMAGE"
+
+request_url<-"{http://api.skybiometry.com/fc/faces/detect.json?returnFaceId=false&returnFaceLAndmarks=true}"
+headers<-"add_headers(Content-Type='application/json', Ocp-Apim-Subscription-Key ='2411ca5a7294462b9923e6ef7f97eb24')"
+
+
+httr_request<-POST(request_url, headers, encode = "multipart")
+
+??POST
 
 the_request <- function(url) 
 	sub("IMAGE", url, sub("SECRET", api_secret, sub("KEY", api_key, request_pattern)))
