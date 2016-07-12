@@ -84,6 +84,7 @@ getFacesSkyBiometry <- function(faceTags){
 
 # maps data to a datamat
 mytest <- forecast:::datamat(faceTags$photos$tags[[1]])
+mytest
 #allocates correct column names
 colnames(mytest) <- names(unlist(faceTags$photos$tags[[1]][1,]))
 
