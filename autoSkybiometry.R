@@ -1,7 +1,11 @@
 ### API loop function
 library(jsonlite)
-setwd("~/github/face-recognition/")
-reqsize <- 5
+setwd("~/Desktop/face-recognition/")
+reqsize <- 97
+
+# Starting script for SkyBiometry API
+api_key <- "2411ca5a7294462b9923e6ef7f97eb24"
+api_secret <- "f57d0bc3b0eb427389f6c890700b4749"
 
 getFacesSkyBiometry <- function(faceTags){
   if(length(faceTags$photos$tags[[1]]) > 1){
@@ -33,30 +37,65 @@ if (length(imagelist) == 0){
 
 
 ## Manual check on http://mitchelloharawild.com/tennis/ image server
-imagelist <- c(
-  "2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0003.png",
-  "2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0020.png"
-)
+# imagelist <- c(
+#   "2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0003.png",
+#   "2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0020.png"
+# )
 
-for (i in 0:floor(length(imagelist)/reqsize)){
-  image_urls <- na.omit(imagelist[100*i + (1:reqsize)])
-  image_urls <- paste0("http://mitchelloharawild.com/tennis/", image_urls)
-  #image_urls <- paste0("http://on-the-t.com/assets/match_images/", image_urls)
-  requests <- the_request(image_urls)
-  SkyRequest <- lapply(requests, readLines)
-  parse_json <- lapply(SkyRequest, fromJSON)
-  parsedFaces <- lapply(parse_json, getFacesSkyBiometry)
-  final_df <- do.call(rbind,parsedFaces)
-  #Save backup file
-  write.csv(final_df, file=paste0("SkybiometryBackup/SkybiometryClassifiedFaces_", Sys.Date(), "_", i, ".csv"), row.names = FALSE)
+# for (i in 0:floor(length(imagelist)/reqsize)){
+#   image_urls <- na.omit(imagelist[100*i + (1:reqsize)])
+#   #image_urls <- paste0("http://mitchelloharawild.com/tennis/", image_urls)
+#   image_urls <- paste0("http://on-the-t.com/assets/match_images/", image_urls)
+#   requests <- the_request(image_urls)
+#   SkyRequest <- lapply(requests, readLines)
+#   parse_json <- lapply(SkyRequest, fromJSON)
+#   parsedFaces <- lapply(parse_json, getFacesSkyBiometry)
+#   final_df <- do.call(rbind,parsedFaces)
+#   #Save backup file
+#   write.csv(final_df, file=paste0("SkybiometryBackup/SkybiometryClassifiedFaces_", Sys.Date(), "_", i, ".csv"), row.names = FALSE)
+#   
+#   #Save current combined file
+#   currentFaces <- rbind(currentFaces, final_df)
+#   write.csv(currentFaces, file="SkybiometryClassifiedFaces.csv", row.names = FALSE)
+#   
+#   message(paste0("Successfully completed batch ", i+1, " of ", ceiling(length(imagelist)/reqsize)))
+#   message(paste0("Time of next batch: ", as.POSIXct(parse_json[[1]]$usage$reset_time, origin="1970-01-01")))
+#   while(Sys.time() < as.POSIXct(parse_json[[1]]$usage$reset_time, origin="1970-01-01")){
+#     Sys.sleep(30)
+#   }
+# }
+
+
+for (img in imagelist){
+  image_url <- paste0("http://on-the-t.com/assets/match_images/", img)
+  request <- the_request(image_url)
+  time <- system.time(SkyRequest <- try(readLines(request)))
+  while(class(SkyRequest) == "try-error"){
+    message(paste0("ERROR: API call failed - ", img))
+    message("Trying again in 10 minutes...")
+    Sys.sleep(600)
+    time <- system.time(SkyRequest <- try(readLines(request)))
+  }
+  parse_json <- fromJSON(SkyRequest)
+  parsedFaces <- getFacesSkyBiometry(parse_json)
+  final_df <- as.data.frame(parsedFaces)
   
   #Save current combined file
   currentFaces <- rbind(currentFaces, final_df)
   write.csv(currentFaces, file="SkybiometryClassifiedFaces.csv", row.names = FALSE)
   
-  message(paste0("Successfully completed batch ", i+1, " of ", ceiling(length(imagelist)/reqsize)))
-  while(Sys.time() < as.POSIXct(parse_json[[1]]$usage$reset_time, origin="1970-01-01")){
-    Sys.sleep(30)
+  message(paste0("SUCCESS (", match(img, imagelist), "/", length(imagelist), ", ", round(time[3], digits = 2), "s): ", img))
+  if(parse_json$usage$remaining == 0){
+    #Save backup file
+    write.csv(final_df, file=paste0("SkybiometryBackup/SkybiometryClassifiedFaces_", Sys.Date(), "_", match(img, imagelist), ".csv"), row.names = FALSE)
+    message(paste0(Sys.Date(), " >> Backup saved"))
+    
+    #Wait until usage reset
+    message(paste0("Time of next reset: ", as.POSIXct(parse_json$usage$reset_time, origin="1970-01-01")))
+    # while(Sys.time() < as.POSIXct(parse_json$usage$reset_time, origin="1970-01-01")){
+    #   Sys.sleep(30)
+    # }
+    Sys.sleep(as.numeric(difftime(as.POSIXct(parse_json$usage$reset_time, origin="1970-01-01"), Sys.time(), units="secs")))
   }
 }
 
