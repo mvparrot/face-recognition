@@ -3,12 +3,15 @@ setwd("~/github/face-recognition/")
 #Load Packages
 library(imager)
 library(dplyr)
+library(tidyr)
+library(purrr)
 
 #Load Data
 MicrosoftClassifiedFaces <- read.csv("~/github/face-recognition/MicrosoftClassifiedFaces.csv")
 AnimetricsClassifiedFaces <- read.csv("~/github/face-recognition/AnimetricsClassifiedFaces.csv")
 SkybiometryClassifiedFaces <- read.csv("~/github/face-recognition/SkybiometryClassifiedFaces.csv")
 ManualClassifiedFaces <- read.csv("~/github/face-recognition/ManualClassifiedFaces.csv")
+ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedScenes.csv")
 
 #Check all equal length
 length(unique(MicrosoftClassifiedFaces$file))
@@ -25,29 +28,73 @@ ManualClassifiedFaces <- ManualClassifiedFaces[ManualClassifiedFaces$xmax - Manu
 
 #Merge data
 MicrosoftMerge <- MicrosoftClassifiedFaces %>% 
-  mutate(type = "Microsoft",
+  mutate(type = "Microsoft", ID=NA,
          minX = faceRectangle.left, maxX = faceRectangle.left + faceRectangle.width,
-         minY = faceRectangle.top + faceRectangle.height, maxY = faceRectangle.top) %>%
-  select(file, type, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
+         minY = faceRectangle.top, maxY = faceRectangle.top + faceRectangle.height) %>%
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
 AnimetricsMerge <- AnimetricsClassifiedFaces %>%
-  mutate(type = "Animetrics", 
+  mutate(type = "Animetrics",  ID=NA,
          minX = topLeftX, maxX = topLeftX + width,
-         minY = topLeftY + height, maxY = topLeftY) %>%
-  select(file, type, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
+         minY = topLeftY, maxY = topLeftY + height) %>%
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
 SkyBiometryMerge <- SkybiometryClassifiedFaces %>% 
-  mutate(type = "Skybiometry", 
+  mutate(type = "Skybiometry", ID=NA,
          minX = (center.x - width/2)*8, maxX = (center.x + width/2)*8,
          minY = (center.y - height/2)*4.5, maxY = (center.y + height/2)*4.5) %>%
-  select(file, type, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
-mergedData <- rbind(MicrosoftMerge, AnimetricsMerge, SkyBiometryMerge)
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
+ManualMerge <- ManualClassifiedFaces %>%
+  mutate(type = "Manual", time.user.self=NA, time.sys.self=NA, time.elapsed=NA, ID=1:NROW(ManualClassifiedFaces)) %>%
+  rename(minX = xmin, maxX = xmax,
+         minY = ymin, maxY = ymax) %>%
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
+mergedData <- rbind(MicrosoftMerge, AnimetricsMerge, SkyBiometryMerge, ManualMerge)
 mergedData$type <- factor(mergedData$type)
+mergedData$file <- factor(as.character(mergedData$file))
 
+#BOXID
 prepareFaceBox <- function(data){
   boxX <- c(data$minX, data$minX, data$maxX, data$maxX, data$minX)
   boxY <- c(data$maxY, data$minY, data$minY, data$maxY, data$maxY)
   data.frame(x = boxX, y = boxY)
 }
 
+boxOverlap <- function(boxes){
+  require(raster)
+  boxes$boxID <- 1:NROW(boxes)
+  message(boxes$file[1])
+  if(NROW(boxes)>1){
+    for (newBox in 1:(NROW(boxes) - 1)){
+      for (compareBox in (newBox + 1):NROW(boxes)){
+        if(boxes[newBox,"boxID"] != boxes[compareBox,"boxID"]){
+          newPoly <- SpatialPolygons(list(Polygons(list(Polygon(prepareFaceBox(boxes[newBox,]))), 1)))
+          comparePoly <- SpatialPolygons(list(Polygons(list(Polygon(prepareFaceBox(boxes[compareBox,]))), 1)))
+          intersectPoly <- intersect(newPoly, comparePoly)
+          if(!is.null(intersectPoly)){ #If they actually intersect
+            intersectArea <- area(intersectPoly)
+            totalArea <- area(newPoly) + area(comparePoly) - intersectArea
+            if(intersectArea/totalArea > 0.1){
+              boxes[compareBox,"boxID"] <- boxes[newBox,"boxID"]
+            }
+          }
+        }
+      }
+    }
+  }
+  return(boxes)
+}
+
+#Match faces
+mergedFaceMatches <- mergedData %>%
+  split(.$file) %>%
+  map_df(~ boxOverlap(.x))
+
+#Does it match manual?
+a <- mergedFaceMatches %>% group_by(file, boxID) %>%
+  mutate(matchesManual = any(type == "Manual"))
+b <- a %>% filter(matchesManual) %>% mutate(glasses = ManualClassifiedFaces[ID[!is.na(ID)], "glasses")
+mean(a$matchesManual)
+
+#Create plots
 makePlot <- function(imgList, mergeData){
   devAskNewPage(TRUE)
   for(i in imgList){
@@ -55,20 +102,18 @@ makePlot <- function(imgList, mergeData){
     plot(img)
     faceData <- mergeData %>% filter(file == i)
     message(i)
-    if(NROW(faceData) > 0){    
+    if(NROW(faceData) > 0){
       for(face in 1:NROW(faceData)){
         faceBox <- faceData[face,] %>% prepareFaceBox()
-        lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"type"])+1)
-        print(paste0(faceData[face,"type"], ": ", paste0(as.numeric(faceData[face,"type"])+1)))
+        lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"boxID"])+1)
+        print(paste0(faceData[face,"type"], ": ", paste0(as.numeric(faceData[face,"boxID"])+1)))
       }
     }
   }
 }
 
-imgList <- unique(ManualClassifiedFaces$file)
-img <- load.image(paste0("images/", "2016_HSA_R04_ARadwanska_POL_vs_AFriedsam_GER_WS403_clip.0081.png"))
-plot(img)
+a <- unique(ManualClassifiedFaces[ManualClassifiedFaces$headangle == 2, ]$file)
 
-imgList <- unique(ManualClassifiedFaces$file)
-
+makePlot("2016_SC2_R02_MCilic_CRO_vs_ARamos-Vinolas_ESP_MS213_clip.0044.png", mergedData)
 makePlot(dir("images")[-(1:150)], mergedData)
+makePlot(unique(mergedFaceMatches[as.character(mergedFaceMatches$file)%in%dir("images"), "file"])[-(1:50)], mergedFaceMatches)
