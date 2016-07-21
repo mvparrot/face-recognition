@@ -5,13 +5,14 @@ library(imager)
 library(dplyr)
 library(tidyr)
 library(purrr)
+library(rgeos)
 
 #Load Data
-MicrosoftClassifiedFaces <- read.csv("~/github/face-recognition/MicrosoftClassifiedFaces.csv")
-AnimetricsClassifiedFaces <- read.csv("~/github/face-recognition/AnimetricsClassifiedFaces.csv")
-SkybiometryClassifiedFaces <- read.csv("~/github/face-recognition/SkybiometryClassifiedFaces.csv")
-ManualClassifiedFaces <- read.csv("~/github/face-recognition/ManualClassifiedFaces.csv")
-ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedScenes.csv")
+MicrosoftClassifiedFaces <- read.csv("MicrosoftClassifiedFaces.csv")
+AnimetricsClassifiedFaces <- read.csv("AnimetricsClassifiedFaces.csv")
+SkybiometryClassifiedFaces <- read.csv("SkybiometryClassifiedFaces.csv")
+ManualClassifiedFaces <- read.csv("ManualClassifiedFaces.csv")
+ManualClassifiedScenes <- read.csv("ManualClassifiedScenes.csv")
 
 #Check all equal length
 length(unique(MicrosoftClassifiedFaces$file))
@@ -91,7 +92,8 @@ mergedFaceMatches <- mergedData %>%
 #Does it match manual?
 a <- mergedFaceMatches %>% group_by(file, boxID) %>%
   mutate(matchesManual = any(type == "Manual"))
-b <- a %>% filter(matchesManual) %>% mutate(glasses = ManualClassifiedFaces[ID[!is.na(ID)], "glasses")
+# what is b?
+b <- a %>% filter(matchesManual) %>% mutate("glasses" = ManualClassifiedFaces[ID[!is.na(ID)]], "glasses")
 mean(a$matchesManual)
 
 #Create plots
@@ -112,8 +114,28 @@ makePlot <- function(imgList, mergeData){
   }
 }
 
-a <- unique(ManualClassifiedFaces[ManualClassifiedFaces$headangle == 2, ]$file)
 
 makePlot("2016_SC2_R02_MCilic_CRO_vs_ARamos-Vinolas_ESP_MS213_clip.0044.png", mergedData)
 makePlot(dir("images")[-(1:150)], mergedData)
 makePlot(unique(mergedFaceMatches[as.character(mergedFaceMatches$file)%in%dir("images"), "file"])[-(1:50)], mergedFaceMatches)
+
+
+
+### Manual Classified Scenes Analysis ###
+ImagesLength <- length(ManualClassifiedScenes$file)
+freqLive <- length(ManualClassifiedScenes[ManualClassifiedScenes$graphic == 0, ]$file)
+(freqLive)/(ImagesLength)
+
+UselessBirdseye <- ManualClassifiedScenes[ManualClassifiedScenes$situation == 0 & 
+                ManualClassifiedScenes$bg == 2 & ManualClassifiedScenes$shotangle == 1,]
+freqUselessBirdseye <- length(UselessBirdseye$file)
+(freqUselessBirdseye)/(ImagesLength)
+
+freqUselessBirdseye
+
+Birdseye <- ManualClassifiedScenes[ManualClassifiedScenes$shotangle == 1,]
+freqBirdseye <- length(Birdseye$file)
+
+NoPerson <- ManualClassifiedScenes[ManualClassifiedScenes$person == 1,]
+NoPerson
+
