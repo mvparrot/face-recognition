@@ -1,0 +1,42 @@
+---
+title: "Report"
+author: "Stephanie Kobakian, Mitchell O'Hara Wild"
+date: "26 July 2016"
+output: pdf_document
+geometry: margin=.75in
+---
+
+(1) Background: 2-3 paragraphs describing the mental side of tennis, need for direct measurement, tools for other applications with unknown performance in high-performance sport
+
+As many Tennis Professionals believe that tennis is a game heavily affected by the mental states of the players, the opportunity for researching this concept presents itself with the hope of improving the playing and coaching of Tennis players. By measuring and analysing the faces and expressions of players during a match there is a hope that insight may be gained into the affects of the mental state on the outcome of a match.
+
+In this paper, we investigate the performance of several popular facial recognition algorithms and evaluate their performance when applied to the broadcasts of elite tennis matches. While it is impossibe to know the thoughts and feelings of a player during a match, professionals may be able to infer this information through recognition softwares.
+
+Make use of the recognition softwares currently available presents a challenge as high performance sports are not the intended uses of such softwares.
+Their capabilities are often limited to their intended uses. This report aims to analyse the application of these softwares to a broadcast to find a suitable software for use on a pre recorded tennis broadcast file. 
+
+(2) Materials: Paragraph describing the sample and sampling approach; processing of selecting the software, which we ended up with and anything we know about their methodology/limitations 
+
+The sample consisted of a set of 6404 still images. These images were taken at every three seconds, from 5 minute segments of the 105 Broadcast video files.
+All 105 Broadcast video files were the live broadcast of the tennis match shown on the 7 Network during th Australian Open 2016.
+To test the softwares the diversity of the players had to be considered, therefore the sample included singles tennis matches played between females and males. The rounds of the competition vary as to not limit the pool of players to only those who progressed, though there was a higher chance of these players appearing.
+
+
+- Gender, either Male or Female
+- Court, one of 7 possible courts
+
+We then took:
+
+- 
+- Of these segments, a still was taken at every 3 seconds
+
+##
+
+
+(3) Methodology: Describe the annotation tool developed and procedure; describe collection of algorithm results; describe the validation analysis 
+
+(4) Results: Table 1 = Describe the characteristics of the images - how many? what are the typical situations? how many have faces? etc. Table 2 = Describe the images/boxes identified by the algorithms--what are they typically like? what is the area represented? Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) How often is type I error made (a face detached incorrectly)? How often type II error (a face is incorrectly NOT detected)? How often are duplicates? Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
+
+(5) Conclusions 
+
+(6) Future Work
