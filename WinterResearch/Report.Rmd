@@ -35,7 +35,13 @@ We then took:
 
 (3) Methodology: Describe the annotation tool developed and procedure; describe collection of algorithm results; describe the validation analysis 
 
-(4) Results: Table 1 = Describe the characteristics of the images - how many? what are the typical situations? how many have faces? etc. Table 2 = Describe the images/boxes identified by the algorithms--what are they typically like? what is the area represented? Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) How often is type I error made (a face detached incorrectly)? How often type II error (a face is incorrectly NOT detected)? How often are duplicates? Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
+(4) Results: 
+Table 1 = Describe the characteristics of the images - how many? what are the typical situations? how many have faces? etc. 
+Table 2 = Describe the images/boxes identified by the algorithms--what are they typically like? what is the area represented? 
+Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) 
+  How often is type I error made (a face detached incorrectly)?   How often type II error (a face is incorrectly NOT detected)?   How often are duplicates? Rarely, notable as a point of interest but given only occurs when using animetrics it is not worth basing decisions on this characteristic.
+
+Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
 
 (5) Conclusions 
 
