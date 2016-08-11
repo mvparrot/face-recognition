@@ -5,14 +5,13 @@ library(imager)
 library(dplyr)
 library(tidyr)
 library(purrr)
-library(rgeos)
 
 #Load Data
-MicrosoftClassifiedFaces <- read.csv("MicrosoftClassifiedFaces.csv")
-AnimetricsClassifiedFaces <- read.csv("AnimetricsClassifiedFaces.csv")
-SkybiometryClassifiedFaces <- read.csv("SkybiometryClassifiedFaces.csv")
-ManualClassifiedFaces <- read.csv("ManualClassifiedFaces.csv")
-ManualClassifiedScenes <- read.csv("ManualClassifiedScenes.csv")
+MicrosoftClassifiedFaces <- read.csv("~/github/face-recognition/MicrosoftClassifiedFaces.csv")
+AnimetricsClassifiedFaces <- read.csv("~/github/face-recognition/AnimetricsClassifiedFaces.csv")
+SkybiometryClassifiedFaces <- read.csv("~/github/face-recognition/SkybiometryClassifiedFaces.csv")
+ManualClassifiedFaces <- read.csv("~/github/face-recognition/ManualClassifiedFaces.csv")
+ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedScenes.csv")
 
 #Check all equal length
 length(unique(MicrosoftClassifiedFaces$file))
@@ -25,7 +24,9 @@ AnimetricsClassifiedFaces <- AnimetricsClassifiedFaces[!is.na(AnimetricsClassifi
 SkybiometryClassifiedFaces <- SkybiometryClassifiedFaces[!is.na(SkybiometryClassifiedFaces$width),]
 
 #Manual Classified Faces minimum size set
-ManualClassifiedFaces <- ManualClassifiedFaces[ManualClassifiedFaces$xmax - ManualClassifiedFaces$xmin > 36,]
+ManualClassifiedFaces <- ManualClassifiedFaces %>%
+  mutate(type = "Manual", time.user.self=NA, time.sys.self=NA, time.elapsed=NA, ID=1:NROW(ManualClassifiedFaces)) %>%
+  filter(xmax - xmin > 36)
 
 #Merge data
 MicrosoftMerge <- MicrosoftClassifiedFaces %>% 
@@ -44,7 +45,6 @@ SkyBiometryMerge <- SkybiometryClassifiedFaces %>%
          minY = (center.y - height/2)*4.5, maxY = (center.y + height/2)*4.5) %>%
   dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
 ManualMerge <- ManualClassifiedFaces %>%
-  mutate(type = "Manual", time.user.self=NA, time.sys.self=NA, time.elapsed=NA, ID=1:NROW(ManualClassifiedFaces)) %>%
   rename(minX = xmin, maxX = xmax,
          minY = ymin, maxY = ymax) %>%
   dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
@@ -90,14 +90,26 @@ mergedFaceMatches <- mergedData %>%
   map_df(~ boxOverlap(.x))
 
 #Does it match manual?
-a <- mergedFaceMatches %>% group_by(file, boxID) %>%
+mergedFaceMatches <- mergedFaceMatches %>% group_by(file, boxID) %>%
   mutate(matchesManual = any(type == "Manual"))
-# what is b?
-b <- a %>% filter(matchesManual) %>% mutate("glasses" = ManualClassifiedFaces[ID[!is.na(ID)]], "glasses")
-mean(a$matchesManual)
+
+classifiedIMG <- mergedFaceMatches[mergedFaceMatches$file%in%ManualClassifiedScenes$file,]
+#Calculate percentage of box matching manual by API type
+classifiedIMG[classifiedIMG$type!="Manual",] %>% group_by(type) %>% summarise(percent = mean(matchesManual))
+
+### MERGE ALL THE DATA!
+metaManualClassifiedFaces <- merge(dplyr::select(ManualClassifiedFaces, file, facecounter, detect, obscured, lighting, headangle, glasses, visorhat, ID),
+                                   dplyr::select(dplyr::ungroup(dplyr::filter(mergedFaceMatches, type=="Manual")), ID, boxID), by="ID")
+metaIMG <- merge(ManualClassifiedScenes, metaManualClassifiedFaces, by="file")
+MatchingMetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"))
+ALLmetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"), all.y = TRUE)
+
+#Finding duplicates
+ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
+  mutate(duplicates = duplicated(type))
 
 #Create plots
-makePlot <- function(imgList, mergeData){
+makePlot <- function(imgList, mergeData, matchBox=TRUE){
   devAskNewPage(TRUE)
   for(i in imgList){
     img <- load.image(paste0("images/", i))
@@ -107,35 +119,15 @@ makePlot <- function(imgList, mergeData){
     if(NROW(faceData) > 0){
       for(face in 1:NROW(faceData)){
         faceBox <- faceData[face,] %>% prepareFaceBox()
-        lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"boxID"])+1)
-        print(paste0(faceData[face,"type"], ": ", paste0(as.numeric(faceData[face,"boxID"])+1)))
+        if(matchBox){
+          lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"boxID"])+1)
+          print(paste0(faceData[face,]$type, ": ", paste0(as.numeric(faceData[face,"boxID"])+1)))
+        }
+        else{
+          lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"type"])+1)
+          print(paste0(faceData[face,]$type, ": ", paste0(as.numeric(faceData[face,"type"])+1)))
+        }
       }
     }
   }
 }
-
-
-makePlot("2016_SC2_R02_MCilic_CRO_vs_ARamos-Vinolas_ESP_MS213_clip.0044.png", mergedData)
-makePlot(dir("images")[-(1:150)], mergedData)
-makePlot(unique(mergedFaceMatches[as.character(mergedFaceMatches$file)%in%dir("images"), "file"])[-(1:50)], mergedFaceMatches)
-
-
-
-### Manual Classified Scenes Analysis ###
-ImagesLength <- length(ManualClassifiedScenes$file)
-freqLive <- length(ManualClassifiedScenes[ManualClassifiedScenes$graphic == 0, ]$file)
-(freqLive)/(ImagesLength)
-
-UselessBirdseye <- ManualClassifiedScenes[ManualClassifiedScenes$situation == 0 & 
-                ManualClassifiedScenes$bg == 2 & ManualClassifiedScenes$shotangle == 1,]
-freqUselessBirdseye <- length(UselessBirdseye$file)
-(freqUselessBirdseye)/(ImagesLength)
-
-freqUselessBirdseye
-
-Birdseye <- ManualClassifiedScenes[ManualClassifiedScenes$shotangle == 1,]
-freqBirdseye <- length(Birdseye$file)
-
-NoPerson <- ManualClassifiedScenes[ManualClassifiedScenes$person == 1,]
-NoPerson
-
