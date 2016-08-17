@@ -93,6 +93,9 @@ mergedFaceMatches <- mergedData %>%
 mergedFaceMatches <- mergedFaceMatches %>% group_by(file, boxID) %>%
   mutate(matchesManual = any(type == "Manual"))
 
+#size of box
+mergedFaceMatches <- mergedFaceMatches %>% mutate(size = (maxX - minX) * (maxY - minY))
+
 classifiedIMG <- mergedFaceMatches[mergedFaceMatches$file%in%ManualClassifiedScenes$file,]
 #Calculate percentage of box matching manual by API type
 classifiedIMG[classifiedIMG$type!="Manual",] %>% group_by(type) %>% summarise(percent = mean(matchesManual))
@@ -109,6 +112,7 @@ ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
   mutate(duplicates = duplicated(type))
 
 #Create plots
+
 makePlot <- function(imgList, mergeData, matchBox=TRUE){
   devAskNewPage(TRUE)
   for(i in imgList){
@@ -130,4 +134,7 @@ makePlot <- function(imgList, mergeData, matchBox=TRUE){
       }
     }
   }
+  devAskNewPage(FALSE)
 }
+
+makePlot(as.character(MatchingMetaIMG[MatchingMetaIMG$size>75000,]$file), ALLmetaIMG)
