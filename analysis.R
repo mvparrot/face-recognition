@@ -10,6 +10,7 @@ library(purrr)
 MicrosoftClassifiedFaces <- read.csv("~/github/face-recognition/MicrosoftClassifiedFaces.csv")
 AnimetricsClassifiedFaces <- read.csv("~/github/face-recognition/AnimetricsClassifiedFaces.csv")
 SkybiometryClassifiedFaces <- read.csv("~/github/face-recognition/SkybiometryClassifiedFaces.csv")
+GoogleClassifiedFaces <- read.csv("~/github/face-recognition/GoogleClassifiedFaces.csv")
 ManualClassifiedFaces <- read.csv("~/github/face-recognition/ManualClassifiedFaces.csv")
 ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedScenes.csv")
 
@@ -17,11 +18,13 @@ ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedSc
 length(unique(MicrosoftClassifiedFaces$file))
 length(unique(AnimetricsClassifiedFaces$file))
 length(unique(SkybiometryClassifiedFaces$file))
+length(unique(GoogleClassifiedFaces$file))
 
 #Remove images with no faces
 MicrosoftClassifiedFaces <- MicrosoftClassifiedFaces[!is.na(MicrosoftClassifiedFaces$faceRectangle.top),]
 AnimetricsClassifiedFaces <- AnimetricsClassifiedFaces[!is.na(AnimetricsClassifiedFaces$topLeftX),]
 SkybiometryClassifiedFaces <- SkybiometryClassifiedFaces[!is.na(SkybiometryClassifiedFaces$width),]
+GoogleClassifiedFaces <- GoogleClassifiedFaces[!is.na(GoogleClassifiedFaces$rollAngle),]
 
 #Manual Classified Faces minimum size set
 ManualClassifiedFaces <- ManualClassifiedFaces %>%
@@ -44,11 +47,19 @@ SkyBiometryMerge <- SkybiometryClassifiedFaces %>%
          minX = (center.x - width/2)*8, maxX = (center.x + width/2)*8,
          minY = (center.y - height/2)*4.5, maxY = (center.y + height/2)*4.5) %>%
   dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
+GoogleMerge <- GoogleClassifiedFaces %>% 
+  rowwise() %>%
+  mutate(type = "Google", ID=NA,
+         minX = min(boundingPoly.x1, boundingPoly.x4), maxX = min(boundingPoly.x2, boundingPoly.x3),
+         minY = min(boundingPoly.y1, boundingPoly.y2), maxY = min(boundingPoly.y3, boundingPoly.y4)) %>%
+  ungroup() %>%
+  mutate(minX = ifelse(is.na(minX), 0, minX), minY = ifelse(is.na(minY), 0, minY)) %>%
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
 ManualMerge <- ManualClassifiedFaces %>%
   rename(minX = xmin, maxX = xmax,
          minY = ymin, maxY = ymax) %>%
   dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)
-mergedData <- rbind(MicrosoftMerge, AnimetricsMerge, SkyBiometryMerge, ManualMerge)
+mergedData <- rbind(MicrosoftMerge, AnimetricsMerge, SkyBiometryMerge, GoogleMerge, ManualMerge)
 mergedData$type <- factor(mergedData$type)
 mergedData$file <- factor(as.character(mergedData$file))
 
@@ -134,7 +145,7 @@ makePlot <- function(imgList, mergeData, matchBox=TRUE){
       }
     }
   }
-  devAskNewPage(FALSE)
 }
 
-makePlot(as.character(MatchingMetaIMG[MatchingMetaIMG$size>75000,]$file), ALLmetaIMG)
+makePlot(as.character(a[a$size>75000,]$file), ALLmetaIMG)
+makePlot(as.character(GoogleMerge$file[5]), ALLmetaIMG)

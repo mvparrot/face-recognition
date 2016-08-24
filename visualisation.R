@@ -21,7 +21,7 @@ ggplot(ALLmetaIMG, aes(x = factor(x = factor(headangle)), group=type, fill=type)
 ## TODO: Proportions of manual classifications.
 a <- ALLmetaIMG %>% filter(matchesManual) %>% group_by(glasses, type) %>% summarise(a=n())
 ggplot(a, aes(x=factor(glasses), y=a, fill=type)) + geom_bar(stat="identity", position = "dodge")
-a$manVal <- rep(c(1344, 186), each=4) # MAKE THIS MORE GENERAL
+a$manVal <- rep(c(1344, 186), each=5) # MAKE THIS MORE GENERAL
 b <- a %>% mutate(prop = a/manVal)
 b
 ggplot(filter(b, type!="Manual"), aes(x=factor(glasses), y=prop, fill=type)) + geom_bar(stat="identity", position = "dodge")
