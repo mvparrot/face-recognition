@@ -118,12 +118,18 @@ metaIMG <- merge(ManualClassifiedScenes, metaManualClassifiedFaces, by="file")
 MatchingMetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"))
 ALLmetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"), all.y = TRUE)
 
+#Extract file name info
+fileSplit <- strsplit(unique(as.character(ALLmetaIMG$file)), "_")
+fileSplit <- as.data.frame(do.call(rbind, fileSplit))
+colnames(fileSplit) <- c("year", "court", "round", "player1", "country1", "junk1", "player2", "country2", "matchDraw", "junk2")
+fileInfo <- cbind(file = unique(as.character(ALLmetaIMG$file)), fileSplit[,-c(6, 10)])
+ALLmetaIMG <- merge(ALLmetaIMG, fileInfo, by="file")
+
 #Finding duplicates
 ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
   mutate(duplicates = duplicated(type))
 
 #Create plots
-
 makePlot <- function(imgList, mergeData, matchBox=TRUE){
   devAskNewPage(TRUE)
   for(i in imgList){
