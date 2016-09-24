@@ -28,8 +28,7 @@ GoogleClassifiedFaces <- GoogleClassifiedFaces[!is.na(GoogleClassifiedFaces$roll
 
 #Manual Classified Faces minimum size set
 ManualClassifiedFaces <- ManualClassifiedFaces %>%
-  mutate(type = "Manual", time.user.self=NA, time.sys.self=NA, time.elapsed=NA, ID=1:NROW(ManualClassifiedFaces)) %>%
-  filter(xmax - xmin > 36)
+  mutate(type = "Manual", time.user.self=NA, time.sys.self=NA, time.elapsed=NA, ID=1:NROW(ManualClassifiedFaces))
 
 #Merge data
 MicrosoftMerge <- MicrosoftClassifiedFaces %>% 
@@ -80,7 +79,7 @@ boxOverlap <- function(boxes){
         if(boxes[newBox,"boxID"] != boxes[compareBox,"boxID"]){
           newPoly <- SpatialPolygons(list(Polygons(list(Polygon(prepareFaceBox(boxes[newBox,]))), 1)))
           comparePoly <- SpatialPolygons(list(Polygons(list(Polygon(prepareFaceBox(boxes[compareBox,]))), 1)))
-          intersectPoly <- intersect(newPoly, comparePoly)
+          intersectPoly <- suppressWarnings(intersect(newPoly, comparePoly))
           if(!is.null(intersectPoly)){ #If they actually intersect
             intersectArea <- area(intersectPoly)
             totalArea <- area(newPoly) + area(comparePoly) - intersectArea
@@ -114,9 +113,14 @@ classifiedIMG[classifiedIMG$type!="Manual",] %>% group_by(type) %>% summarise(pe
 ### MERGE ALL THE DATA!
 metaManualClassifiedFaces <- merge(dplyr::select(ManualClassifiedFaces, file, facecounter, detect, obscured, lighting, headangle, glasses, visorhat, ID),
                                    dplyr::select(dplyr::ungroup(dplyr::filter(mergedFaceMatches, type=="Manual")), ID, boxID), by="ID")
-metaIMG <- merge(ManualClassifiedScenes, metaManualClassifiedFaces, by="file")
-MatchingMetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"))
-ALLmetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"), all.y = TRUE)
+#metaIMG <- merge(ManualClassifiedScenes, metaManualClassifiedFaces, by="file")
+#MatchingMetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"))
+#ALLmetaIMG <- merge(dplyr::select(metaIMG, -ID), dplyr::select(mergedFaceMatches, -ID), by=c("file", "boxID"), all.y = TRUE)
+
+## New method to retain scene information on non-matches
+## Pairwise merge, always include file, change merge order
+metaFaces <- merge(metaManualClassifiedFaces, classifiedIMG, by="file") %>% dplyr::select(-ID.y, -boxID.x) %>% rename(ID = ID.x, boxID = boxID.y)
+ALLmetaIMG <- merge(ManualClassifiedScenes, metaFaces, by="file")
 
 #Extract file name info
 fileSplit <- strsplit(unique(as.character(ALLmetaIMG$file)), "_")
