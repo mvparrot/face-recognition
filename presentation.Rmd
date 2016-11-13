@@ -1,0 +1,288 @@
+---
+title: "Facial Recognition"
+author: 
+  - Stephanie Kobakian
+  - Mitchell O'Hara-Wild
+date: "26 September 2016"
+output: 
+  revealjs::revealjs_presentation:
+    theme: black
+    highlight: pygments
+    transition: slide
+    center: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Winter research project {data-background="img/intro_bg.png"}
+
+## Project goals
+
+- Find the best facial recognition software for tennis matches
+- Build manually classified dataset of faces
+- Compare software performance under varied conditions
+- Determine ideal camera feeds for facial recognition
+
+## Challenges
+
+- Access to usable images and videos
+- Availability of software
+- Using the software
+- Time constraints
+
+# Applications of facial detection software
+
+## Camera auto-focus
+![Camera auto-focus](img/Face_detection.jpg)
+
+## Facebook's image tagging
+![Facebook's tagging feature for quick classification of friends](img/FacebookTag.png)
+
+## Snapchat filters
+![snap](img/snapchat.jpg)
+
+## Surveillance and security
+![security](img/security.png)
+
+## Google's Mobile Vision
+
+![Google Mobile Vision](img/googleMobile.png)
+
+# Applying facial recognition to tennis
+
+## Emotion in tennis
+
+Serena Williams
+
+> "Tennis is mostly mental. You win or lose the match before you even go out there."
+
+![Serena GIF](img/serenaWilliams.gif)
+
+## Long-term goals
+
+- Better understand emotion's effect on player performance
+- Automatic collection of player emotion data from video
+
+# Manual classification
+
+## Dataset
+
+- 6406 Australian Open images (2.8GB)
+- 800x450px size frames from 105 match broadcast videos
+- Video frames taken every 3 seconds over a 5 minute segment
+
+## So how do we classify these?
+- Do it in Excel
+- Write a website
+- Write a program
+
+
+## Shiny Application
+![ShinyApp](img/shiny.png)
+
+# Facial recognition software
+
+## Evaluated software (APIs)
+
+- Animetrics
+- Skybiometry
+- Microsoft
+- Google
+
+## Comparison of features
+
+| Feature        | Google | Microsoft | Skybiometry | Animetrics |
+|----------------|--------|-----------|-------------|------------|
+| Face features  | ✔      | ✔         | ✔           | ✔          |
+| Head angle     | ✔      | ✔         | ✔           | ✔          |
+| Basic emotion  | ✔      | ✔         |             |            |
+| Face landmarks | ✔      | ✔         |             | ✔          |
+| Scene labels   | ✔      |           |             |            |
+| 3D points      | ✔      |           |             |            |
+
+## Using the software
+
+> API: Application programming interface
+
+APIs are built to be part of a larger program.
+
+(for example, a camera app)
+
+In order to use them, we need to write scripts to use the API.
+
+## Running the scripts
+
+Detecting faces in each image typically took 3-4 seconds.  
+
+To complete all 6406 images, it would take 5-7 hours, per API.  
+
+Some APIs had usage limits, and took several days to run.
+
+## Raspberry Pie
+![RaspPie](img/raspberry-pie-4.jpg)
+
+## Raspberry Pi
+![RPi](img/rasp.png)
+
+## Raspberry Pi
+![RaspPi](img/RP.png)
+
+## Several days later...
+
+We have all our data!  
+(toward the end of the original project window)
+
+# Preparing the data
+
+## Overlaying face boxes
+Check if the software is producing sensible output.
+```{r,echo=FALSE, message=FALSE}
+ALLmetaIMG <- read.csv("~/github/face-recognition/ALLmetaIMG.csv")
+
+
+ALLmetaIMG$graphic<-factor(ALLmetaIMG$graphic, levels = 0:1, labels = c("Live image", "Graphic"))
+ALLmetaIMG$bg<-factor(ALLmetaIMG$bg, levels = 0:3, labels = c("Crowd", "Court", "Logo wall", "Not applicable"))
+ALLmetaIMG$person<-factor(ALLmetaIMG$person, levels = 0:1, labels = c("No Person", "Person"))
+ALLmetaIMG$shotangle<-factor(ALLmetaIMG$shotangle, levels = 0:2, labels = c("Player Shoulder Height", "Birds Eye", "Upward Angle"))
+ALLmetaIMG$situation<-factor(ALLmetaIMG$situation, levels = 0:5, labels = c("Court in play", "Court player close-up", "Court close-up not player", "Crowd", "Off court close up of player", "Transition"))
+
+ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:3, labels = c("Player", "Other staff on court", "Fan", "None"))
+ALLmetaIMG$obscured<-factor(ALLmetaIMG$obscured, levels = 0:1, labels = c("No", "Yes"))
+ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 0:2, labels = c("Direct sunlight", "Shaded", "Partially shaded"))
+ALLmetaIMG$headangle<-factor(ALLmetaIMG$headangle, levels = 0:3, labels = c("Front on", "Back of head", "Profile", "Other"))
+ALLmetaIMG$glasses<-factor(ALLmetaIMG$glasses, levels = 0:1, labels = c("No", "Yes"))
+ALLmetaIMG$visorhat<-factor(ALLmetaIMG$visorhat, levels = 0:1, labels = c("No", "Yes"))
+
+library(imager)
+library(dplyr)
+library(tidyr)
+
+prepareFaceBox <- function(data){
+  boxX <- c(data$minX, data$minX, data$maxX, data$maxX, data$minX)
+  boxY <- c(data$maxY, data$minY, data$minY, data$maxY, data$maxY)
+  data.frame(x = boxX, y = boxY)
+}
+
+
+library(ggplot2)
+getManualCount <- function(type, nTotal) {
+  return(nTotal[type == "Manual"])
+}
+ggplotProportion <- function(dataset, factorVar){
+  factorVar <- deparse(substitute(factorVar))
+  dataset <- dataset %>% filter(matchesManual) %>% group_by_(factorVar, "type") %>% summarise(nTotal=n()) %>% group_by_(factorVar) %>% mutate(ManualCount = getManualCount(type, nTotal)) %>%
+    mutate(proportion = nTotal/ManualCount) %>% rename_(xvar = factorVar) %>% filter(type!="Manual")
+  ggplot(dataset, aes(x=factor(xvar), y=proportion, group = type, fill=type)) + geom_bar(stat = "identity", position = "dodge") +
+    ylab("Proportion of faces matched") + xlab(factorVar)
+}
+
+overlayFaceBox <- function(imgList, mergeData, matchBox=TRUE){
+  for(i in imgList){
+    img <- load.image(paste0("images/", i))
+    plot(img)
+    faceData <- mergeData %>% filter(file == i)
+    if(NROW(faceData) > 0){
+      for(face in 1:NROW(faceData)){
+        faceBox <- faceData[face,] %>% prepareFaceBox()
+        if(matchBox){
+          lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"boxID"])+1)
+        }
+        else{
+          lines(faceBox$x, faceBox$y, col=as.numeric(faceData[face,"type"])+1)
+        }
+      }
+      if(!matchBox){
+        legend("topright", legend = unique(faceData$type), col = unique(as.numeric(faceData$type) + 1), lty = 1)
+      }
+    }
+  }
+}
+```
+
+## Data is reasonable!
+
+```{r, }
+overlayFaceBox("2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0013.png", ALLmetaIMG, FALSE)
+```
+
+## Most of the time.
+
+```{r}
+overlayFaceBox("2016_HSA_R01_PKohlschreiber_GER_vs_KNishikori_JPN_MS116_clip.0057.png", ALLmetaIMG, FALSE)
+```
+
+## Merging the data
+
+Collected data was spread across 6 files, to analyse it, we need to merge it all together.
+
+![Data structure](img/DataLayout.png)
+
+## Matching face boxes
+
+We also need to determine if the boxes from each API match the same face.  
+
+This is also important for importing the extra face information from the manual classification.
+
+Comparing every box generated, if the intersection of the box was >10%, they matched.
+
+![box intersection](img/sharedBox.png)
+
+## Matching face boxes
+```{r}
+overlayFaceBox("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0020.png", ALLmetaIMG, TRUE)
+```
+
+# Analysing the data
+
+## Shot angles
+```{r}
+ggplotProportion(ALLmetaIMG, shotangle)
+```
+
+## Best shot angle
+Player close-up
+![closeup](img/closeup.png)
+
+## Worst shot angle
+Birds-eye view
+![birdseye](img/birdseye.png)
+
+## Hats and visors
+As expected, they reduce the detection.
+```{r, echo=FALSE}
+ggplotProportion(ALLmetaIMG, visorhat)
+```
+
+## Classification time
+![time](img/recognitionTime.png)
+
+## Face size
+![size](img/size.png)
+
+# Conclusions
+
+## The best facial recognition software
+
+Google
+
+- Provided the most accurate face detection
+- Provided lots of meta information
+- Includes basic emotion recognition
+- Well priced
+
+## Room for improvement
+
+Facial recognition software needs work to improve detection of faces, let alone emotion.
+
+Some basic emotion is possible, however the precision is questionable, especially with players expressions during a game.
+
+## Further research
+
+- Use higher definition images
+- Obtain and use only best camera angles
+- Analyse player microphone audio for emotion
+- Use videos for facial recognition
+
+# Q & A
