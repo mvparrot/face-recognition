@@ -135,7 +135,6 @@ ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
 
 #Create plots
 makePlot <- function(imgList, mergeData, matchBox=TRUE){
-  devAskNewPage(TRUE)
   for(i in imgList){
     img <- load.image(paste0("images/", i))
     plot(img)
@@ -153,9 +152,14 @@ makePlot <- function(imgList, mergeData, matchBox=TRUE){
           print(paste0(faceData[face,]$type, ": ", paste0(as.numeric(faceData[face,"type"])+1)))
         }
       }
+      if(!matchBox){
+        legend("topright", legend = unique(faceData$type), col = unique(as.numeric(faceData$type) + 1), lty = 1)
+      }
     }
   }
 }
 
 makePlot(as.character(a[a$size>75000,]$file), ALLmetaIMG)
-makePlot(as.character(GoogleMerge$file[5]), ALLmetaIMG)
+makePlot("2016_SC2_R02_XHan_CHN_vs_YPutintseva_KAZ_WS204_clip.0098.png", ALLmetaIMG)
+
+makePlot(b[1], ALLmetaIMG)
