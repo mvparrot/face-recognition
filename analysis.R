@@ -119,8 +119,11 @@ metaManualClassifiedFaces <- merge(dplyr::select(ManualClassifiedFaces, file, fa
 
 ## New method to retain scene information on non-matches
 ## Pairwise merge, always include file, change merge order
-metaFaces <- merge(metaManualClassifiedFaces, classifiedIMG, by="file") %>% dplyr::select(-ID.y, -boxID.x) %>% rename(ID = ID.x, boxID = boxID.y)
-ALLmetaIMG <- merge(ManualClassifiedScenes, metaFaces, by="file")
+
+#metaFaces <- merge(metaManualClassifiedFaces, classifiedIMG, by="file") %>% dplyr::select(-ID.y, -boxID.x) %>% rename(ID = ID.x, boxID = boxID.y)
+metaFaces <- merge(metaManualClassifiedFaces, classifiedIMG, by="file", all=TRUE) %>% dplyr::select(-ID.y, -boxID.x) %>% rename(ID = ID.x, boxID = boxID.y)
+
+ALLmetaIMG <- merge(ManualClassifiedScenes, metaFaces, by="file", all=TRUE)
 
 #Extract file name info
 fileSplit <- strsplit(unique(as.character(ALLmetaIMG$file)), "_")
