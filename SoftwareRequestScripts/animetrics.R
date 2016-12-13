@@ -1,5 +1,5 @@
 # Starting script for Animetrics FaceR API
-a.api_key <- "b94ed4dde06aca433a90af1a88c731b2"
+a.api_key <- ""
 a.selection <- "FULL"
 
 image_urls <- c("mitchelloharawild.com/tennis/2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0003.png")

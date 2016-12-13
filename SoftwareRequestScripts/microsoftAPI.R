@@ -1,6 +1,6 @@
 library(httr)
 a <- POST(url="https://api.projectoxford.ai/face/v1.0/detect?returnFaceId=false&returnFaceLandmarks=true",
-     add_headers(`Ocp-Apim-Subscription-Key` = "1f5f1bdb8e7d4a9abf25daea59ce79bc",
+     add_headers(`Ocp-Apim-Subscription-Key` = "",
                  `Content-Type` = "application/json"),
      body = list(`url` = "http://mitchelloharawild.com/tennis/2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0003.png"))
 
@@ -16,7 +16,7 @@ mybody = list(url = img.url)
 
 MicrosoftAPI <- function(img.url){
   POST(url = "https://api.projectoxford.ai/face/v1.0/detect?returnFaceId=false&returnFaceLandmarks=true", 
-    content_type('application/json'), add_headers(.headers = c('Ocp-Apim-Subscription-Key' = "1f5f1bdb8e7d4a9abf25daea59ce79bc")),
+    content_type('application/json'), add_headers(.headers = c('Ocp-Apim-Subscription-Key' = "")),
     body = list(url = img.url),
     encode = 'json'
   )
