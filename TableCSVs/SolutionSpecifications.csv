@@ -1,5 +1,5 @@
-Name,Website,Input,FileType,ImageSizeMin,ImageSizeMax
-Animetrics-FaceR,http://www.animetrics.com/?content=products/aPIs,Images,NA,NA,NA
-Google-Vision,https://cloud.google.com/vision/,Images,"JPEG, RAW",NA,4MB
-Microsoft,https://www.microsoft.com/cognitive-services/en-us/face-api,Images,"JPEG,PNG",1KB,4MB
-Skybiometry,https://skybiometry.com/,Images,"JPEG,PNG,BMP",NA,2MB
+Name,Input,FileType,ImageSizeMin,ImageSizeMax
+Animetrics-FaceR,Images,NA,NA,NA
+Google-Vision,Images,"JPEG, RAW",NA,4MB
+Microsoft,Images,"JPEG,PNG",1KB,4MB
+Skybiometry,Images,"JPEG,PNG,BMP",NA,2MB

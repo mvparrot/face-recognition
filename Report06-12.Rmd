@@ -7,12 +7,12 @@ output:
   pdf_document:
     toc: yes
     toc_depth: 2
+    fig_caption: yes
   word_document:
     toc: yes
 fontsize: 11pt
 bibliography: references.bib
 ---
-
 
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 #packages:
@@ -27,14 +27,17 @@ require(knitr)
 require(grid)
 require(tidyverse)
 require(magick)
+require(kfigr)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,cache=TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
+                      cache=TRUE, fig.align = 'center')
+
 
 options("citation_format" = "pandoc")
 
 BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", cite.style = 'alphabetic')
 
-setwd("C:/Users/steff/Github/face-recognition-presentation")
+setwd("C:/Users/steff/Github/face-recognition")
 
 #csv files:
 ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
@@ -178,14 +181,16 @@ An annotation tool was constructed to create a base for comparative analysis, we
 These manual Classifications involved describing the features of the Scenes. For this we considered the following attributes of the scenes:
 
 #####**Table 1.** Scene Attributes
-```{r T1 Scene Attributes Table}
-kable(SceneAttributes, format = "pandoc", booktabs = TRUE)
+```{r Scene-Attributes-Table, anchor="table"}
+kable(SceneAttributes, format = "pandoc", booktabs = TRUE, caption = figr("Scene-Attributes-Table", TRUE, type="Table"))
 ```
+
+`r figr("Scene-Attributes-Table", TRUE, type="Table")`   Yayyy 
 
 The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for softwares to detect a standard was created for reasonable detection. This was based on the attributes provided in the table below:
 
 #####**Table 2.** Solution Specifications
-```{r T2 Solution Specifications Table, results='asis'}
+```{r Solution-Specifications-Table, results='asis', anchor="table"}
 kable(SolutionSpecs, format = "pandoc", booktabs = TRUE)
 
 ```
@@ -196,11 +201,13 @@ If it was the face of a player it was always recorded if it captured their face.
 Crowd shots provided difficultly in determining which faces were reasonable to classify. As these faces were not the intended targets of the recognition these faces were contributing to our understanding of the softwares. 
 The same face size standard applied to crowd memebers, but focus was placed on the most prominent faces. For each of these faces, we collected information on the following attributes:
 
-#####**Table 3.** Face Attributes
+#####**Table \label{tab:FAT}.** Face Attributes
 ```{r T3 Face Attribute Tables, results='asis'}
 kable(FaceAttributes, format = "pandoc", booktabs = TRUE)
-
 ```
+
+
+Table \ref{tab:FAT} above 
 
 ####Manual Annotation
 To record these questions a Shiny App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes readily and consistently. This worked by presenting an image, using the imager package, from the sample of images that had not yet been considered, appearing underneath were a set of radio buttons corresponding to the Scene table as shown above. If there was a face in the image we were able to highlight the square 'Face Box'. This recorded the x and y coordinates of the box drawn, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file.
@@ -216,9 +223,8 @@ This can be seen in the ManualClassifiedScenes.csv file located in the appendix.
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for each software API, it would loop through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format.
 One interesting anomoly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
-####Data Manipulation
-The collected data was spread across 6 files. See Appendices.
-For each software we had the classified faces csv file, these are located in the appendix.
+####Data Processing
+The data was spread across 6 files. For each software we had the classified faces csv file, these are located in the appendix.
 The collation of the results from the Manual Recognition Program created the files ManualClassifiedFaces and ManualClassifiedScenes.
 
 
