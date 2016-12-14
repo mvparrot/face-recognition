@@ -13,7 +13,6 @@ fontsize: 11pt
 bibliography: references.bib
 ---
 
-
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 #packages:
 require(pander)
@@ -28,7 +27,8 @@ require(grid)
 require(tidyverse)
 require(magick)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,cache=TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
+                      cache=TRUE, fig.align = 'center')
 
 options("citation_format" = "pandoc")
 
