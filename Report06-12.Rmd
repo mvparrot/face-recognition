@@ -1,0 +1,595 @@
+---
+title: "Detecting Facial Expressions in Professional Tennis Matches"
+author: Stephanie Kobakian, Mitchell O'Hara Wild. Supervised by Dianne Cook, Stephanie
+  Kovalcik
+date: "November 19 2016"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+    fig_caption: yes
+  word_document:
+    toc: yes
+fontsize: 11pt
+bibliography: references.bib
+---
+
+```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+#packages:
+require(pander)
+require(ggplot2)
+require(imager)
+require(devtools)
+require(knitcitations)
+require(RefManageR)
+require(readr)
+require(knitr)
+require(grid)
+require(tidyverse)
+require(magick)
+require(kfigr)
+
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
+                      cache=TRUE, fig.align = 'center')
+
+
+options("citation_format" = "pandoc")
+
+BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", cite.style = 'alphabetic')
+
+setwd("C:/Users/steff/Github/face-recognition")
+
+#csv files:
+ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+SceneAttributes<-read_csv("TableCSVs/SceneAttributes.csv")
+FaceAttributes<-read_csv("TableCSVs/FaceAttributes.csv")
+SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
+
+
+#plot images with overlaid boxes
+overlayGgplot <- function(imgList, mergeData, matchBox=TRUE){
+  for(i in imgList){
+    
+    img <- image_read(paste0("images/", i))
+    
+    p <- ggplot(data.frame(x=c(0,800), y=c(0,450)), aes(x,y)) +
+      theme_void()+ coord_fixed()+
+      annotation_custom(rasterGrob(img)) +
+      scale_x_continuous(expand = c(0,0), limits = c(0,800)) +
+      scale_y_continuous(expand = c(0,0), limits = c(0,450))
+    
+    faceData <- ALLmetaIMG %>% filter(file == i)
+    
+      if(nrow(faceData) == 0){
+      return(p)
+    } else{
+     
+      
+      faceData <- faceData %>%
+        mutate(x1 = minX, x2 = minX, x3 = maxX, x4 = maxX, x5 = minX,
+               y1 = minY, y2 = maxY, y3 = maxY, y4 = minY, y5 = minY) %>%
+        gather(corner, boxPos, x1:y5) %>%
+        mutate(posCoord = substr(corner, 1, 1), posID = substr(corner, 2, 2)) %>%
+        select(-corner) %>% spread(posCoord, boxPos)
+      
+      
+    }
+    if(matchBox){
+      p <- p + geom_path(aes(x=x, y=450-y, group = faceID, colour=faceID), faceData) + guides(colour="none")
+    }
+    else{
+      p <- p + geom_path(aes(x=x, y=450-y, group = faceID, colour=type), faceData)
+ }
+  }
+  return(p)
+}
+
+
+# Create graphs of factors in manual proportions
+getManualCount <- function(type, count) {
+  return(count[type == "Manual"])
+}
+ggplotProportion <- function(dataset, factorVar){
+  factorVar <- deparse(substitute(factorVar))
+  dataset <- dataset %>% filter(matchesManual) %>% group_by_(factorVar, "type") %>% summarise(nTotal=n()) %>% group_by_(factorVar) %>% mutate(ManualCount = getManualCount(type, nTotal)) %>%
+    mutate(proportion = nTotal/ManualCount) %>% rename_(xvar = factorVar) %>% filter(type!="Manual")
+  ggplot(dataset, aes(x=factor(xvar), y=proportion, group = type, fill=type)) + geom_bar(stat = "identity", position = "dodge") +
+    ylab("Proportion of faces matched") + xlab(factorVar)
+}
+
+
+
+#Factor Names 
+ALLmetaIMG$graphic<-factor(ALLmetaIMG$graphic, levels = 0:1, labels = c("Live image", "Graphic"))
+ALLmetaIMG$bg<-factor(ALLmetaIMG$bg, levels = 0:3, labels = c("Crowd", "Court", "Logo wall", "Not applicable"))
+ALLmetaIMG$person<-factor(ALLmetaIMG$person, levels = 0:1, labels = c("No Person", "Person"))
+ALLmetaIMG$shotangle<-factor(ALLmetaIMG$shotangle, levels = 0:2, labels = c("Player Shoulder Height", "Birds Eye", "Upward Angle"))
+ALLmetaIMG$situation<-factor(ALLmetaIMG$situation, levels = 0:5, labels = c("Court in play", "Court player close-up", "Court close-up not player", "Crowd", "Off court close up of player", "Transition"))
+
+ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:3, labels = c("Player", "Other staff on court", "Fan", "None"))
+ALLmetaIMG$obscured<-factor(ALLmetaIMG$obscured, levels = 0:1, labels = c("No", "Yes"))
+ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 0:2, labels = c("Direct sunlight", "Shaded", "Partially shaded"))
+ALLmetaIMG$headangle<-factor(ALLmetaIMG$headangle, levels = 0:3, labels = c("Front on", "Back of head", "Profile", "Other"))
+ALLmetaIMG$glasses<-factor(ALLmetaIMG$glasses, levels = 0:1, labels = c("No", "Yes"))
+ALLmetaIMG$visorhat<-factor(ALLmetaIMG$visorhat, levels = 0:1, labels = c("No", "Yes"))
+
+ALLmetaIMG$headangle <- as.character(ALLmetaIMG$headangle)
+ALLmetaIMG$headangle[ALLmetaIMG$headangle == "Back of head"] <- "Other"
+ALLmetaIMG$headangle <- as.factor(ALLmetaIMG$headangle)
+
+ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
+
+```
+
+##Introduction##
+
+Many Tennis professionals believe that tennis is a game heavily affected by the mental states of the players. The opportunity for researching this concept presents itself with the hope of improving the playing and coaching of Tennis players. 
+By statistically analysing the faces and expressions of players during a match there is a hope that insight may be gained into the effects of the mental state on the outcome of a match.
+Facial expressions during competition provide the most direct insight into a player's thoughts. The aim of this project is to begin to develop methods to collect accurate information about the facial expressions of elite tennis athletes during matchplay.
+
+
+In this report, we investigate the performance of several popular facial recognition software's through their Application Programming Interfaces (APIs), and evaluate their performance when applied to the broadcasted videos of elite tennis matches. While it is impossible to know the thoughts and feelings of a player during a match, professionals may be able to infer this information through results produced by a recognition software.
+
+Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended uses of such software's.
+Their capabilities are often limited to their intended security and surveillance uses. This report aims to analyse the application of these software's to a broadcast to find a suitable software and API to use to analyse a pre-recorded tennis broadcast file. 
+
+####Project Aim
+- Find the best facial recognition software for tennis matches
+- Build manually classified dataset of faces
+- Compare software performance under varied conditions
+
+
+####Sample and sampling approach#### 
+The goal of the sample was to be representative of the video files that will be used for future facial recognition analysis.
+
+
+- 6406 Australian Open images (2.8GB)
+- 800x450px size frames from 105 match broadcast videos
+- Video frames taken every 3 seconds over a 5 minute segment
+
+
+The sample consisted of a set of 6404 still images. To produce these images, a still shot of the frame was taken at every three seconds, for the length of each 5 minute segment. The stills were provided by Tennis Australia for use in this research, these segments were taken from 105 video files, which were the broadcast of the Tennis Matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of singles tennis matches played between females and males. The rounds of the competition vary as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
+
+There are many matches played during the Australian Open, and they are played on the range of courts available at Melbourne Olympic Park. Therefore the sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
+
+
+####Selecting the software####
+The choice of the initial softwares considered for this research were informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.'
+
+The process of software selection to determine which we would compare was based on several criteria. Firstly, we based our choices on the results of the report as it considered processing speed and feature selction techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
+
+From the software's analysed we considered availability for use within the timeframe of the report. This led us to choose Animetrics FaceR. The report outlines that for Animetrics, 'one requirement is that image/face proportion
+should be at least 1:8 and that at least 64 pixels between eyes are required'. We realise this could present challenges given our dataset.
+It will also allow for an extension from detecting to recognising people in the dataset.
+
+After considering several other off-the-shelf products, we did not choose any other software's from those analysed as they were not as readily available as other products on the market.
+
+This led to SkyBiometry, an API that also allows for both detection and recognition. The cloud-based software as a service, is a 'spin-off of Neurotechnology', a software considered by the report. 
+
+We then chose to consider company's who are expanding their API ranges. This resulted in the choice of Microsoft API, provided by Microsoft Cognitive Services. This detects faces and return a square area where the face was located, and predicts facial features. It also allows the possibility of video stream detection.
+
+The final software we chose to analyse was Google Vision API. Due to Google's expansion in many web based solutions we researched for a facial recognition software. While it was somewhat difficult to access
+
+We were able to try the online demos to see whether these softwares were viable, we used the following image:
+```{r Trial Image, results=FALSE}
+imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
+overlayGgplot(imagesList0, ALLmetaIMG, matchBox = FALSE)
+```
+
+## Methodology ##
+An annotation tool was constructed to create a base for comparative analysis, we refer to this as Manual Classifications.
+These manual Classifications involved describing the features of the Scenes. For this we considered the following attributes of the scenes:
+
+#####**Table 1.** Scene Attributes
+```{r Scene-Attributes-Table, anchor="table"}
+kable(SceneAttributes, format = "pandoc", booktabs = TRUE, caption = figr("Scene-Attributes-Table", TRUE, type="Table"))
+```
+
+`r figr("Scene-Attributes-Table", TRUE, type="Table")`   Yayyy 
+
+The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for softwares to detect a standard was created for reasonable detection. This was based on the attributes provided in the table below:
+
+#####**Table 2.** Solution Specifications
+```{r Solution-Specifications-Table, results='asis', anchor="table"}
+kable(SolutionSpecs, format = "pandoc", booktabs = TRUE)
+
+```
+
+
+It was decided that it would be reasonable for a software to detect was decided to be a face size larger than 20 by 20 pixels, as it was specified that the software had minimum distances between the eyes on a face for recognition. (reference table with values)
+If it was the face of a player it was always recorded if it captured their face. The back of the head was not able to be picked up by any software, so after a demo trial these faces were not classified manually.
+Crowd shots provided difficultly in determining which faces were reasonable to classify. As these faces were not the intended targets of the recognition these faces were contributing to our understanding of the softwares. 
+The same face size standard applied to crowd memebers, but focus was placed on the most prominent faces. For each of these faces, we collected information on the following attributes:
+
+#####**Table \label{tab:FAT}.** Face Attributes
+```{r T3 Face Attribute Tables, results='asis'}
+kable(FaceAttributes, format = "pandoc", booktabs = TRUE)
+```
+
+
+Table \ref{tab:FAT} above 
+
+####Manual Annotation
+To record these questions a Shiny App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes readily and consistently. This worked by presenting an image, using the imager package, from the sample of images that had not yet been considered, appearing underneath were a set of radio buttons corresponding to the Scene table as shown above. If there was a face in the image we were able to highlight the square 'Face Box'. This recorded the x and y coordinates of the box drawn, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file.
+
+Following the saving of each face, and the Scene radio button selections, the save button would then save the Scene selections to a separate CSV file. This data can be seen in the ManualClassifiedFaces.csv file located in the appendix.
+
+If there were issues, the CSV files were able to be edited, this was reserved for extreme circumstances. And a lot of care was taken to ensure the first selections were correctly submitted and applied to the correct Faces and Scenes.
+
+The results in the CSV files showed the file name, and the attributes relating to the Scene being considered. 
+This can be seen in the ManualClassifiedScenes.csv file located in the appendix.
+
+####Software Recognition
+The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for each software API, it would loop through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format.
+One interesting anomoly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
+
+####Data Processing
+The data was spread across 6 files. For each software we had the classified faces csv file, these are located in the appendix.
+The collation of the results from the Manual Recognition Program created the files ManualClassifiedFaces and ManualClassifiedScenes.
+
+
+A single data set was created to combine all necessary information in the previously mentioned files for our analysis. The information in the dataset,(cite ALLmetaIMG.csv,) was carefully considered. It considers the identify of each face, and all relative face attributes, as well as the image file the face was found in, from this information each face was able to be uniquely identified. Also included was information on the software that found it, and the time it took the software to identify the face. It also has a record of how many faces had been indentified in the image by counting each additional recognised face.
+
+To find whether the softwares were recongising the same faces a function was created. As the location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face.
+ This function uses the information of each face and compares the intersecting regions of the polygons created by the x,y coordinates of Manual Faces and other software's faces, to determine if the same face was recognised. We determined the ratio of intersecting area to total area must be greater than 0.1 to be considered the same face. This allowed us to compare the identification areas, as well as contrast the identified faces of each software.
+
+####Analysis
+The statistical analysis conducted to summarise and assess the validity of the method.
+This method allowed all the softwares and the faces they found to be compared.
+
+## Results
+Using the database of the combined results, we were able to compare the performance of the softwares.
+Firstly, we considered how many individual faces the softwares were able to detect.
+
+#####**Graph 1.** Face Bounding Box Data: Bar Chart
+```{r G1 Face Bounding Box Data, results='hide'}
+ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge")  +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE) 
+```
+
+The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognised almost 1000 more faces than the next best software, Microsoft.
+
+#####**Graph 4.** Face Bounding Box Data: Box Plot 
+```{r G4 Face Bounding Box Data}
+ggplot(ALLmetaIMG, aes(x = factor(x = factor(type)), fill=type, y = size)) + geom_boxplot() + scale_y_continuous(trans='log') +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Google","Animetrics","Manual","Microsoft","Skybiometry"))+ylab("Size of Face Bounding Boxes")+guides(fill=FALSE)
+
+```
+
+This box and whisker plot shows the differences between the sizes of the 'Face Bounding Boxes' produced by each software. Where a 'Face Bounding Box' refers to the size of the square the software provided as a location in the image of a face that was detected. On average, Google maps the largest boxes around faces, however Animetrics has the largest box recognised in the set. On average, the smallest faces are recognised by Skybiometry.
+
+
+Skybiometry results accounted for the 255 smallest recognised faces. However this is not necessarily a benefit to this research, as these are not all faces.
+
+
+Note: Skybiometry boxes are pink, Microsoft are blue, Google are Green and Animetrics are Red.
+
+##### Image 2.2016_CT6_R02_JSousa_POR_vs_SGiraldo_COL_MS231_clip.0017.png
+```{r I2, results=TRUE}
+imagesList2<-as.list("2016_CT6_R02_JSousa_POR_vs_SGiraldo_COL_MS231_clip.0017.png")
+overlayGgplot(imagesList2, ALLmetaIMG, matchBox = FALSE)
+```
+
+This image shows the smallest Face Bounding Box recognised. However visual inspection shows it only captures the player's eye and nose, not their whole face. 
+
+##### Image 3.2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png
+```{r I3, results=TRUE}
+imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
+overlayGgplot(imagesList3, ALLmetaIMG, matchBox = FALSE)
+```
+
+As before, the 'face' is not as we would hope it would be classified. Just right of the centre, the smaller box actaully captures a fist, not a face.
+
+##### Image 4.2016_RLA_R04_NDjokovic_SRB_vs_GSimon_FRA_MS401_clip.0003.png
+```{r I4,results=TRUE}
+imagesList4<-as.list("2016_RLA_R04_NDjokovic_SRB_vs_GSimon_FRA_MS401_clip.0003.png")
+overlayGgplot(imagesList4, ALLmetaIMG, matchBox = FALSE)
+```
+
+This is almost usable, however this shows the sensitivity of the software. We may consider this too sensitive as it recognised the eye and nose of the ballboy on the court.
+
+##### Image 5.2016_SC2_R01_AKerber_GER_vs_MDoi_JPN_WS1332_clip.0083.png
+```{r I5, results=TRUE}
+imagesList5<-("2016_SC2_R01_AKerber_GER_vs_MDoi_JPN_WS1332_clip.0083.png") 
+overlayGgplot(imagesList5, ALLmetaIMG, matchBox = FALSE)
+```
+
+As seen in this image of the crowd, the software is performing reasonably well. It does recognise the faces, yet only one not recognised by the other softwares, this may be due to the sunglasses.
+
+This image demonstrates that the it is not necessarily the smaller faces that Skybiometry recognises, but it puts smaller bounds on the facial features than other softwares.
+
+
+#####**Table 4.** Type Matches Manual
+```{r T4 Type Matches Manual}
+library(descr, quietly = TRUE)
+NoManual<-ALLmetaIMG %>% filter(ALLmetaIMG$type!="Manual")
+NoManual<-NoManual %>% droplevels(NoManual$type)
+Accuracy<-with(NoManual, table(NoManual$matchesManual, NoManual$type))
+pander(CrossTable(Accuracy, prop.chisq = FALSE) , digits = 2)
+```
+
+
+To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually.
+
+The sample used contains all the manually annotated faces and all the faces recognised by the four softwares.
+
+To consider how many Type I errors occured, where a face was detected incorrectly, we look at the Bounding Boxes that do not match manually annotated faces.
+
+
+Table 4 shows whether the potential Face Bounding Boxes match faces that were annotated during the manual classifications. Where the FALSE row denotes where software's Face Bounding Boxes do not coincide with manually annotated faces. The tables shows that Google found 38.70% of the 90.34% of the Faces found that matched Faces also identified manually.
+
+A potential face detected that does not match a face manually annotated occurs for 9.66% of all the Faces detected by the softwares. This is especially high for Google with 289 faces identified.
+
+
+All the Face Bounding Boxes that Google found which do not match manually annotated faces were correctly identifying faces. This exhibits the occurences of errors.
+  
+We then considered the characteristics of the images that the softwares found Potential Face Bounding Boxes^[These boxes represent an area of pixels that are a potentially recognised face.] in. 
+
+
+#####**Table 5.** Image Characteristics
+```{r T5 Image Characteristics Table}
+ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
+
+kable(ImageCharacteristics[1:10,], format = "pandoc", booktabs = TRUE)
+```
+
+
+This table displays the feature combinations that produced the most potential face Bounding Boxes recognitions by all four softwares. The most common shot is a crowd shot.
+The second row in the table with 830 faces recognised is more interesting than the first result. This useful scene is an image of a Court Player Close-Up in front of a Logo Wall, taken at Player Shoulder Height.
+
+These attributes typically represent an image similar to the following:
+
+##### **Image 1.Typically Recognised Image**
+
+```{r I1 Typical Best Recognised, results=FALSE}
+imagesList1<-as.list("2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0013.png") 
+overlayGgplot(imagesList1, ALLmetaIMG, matchBox = FALSE)
+```
+
+
+#####**Table 6.** Google Errors Characteristics
+```{r T6 Google Errors Characteristics Table}
+library(dplyr)
+
+GoogleNoMatch <- ALLmetaIMG %>%
+  filter(type=="Google") %>%
+  filter(matchesManual==FALSE) %>%
+  group_by(person, situation, bg, shotangle) %>% dplyr::summarise(count=n())
+
+#use this list in the overlay function to view the images where Google found faces not annotated manually
+#GoogleImages<-GoogleNoMatch$file
+#GoogleImages<-as.list(GoogleImages)
+
+GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
+pander(GoogleNoMatch[1:10,], type = 'table')
+
+#overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
+```
+
+This Table shows that the potential Face Bounding Boxes Google returned were found in images that had the same characteristics of those that were manually annotated for faces.
+This is shown by the same combinations of characteristics occuring in both Table 5 and Table 6. 
+Without looking at each individual image this Table confirms that the potential Face Bounding Boxes Google located will likely be reasonable, and actually contain faces.
+
+The best scenes for facial recongition have been found, given this information the following table considers the Characteristics of the individual faces found within those scenes. For this section we chose to consider only the faces that were manually annotated as players, with the intention of not basing results on recognitions of undesirable faces.
+
+
+#####**Table 7.** Face Characteristics
+```{r T7 Face Characteristics Table}
+FaceCharacteristics <- ALLmetaIMGPlayers %>%   filter(type=="Google")%>% filter(matchesManual==TRUE)%>% group_by(visorhat, glasses, headangle, lighting, obscured, detect) %>% dplyr::summarise(count=n())
+FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
+pander(FaceCharacteristics[1:10,], type = 'table')
+```
+
+Table 7 utilises a set of faces that were Manually annotated and also found by Google. 
+Nine of the top ten facial characteristic combinations contained faces that were not wearing glasses.
+The head angle describing the face angle was 'Other'^[Definition for headangle factor level 'Other' found in..]
+for nine of the top ten facial characteristic combinations.
+
+
+
+#####**Table 8.** Glasses on Recognised Faces
+```{r T8 Glasses}
+GlassesGoogle <- ALLmetaIMGPlayers %>% filter(type=="Google") %>%
+filter(matchesManual==TRUE)
+
+pander(table(GlassesGoogle$glasses))
+```
+The extreme disparity between the amount of faces with glasses to without them means that the occurence of these attributes across the softwares must be considered proportionally.
+
+
+#####**Graph 2.** Glasses
+```{r G2 Glasses}
+ggplotProportion(ALLmetaIMGPlayers, glasses)
+```
+Graph 2 above shows that Google outperforms the other softwares, with or without glasses. When there are no glasses worn Google finds over 60% of the manually annotated faces.
+
+
+#####**Table 9.** Head Angles
+```{r T9 HeadAngles}
+HeadangleGoogle <- ALLmetaIMGPlayers %>%   filter(type=="Google") %>%
+filter(matchesManual==TRUE)
+
+pander(table(HeadangleGoogle$headangle))
+```
+The amount of faces found by Google with the headangle "Other", is much larger than the amount of faces with the headangle "Profile" or "Front On". Therefor this should also be considered propotionately.
+
+
+#####**Graph 3.** Glasses
+```{r G3 Glasses}
+ggplotProportion(ALLmetaIMGPlayers, headangle)
+```
+Graph 3 diplays that Google performs much better in comparison to the other softwares when the headangle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the softwares in this circumstance.
+
+
+Table 2 = Describe the images/boxes identified by the algorithms--what are they typically like? what is the area represented? 
+
+
+
+Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) 
+  How often is type I error made (a face detected incorrectly)?   
+  
+##### **Table 10.**
+```{r T10}
+library(tables, quietly = TRUE)
+Accuracy<-with(ALLmetaIMG, table(ALLmetaIMG$matchesManual, ALLmetaIMG$type))
+pander(Accuracy)
+```
+
+  How often type II error (a face is incorrectly NOT detected)?   
+  3 of the four software's 
+  
+It should be noted that there were results where a single face was recognised twice within the same image. This was a very unusual result and is notable as a point of interest but given it only occured for Animetrics, it is not worth basing decisions on this unusual result.
+
+
+Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
+
+
+#####**Table 11.** Google Characteristics
+```{r T11 Google Characteristics Table}
+GoogleCharacteristics <- ALLmetaIMG %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
+
+kable(GoogleCharacteristics, format = "pandoc", booktabs = TRUE)
+```
+This table shows how many images with potential player's faces Google recognised. This diplays a vast gap between the amount of potential faces found given the different shot angles. Shoulder height is an optimum angle for a Face Bounding Box.
+
+Considering only the Shoulder Height Angle, the following Graph looks at how accessories affected Google's recognition. 
+
+#####**Graph 4.** Google Face Bounding Boxes: Mosaic Plot
+```{r G4 Google Characteristics Mosaic Plot}
+GoogleAccessories <- ALLmetaIMG %>% filter(type=="Google") %>% filter(shotangle=="Player Shoulder Height") %>% filter(detect=="Player") %>% filter(lighting!="Direct sunlight")
+
+GoogleAccessories<-droplevels(GoogleAccessories)
+#lighting headangle glasses visorhat 
+
+
+
+mosaicplot(~ headangle + visorhat, data = GoogleAccessories, color = TRUE)
+
+mosaicplot(~ lighting + visorhat, data = GoogleAccessories, color = TRUE)
+
+mosaicplot(~ lighting +headangle +visorhat, data = GoogleAccessories, color = TRUE)
+
+mosaicplot(~ glasses + lighting, data = GoogleAccessories, color = TRUE)
+
+```
+
+### Discussion
+Graph 1, the Bar Chart of the Face Bounding Boxes promotes Google as the best possible software for a facial recognition application in tennis. According to Table 4 Google had 38.23% of the 9.66% potential face boxes not annotated manually.
+It was considered that this may have shown Google's API may have been finding more unwanted faces than the other softwares. However, visual inspection showed that these were actually faces. This is considered in Table 6, which showed that some of the faces were found in a crowd setting. Therefore some of these could be considered irrelevant, possibly being crowd faces. These were deemed unlikely to be detected and neglected during manual annotation. 
+Interestingly, Animetrics had the least amount of matches to Manually annotated faces. Looking into this further showed that Animetrics results contained potential Face Bounding Boxes that did not contain faces.
+
+
+The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential face Bounding Boxes were found with the combination of scene attributes.
+This showed that crowd members faces were often recognised, this is both helpful and unhelpful as it shows a strong ability of Google's algorithm to recognise faces, even when these faces are not the goal of the research.
+
+
+Image 1 shows the images preferable for future research. Where the faces will be recognised and allow both the identity and emotion of the players to be recognised.
+
+Google gave the optimum results in this image as it found the face of the player, but did not locate the face of the staff memeber behind him on the court.
+
+While Google's recognitions mostly matched the Manually annotated set of faces, there were some that did not. These were all actually faces and were missed during manual annotations.
+
+Table 6 shows that 190 of the faces that were not found manually occured in the scene of a Court player close-up, with a background of a logo wall, where the shot was taken at player shoulder height.
+
+This shows it was performing extremely well and not resulting in unexplainable face Bounding Boxes as some of the other softwares were. This is a strong indicator that applying Google's software for further research would result in the recognition of desired faces.
+
+These results have contributed to the choice of Google given the optimum scene as described above. Implementing a filtering process, either using current or alternative footage^[See future research for further information on these options] would allow Google to provide Tennis Australia with the most applicable results.
+
+
+We moved to considering the characteristics of the faces. This helped to distinguish where Google performed well in comparison to the other software options.
+
+Table 7 showed the combinations of attributes that were found for each face[Given that information was not recorded where Google provided facial recognitions for faces not Manually annotated thesse could not be considered.].
+The use of accessories, Glasses and Visors or Hats, was considered as the Australian Open takes place on both indoor and outdoor courts. To apply this research all courts that elite Tennis players compete on had to be included.
+It was assumed that outdoor courts would led to the use of these accessories and these accessories may contribute to the performance of a recongition software.
+It may be implied by the table that Glasses prohibits recognition as all but one of the combinations have 'No' for the Glasses variable. However, we are cautious of validating this as Table 8 tells that there are many more faces recognised, by both the Google recnogitions and manual annotations, that do not have Glasses. This disproportionate sample of faces with Glasses means that we considered it proportionally rather than as a total.
+
+Graph 2 demonstrates that the prescence of Glasses on faces annotated manually did affect recognition by Google's alrgorithm, while it outperformed the other softwares in both instances, faces were identified more often if the person did not wear glasses.
+
+
+
+
+Moving to looking at the characteristics that were considered manually shows that the use of glasses by players coincided with less faces being annotated. 
+
+
+
+
+
+The boxplot in graph encourages our comparisons to not consider the size of face bounding box as a measure of how the software performs on small faces. 
+
+
+#### Challenges
+
+ it is understandable that there would be many more faces to recognise in these shots than in shots where there is only a player, and therefore many more faces recognised. However in this research 
+
+
+- Access to usable images and videos
+- Availability of software
+- Using the software
+- Time constraints
+
+Long Term Goals
+- Better understand emotion's effect on player performance
+- Automatic collection of player emotion data from video
+
+Method, automated the process to reduce datacleaning and help group characterstics
+
+Pricing
+
+
+(5) Conclusions 
+Employ the Google Vision API, which would allow the use of still images, or video (TEST VIDEO) files, reducing the need for stills.
+This product - cost in relation
+Ease of access - API calling
+
+
+
+
+(6) Future Work
+Considering the images used during our study were stills derived from Broadcast video files,
+it would be useful to extend further research to deal with the video files directly. 
+These companies have the potential to allow for video recognition......
+
+
+It should also be considered that there are softwares focussed on providing recognition in certain controlled scenarios.
+If the study was controlled to focus on certain camera angles that align with the facial angles these security minded programs
+are intended for it may be helpful to extend the research to softwares currently available but were deemed impractical for this study.
+
+
+To check for manual errors, create another app that shows the 'faces' identified by each program, confirm manually whether or not these are faces.
+We feel this would be necessary when expanding on the use
+
+We also feel that incorporating audio information from the microphones worn by players may assist in sentiment analysis.
+
+Getting specific camera angle access from the seven network to reduce the work of computers
+
+To undertake sentiment analysis, we would take the boxes of faces found in this set of images. Allowing each face a border we would crop the images and produce an individual face image that would form the data set for emotion recognition. igh enough quality?
+
+Write a program to create images of only that faces
+
+
+
+
+(7)
+Appendix
+```{r}
+
+```
+
+
+## References
+
+
+
+citation @Automated
+
+```{r}
+#Survey of commercial technologies for face recognition in video
+
+
+#Report number: DRDC-RDDC-2014-C245
+
+#Affiliation: Department of National Defence of Canada.
+
+
+
+```
