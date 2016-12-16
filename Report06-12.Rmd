@@ -1,18 +1,17 @@
 ---
 title: "Detecting Facial Expressions in Professional Tennis Matches"
-author: Stephanie Kobakian, Mitchell O'Hara Wild. Supervised by Dianne Cook, Stephanie
+author: Stephanie Kobakian, Mitchell O'Hara-Wild. Supervised by Dianne Cook, Stephanie
   Kovalcik
 date: "November 19 2016"
 output:
   pdf_document:
+    fig_caption: yes
     toc: yes
     toc_depth: 2
-    fig_caption: yes
-  word_document:
-    toc: yes
-fontsize: 11pt
+fontsize: 10pt
 bibliography: references.bib
 ---
+
 
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
 #packages:
@@ -29,9 +28,7 @@ require(tidyverse)
 require(magick)
 require(kfigr)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE,
-                      cache=TRUE, fig.align = 'center')
-
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE)
 
 options("citation_format" = "pandoc")
 
@@ -47,7 +44,7 @@ SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
 
 
 #plot images with overlaid boxes
-overlayGgplot <- function(imgList, mergeData, matchBox=TRUE){
+overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
     
     img <- image_read(paste0("images/", i))
@@ -58,12 +55,12 @@ overlayGgplot <- function(imgList, mergeData, matchBox=TRUE){
       scale_x_continuous(expand = c(0,0), limits = c(0,800)) +
       scale_y_continuous(expand = c(0,0), limits = c(0,450))
     
-    faceData <- ALLmetaIMG %>% filter(file == i)
+    faceData <- ALLmetaIMGFaces %>% filter(file == i)
     
-      if(nrow(faceData) == 0){
+    if(nrow(faceData) == 0){
       return(p)
     } else{
-     
+      
       
       faceData <- faceData %>%
         mutate(x1 = minX, x2 = minX, x3 = maxX, x4 = maxX, x5 = minX,
@@ -72,16 +69,15 @@ overlayGgplot <- function(imgList, mergeData, matchBox=TRUE){
         mutate(posCoord = substr(corner, 1, 1), posID = substr(corner, 2, 2)) %>%
         select(-corner) %>% spread(posCoord, boxPos)
       
-      
     }
     if(matchBox){
-      p <- p + geom_path(aes(x=x, y=450-y, group = faceID, colour=faceID), faceData) + guides(colour="none")
+      p <- p + geom_path(aes(x=x, y=450-y, group = type, colour=boxID), faceData) + guides(colour="none")
     }
     else{
-      p <- p + geom_path(aes(x=x, y=450-y, group = faceID, colour=type), faceData)
- }
-  }
+      p <- p + geom_path(aes(x=x, y=450-y, group = type, colour=type), faceData)
+    }
   return(p)
+  }
 }
 
 
@@ -119,7 +115,16 @@ ALLmetaIMG$headangle <- as.factor(ALLmetaIMG$headangle)
 
 ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
 
+#change this to facesVenn with binary information
+ALLmetaIMGFaces<-ALLmetaIMG%>%
+  filter(!is.na(boxID)) %>% 
+  select(-ID, -facecounter)%>%
+  mutate(fileID = as.numeric(factor(file))) %>%
+  mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
+  mutate(FaceID=paste(fileID, boxID, substring(type, 1,2), sep="-"))
+
 ```
+
 
 ##Introduction##
 
@@ -147,7 +152,6 @@ The goal of the sample was to be representative of the video files that will be 
 - 800x450px size frames from 105 match broadcast videos
 - Video frames taken every 3 seconds over a 5 minute segment
 
-
 The sample consisted of a set of 6404 still images. To produce these images, a still shot of the frame was taken at every three seconds, for the length of each 5 minute segment. The stills were provided by Tennis Australia for use in this research, these segments were taken from 105 video files, which were the broadcast of the Tennis Matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of singles tennis matches played between females and males. The rounds of the competition vary as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
 
 There are many matches played during the Australian Open, and they are played on the range of courts available at Melbourne Olympic Park. Therefore the sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
@@ -170,28 +174,30 @@ We then chose to consider company's who are expanding their API ranges. This res
 
 The final software we chose to analyse was Google Vision API. Due to Google's expansion in many web based solutions we researched for a facial recognition software. While it was somewhat difficult to access
 
-We were able to try the online demos to see whether these softwares were viable, we used the following image:
-```{r Trial Image, results=FALSE}
+We were able to try the online demos to see whether these softwares were viable, we used the following  `r figr("Trial-Image", TRUE, type="Figure")`:
+
+
+```{r Trial-Image, fig.cap="This is a player", anchor="figure"}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
 overlayGgplot(imagesList0, ALLmetaIMG, matchBox = FALSE)
 ```
 
+
 ## Methodology ##
 An annotation tool was constructed to create a base for comparative analysis, we refer to this as Manual Classifications.
-These manual Classifications involved describing the features of the Scenes. For this we considered the following attributes of the scenes:
+These manual Classifications involved describing the features of the Scenes. 
 
-#####**Table 1.** Scene Attributes
-```{r Scene-Attributes-Table, anchor="table"}
-kable(SceneAttributes, format = "pandoc", booktabs = TRUE, caption = figr("Scene-Attributes-Table", TRUE, type="Table"))
+
+
+```{r Scene-Attributes-Table, anchor="table", fig.cap="Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute."}
+kable(SceneAttributes, format = "pandoc", booktabs = TRUE)
 ```
 
-`r figr("Scene-Attributes-Table", TRUE, type="Table")`   Yayyy 
 
-The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for softwares to detect a standard was created for reasonable detection. This was based on the attributes provided in the table below:
+The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for softwares to detect a standard was created for reasonable detection. This was based on the attributes provided in `r figr("Solution-Specifications-Table", TRUE, type="Table")`, below:
 
-#####**Table 2.** Solution Specifications
 ```{r Solution-Specifications-Table, results='asis', anchor="table"}
-kable(SolutionSpecs, format = "pandoc", booktabs = TRUE)
+kable(SolutionSpecs, format = "pandoc", booktabs = TRUE, caption = "Software solutions specifications.")
 
 ```
 
@@ -201,16 +207,14 @@ If it was the face of a player it was always recorded if it captured their face.
 Crowd shots provided difficultly in determining which faces were reasonable to classify. As these faces were not the intended targets of the recognition these faces were contributing to our understanding of the softwares. 
 The same face size standard applied to crowd memebers, but focus was placed on the most prominent faces. For each of these faces, we collected information on the following attributes:
 
-#####**Table \label{tab:FAT}.** Face Attributes
-```{r T3 Face Attribute Tables, results='asis'}
-kable(FaceAttributes, format = "pandoc", booktabs = TRUE)
+
+```{r Face-Attribute-Tables, results='asis', anchor="table"}
+kable(FaceAttributes, format = "pandoc", booktabs = TRUE, caption = "Attributes of an individual face within an image. The most appropriate option from the list was selected for each attribute.")
 ```
 
 
-Table \ref{tab:FAT} above 
-
 ####Manual Annotation
-To record these questions a Shiny App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes readily and consistently. This worked by presenting an image, using the imager package, from the sample of images that had not yet been considered, appearing underneath were a set of radio buttons corresponding to the Scene table as shown above. If there was a face in the image we were able to highlight the square 'Face Box'. This recorded the x and y coordinates of the box drawn, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file.
+To record these questions a Shiny App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes readily and consistently. This worked by presenting an image, using the imager package, from the sample of images that had not yet been considered, appearing underneath were a set of radio buttons corresponding to the Scene Attibutes in `r figr("Scene-Attributes-Table", TRUE, type="Table")` as shown above. If there was a face in the image we were able to highlight the square 'Face Box'. This recorded the x and y coordinates of the box drawn, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file.
 
 Following the saving of each face, and the Scene radio button selections, the save button would then save the Scene selections to a separate CSV file. This data can be seen in the ManualClassifiedFaces.csv file located in the appendix.
 
@@ -241,15 +245,15 @@ This method allowed all the softwares and the faces they found to be compared.
 Using the database of the combined results, we were able to compare the performance of the softwares.
 Firstly, we considered how many individual faces the softwares were able to detect.
 
-#####**Graph 1.** Face Bounding Box Data: Bar Chart
-```{r G1 Face Bounding Box Data, results='hide'}
-ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge")  +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE) 
+
+```{r Face-Bounding-Box-Data, results='hide', type="figure", fig.cap='..', anchor="figure"}
+ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE)
 ```
 
 The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognised almost 1000 more faces than the next best software, Microsoft.
 
 #####**Graph 4.** Face Bounding Box Data: Box Plot 
-```{r G4 Face Bounding Box Data}
+```{r G4 Face Bounding Box Data, anchor="figure"}
 ggplot(ALLmetaIMG, aes(x = factor(x = factor(type)), fill=type, y = size)) + geom_boxplot() + scale_y_continuous(trans='log') +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Google","Animetrics","Manual","Microsoft","Skybiometry"))+ylab("Size of Face Bounding Boxes")+guides(fill=FALSE)
 
 ```
@@ -262,32 +266,31 @@ Skybiometry results accounted for the 255 smallest recognised faces. However thi
 
 Note: Skybiometry boxes are pink, Microsoft are blue, Google are Green and Animetrics are Red.
 
-##### Image 2.2016_CT6_R02_JSousa_POR_vs_SGiraldo_COL_MS231_clip.0017.png
-```{r I2, results=TRUE}
+
+```{r I2, results=TRUE, fig.cap="2016_CT6_R02_JSousa_POR_vs_SGiraldo_COL_MS231_clip.0017.png", anchor="figure"}
 imagesList2<-as.list("2016_CT6_R02_JSousa_POR_vs_SGiraldo_COL_MS231_clip.0017.png")
 overlayGgplot(imagesList2, ALLmetaIMG, matchBox = FALSE)
 ```
 
 This image shows the smallest Face Bounding Box recognised. However visual inspection shows it only captures the player's eye and nose, not their whole face. 
 
-##### Image 3.2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png
-```{r I3, results=TRUE}
+
+```{r I3, results=TRUE, fig.cap="2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png", anchor="figure"}
 imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
 overlayGgplot(imagesList3, ALLmetaIMG, matchBox = FALSE)
 ```
 
 As before, the 'face' is not as we would hope it would be classified. Just right of the centre, the smaller box actaully captures a fist, not a face.
 
-##### Image 4.2016_RLA_R04_NDjokovic_SRB_vs_GSimon_FRA_MS401_clip.0003.png
-```{r I4,results=TRUE}
+```{r I4,results=TRUE, fig.cap="2016_RLA_R04_NDjokovic_SRB_vs_GSimon_FRA_MS401_clip.0003.png", anchor="figure"}
 imagesList4<-as.list("2016_RLA_R04_NDjokovic_SRB_vs_GSimon_FRA_MS401_clip.0003.png")
 overlayGgplot(imagesList4, ALLmetaIMG, matchBox = FALSE)
 ```
 
-This is almost usable, however this shows the sensitivity of the software. We may consider this too sensitive as it recognised the eye and nose of the ballboy on the court.
+I4 shows the sensitivity of the software. We may consider this too sensitive as it recognised the eye and nose of the ballboy on the court.
 
 ##### Image 5.2016_SC2_R01_AKerber_GER_vs_MDoi_JPN_WS1332_clip.0083.png
-```{r I5, results=TRUE}
+```{r I5, results=TRUE, fig.cap="2016_SC2_R01_AKerber_GER_vs_MDoi_JPN_WS1332_clip.0083.png", anchor="figure"}
 imagesList5<-("2016_SC2_R01_AKerber_GER_vs_MDoi_JPN_WS1332_clip.0083.png") 
 overlayGgplot(imagesList5, ALLmetaIMG, matchBox = FALSE)
 ```
@@ -297,13 +300,12 @@ As seen in this image of the crowd, the software is performing reasonably well. 
 This image demonstrates that the it is not necessarily the smaller faces that Skybiometry recognises, but it puts smaller bounds on the facial features than other softwares.
 
 
-#####**Table 4.** Type Matches Manual
-```{r T4 Type Matches Manual}
+```{r Type-Matches-Manual, anchor="table"}
 library(descr, quietly = TRUE)
 NoManual<-ALLmetaIMG %>% filter(ALLmetaIMG$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type)
 Accuracy<-with(NoManual, table(NoManual$matchesManual, NoManual$type))
-pander(CrossTable(Accuracy, prop.chisq = FALSE) , digits = 2)
+kable((Accuracy))
 ```
 
 
@@ -323,31 +325,27 @@ All the Face Bounding Boxes that Google found which do not match manually annota
   
 We then considered the characteristics of the images that the softwares found Potential Face Bounding Boxes^[These boxes represent an area of pixels that are a potentially recognised face.] in. 
 
-
-#####**Table 5.** Image Characteristics
-```{r T5 Image Characteristics Table}
-ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+```{r Image-Characteristics-Table, anchor="table"}
+ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
-
-kable(ImageCharacteristics[1:10,], format = "pandoc", booktabs = TRUE)
+ImageCharacteristics<-ImageCharacteristics[1:10,]
+kable(ImageCharacteristics, booktabs = TRUE)
 ```
 
 
-This table displays the feature combinations that produced the most potential face Bounding Boxes recognitions by all four softwares. The most common shot is a crowd shot.
+`r figr("Image-Characteristics-Table", TRUE, type="Figure")`
+ displays the feature combinations that produced the most potential face Bounding Boxes recognitions by all four softwares. The most common shot is a crowd shot.
 The second row in the table with 830 faces recognised is more interesting than the first result. This useful scene is an image of a Court Player Close-Up in front of a Logo Wall, taken at Player Shoulder Height.
 
 These attributes typically represent an image similar to the following:
 
-##### **Image 1.Typically Recognised Image**
-
-```{r I1 Typical Best Recognised, results=FALSE}
+```{r Typical-Best-Recognised, results=FALSE, anchor="figure"}
 imagesList1<-as.list("2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0013.png") 
 overlayGgplot(imagesList1, ALLmetaIMG, matchBox = FALSE)
 ```
 
 
-#####**Table 6.** Google Errors Characteristics
-```{r T6 Google Errors Characteristics Table}
+```{r Google-Errors-Characteristics-Table, anchor="Table"}
 library(dplyr)
 
 GoogleNoMatch <- ALLmetaIMG %>%
@@ -360,34 +358,36 @@ GoogleNoMatch <- ALLmetaIMG %>%
 #GoogleImages<-as.list(GoogleImages)
 
 GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
-pander(GoogleNoMatch[1:10,], type = 'table')
+kable(GoogleNoMatch[1:10,], type = 'table')
 
 #overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
 ```
 
-This Table shows that the potential Face Bounding Boxes Google returned were found in images that had the same characteristics of those that were manually annotated for faces.
-This is shown by the same combinations of characteristics occuring in both Table 5 and Table 6. 
+`r figr("Google-Errors-Characteristics-Table", TRUE, type="table")`
+ shows that the potential Face Bounding Boxes Google returned were found in images that had the same characteristics of those that were manually annotated for faces.
+<!-- This is shown by the same combinations of characteristics occuring in both Table 5 and Table 6.  keep as tables?-->
 Without looking at each individual image this Table confirms that the potential Face Bounding Boxes Google located will likely be reasonable, and actually contain faces.
 
-The best scenes for facial recongition have been found, given this information the following table considers the Characteristics of the individual faces found within those scenes. For this section we chose to consider only the faces that were manually annotated as players, with the intention of not basing results on recognitions of undesirable faces.
+The best scenes for facial recongition have been found, given this information the following `r figr("Face-Characteristics-Table", TRUE, type="table")`
+ considers the Characteristics of the individual faces found within those scenes. For this section we chose to consider only the faces that were manually annotated as players, with the intention of not basing results on recognitions of undesirable faces.
 
 
-#####**Table 7.** Face Characteristics
-```{r T7 Face Characteristics Table}
+
+```{r Face-Characteristics-Table, anchor="Table"}
 FaceCharacteristics <- ALLmetaIMGPlayers %>%   filter(type=="Google")%>% filter(matchesManual==TRUE)%>% group_by(visorhat, glasses, headangle, lighting, obscured, detect) %>% dplyr::summarise(count=n())
 FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
-pander(FaceCharacteristics[1:10,], type = 'table')
+FaceCharacteristics<-as.tbl(FaceCharacteristics[1:10,])
+kable(FaceCharacteristics, type = 'table')
 ```
 
-Table 7 utilises a set of faces that were Manually annotated and also found by Google. 
+`r figr("Face-Characteristics-Table", TRUE, type="table")`
+utilises a set of faces that were Manually annotated and also found by Google. 
 Nine of the top ten facial characteristic combinations contained faces that were not wearing glasses.
 The head angle describing the face angle was 'Other'^[Definition for headangle factor level 'Other' found in..]
 for nine of the top ten facial characteristic combinations.
 
 
-
-#####**Table 8.** Glasses on Recognised Faces
-```{r T8 Glasses}
+```{r Glasses, anchor="Figure"}
 GlassesGoogle <- ALLmetaIMGPlayers %>% filter(type=="Google") %>%
 filter(matchesManual==TRUE)
 
@@ -396,25 +396,22 @@ pander(table(GlassesGoogle$glasses))
 The extreme disparity between the amount of faces with glasses to without them means that the occurence of these attributes across the softwares must be considered proportionally.
 
 
-#####**Graph 2.** Glasses
-```{r G2 Glasses}
+```{r Glasses-Figure, anchor="Figure"}
 ggplotProportion(ALLmetaIMGPlayers, glasses)
 ```
 Graph 2 above shows that Google outperforms the other softwares, with or without glasses. When there are no glasses worn Google finds over 60% of the manually annotated faces.
 
 
-#####**Table 9.** Head Angles
-```{r T9 HeadAngles}
+```{r HeadAngles, anchor="Table"}
 HeadangleGoogle <- ALLmetaIMGPlayers %>%   filter(type=="Google") %>%
 filter(matchesManual==TRUE)
 
 pander(table(HeadangleGoogle$headangle))
 ```
-The amount of faces found by Google with the headangle "Other", is much larger than the amount of faces with the headangle "Profile" or "Front On". Therefor this should also be considered propotionately.
+The amount of faces found by Google with the headangle "Other", is much larger than the amount of faces with the headangle "Profile" or "Front On". Therefore this should also be considered propotionately.
 
 
-#####**Graph 3.** Glasses
-```{r G3 Glasses}
+```{r Headangle-Figure, anchor="Figure"}
 ggplotProportion(ALLmetaIMGPlayers, headangle)
 ```
 Graph 3 diplays that Google performs much better in comparison to the other softwares when the headangle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the softwares in this circumstance.
@@ -427,11 +424,11 @@ Table 2 = Describe the images/boxes identified by the algorithms--what are they 
 Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) 
   How often is type I error made (a face detected incorrectly)?   
   
-##### **Table 10.**
-```{r T10}
-library(tables, quietly = TRUE)
+
+```{r Accuracy}
 Accuracy<-with(ALLmetaIMG, table(ALLmetaIMG$matchesManual, ALLmetaIMG$type))
-pander(Accuracy)
+kable(Accuracy)
+# make this a proportional table, would this be necessary if we have the UpSetR
 ```
 
   How often type II error (a face is incorrectly NOT detected)?   
@@ -443,35 +440,19 @@ It should be noted that there were results where a single face was recognised tw
 Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
 
 
-#####**Table 11.** Google Characteristics
-```{r T11 Google Characteristics Table}
+```{r Google-Characteristics-Table, anchor="table"}
 GoogleCharacteristics <- ALLmetaIMG %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
 
 kable(GoogleCharacteristics, format = "pandoc", booktabs = TRUE)
 ```
-This table shows how many images with potential player's faces Google recognised. This diplays a vast gap between the amount of potential faces found given the different shot angles. Shoulder height is an optimum angle for a Face Bounding Box.
+
+
+`r figr("Google-Characteristics-Table", TRUE, type="table")`
+shows how many images with potential player's faces Google recognised. This diplays a vast gap between the amount of potential faces found given the different shot angles. Shoulder height is an optimum angle for a Face Bounding Box.
 
 Considering only the Shoulder Height Angle, the following Graph looks at how accessories affected Google's recognition. 
 
-#####**Graph 4.** Google Face Bounding Boxes: Mosaic Plot
-```{r G4 Google Characteristics Mosaic Plot}
-GoogleAccessories <- ALLmetaIMG %>% filter(type=="Google") %>% filter(shotangle=="Player Shoulder Height") %>% filter(detect=="Player") %>% filter(lighting!="Direct sunlight")
-
-GoogleAccessories<-droplevels(GoogleAccessories)
-#lighting headangle glasses visorhat 
-
-
-
-mosaicplot(~ headangle + visorhat, data = GoogleAccessories, color = TRUE)
-
-mosaicplot(~ lighting + visorhat, data = GoogleAccessories, color = TRUE)
-
-mosaicplot(~ lighting +headangle +visorhat, data = GoogleAccessories, color = TRUE)
-
-mosaicplot(~ glasses + lighting, data = GoogleAccessories, color = TRUE)
-
-```
 
 ### Discussion
 Graph 1, the Bar Chart of the Face Bounding Boxes promotes Google as the best possible software for a facial recognition application in tennis. According to Table 4 Google had 38.23% of the 9.66% potential face boxes not annotated manually.

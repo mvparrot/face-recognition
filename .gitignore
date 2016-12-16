@@ -3,3 +3,5 @@ images/
 AnimetricsBackup/
 MicrosoftBackup/
 SkybiometryBackup/
+*_cache/
+*_files/
