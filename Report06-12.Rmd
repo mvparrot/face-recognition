@@ -1,7 +1,7 @@
 ---
 title: "Detecting Facial Expressions in Professional Tennis Matches"
-author: Stephanie Kobakian, Mitchell O'Hara Wild. Supervised by Dianne Cook, Stephanie
-  Kovalcik
+author: Stephanie Kobakian, Mitchell O'Hara Wild, Stephanie
+  Kovalcik, Dianne Cook
 date: "November 19 2016"
 output:
   pdf_document:
@@ -37,7 +37,7 @@ options("citation_format" = "pandoc")
 
 BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", cite.style = 'alphabetic')
 
-setwd("C:/Users/steff/Github/face-recognition")
+#setwd("C:/Users/steff/Github/face-recognition")
 
 #csv files:
 ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
