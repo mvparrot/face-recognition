@@ -1,5 +1,3 @@
-setwd("~/github/face-recognition/")
-
 #Load Packages
 library(imager)
 library(dplyr)
@@ -7,12 +5,12 @@ library(tidyr)
 library(purrr)
 
 #Load Data
-MicrosoftClassifiedFaces <- read.csv("~/github/face-recognition/MicrosoftClassifiedFaces.csv")
-AnimetricsClassifiedFaces <- read.csv("~/github/face-recognition/AnimetricsClassifiedFaces.csv")
-SkybiometryClassifiedFaces <- read.csv("~/github/face-recognition/SkybiometryClassifiedFaces.csv")
-GoogleClassifiedFaces <- read.csv("~/github/face-recognition/GoogleClassifiedFaces.csv")
-ManualClassifiedFaces <- read.csv("~/github/face-recognition/ManualClassifiedFaces.csv")
-ManualClassifiedScenes <- read.csv("~/github/face-recognition/ManualClassifiedScenes.csv")
+MicrosoftClassifiedFaces <- read.csv("MicrosoftClassifiedFaces.csv")
+AnimetricsClassifiedFaces <- read.csv("AnimetricsClassifiedFaces.csv")
+SkybiometryClassifiedFaces <- read.csv("SkybiometryClassifiedFaces.csv")
+GoogleClassifiedFaces <- read.csv("GoogleClassifiedFaces.csv")
+ManualClassifiedFaces <- read.csv("ManualClassifiedFaces.csv")
+ManualClassifiedScenes <- read.csv("ManualClassifiedScenes.csv")
 
 #Check all equal length
 length(unique(MicrosoftClassifiedFaces$file))
