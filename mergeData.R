@@ -124,6 +124,7 @@ metaManualClassifiedFaces <- merge(dplyr::select(ManualClassifiedFaces, file, fa
 
 metaFaces <- merge(metaManualClassifiedFaces, classifiedIMG, by=c("file", "boxID")) %>% dplyr::select(-ID.y) %>% rename(ID = ID.x)
 
+## THIS CAUSES boxID NAs
 ALLmetaIMG <- merge(ManualClassifiedScenes, metaFaces, by="file", all=TRUE)
 
 #Extract file name info
