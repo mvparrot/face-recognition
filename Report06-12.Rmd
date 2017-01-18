@@ -283,8 +283,7 @@ Using the data set^[ALLmetaIMG] of the combined API and manual results, we were 
 Firstly, we considered how many individual faces the software were able to detect in `r figr("Face-Bounding-Box-Data", TRUE, type="Figure")` .
 
 
-However, individual faces are not beneficial if they do not correspond to the faces manually annotated. `r figr("Face-Bounding-Box-UpSet", TRUE, type="Figure")` was created by defining groups depending on the softwares 
-that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance Face Bounding Boxes may overlap on the same face, each bar shows the number of individual faces that have Face Bounding Boxes resulting from each of the softwares highlighted below the bar.
+However, individual faces are not beneficial if they do not correspond to the faces manually annotated. `r figr("Face-Bounding-Box-UpSet", TRUE, type="Figure")` was created by defining groups depending on the softwares that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance Face Bounding Boxes may overlap on the same face, each bar shows the number of individual faces that have Face Bounding Boxes resulting from each of the softwares highlighted below the bar.
 
 
 Following, we considered the sizes of the Boxes created in `r figr("Face-Bounding-Box-Data-Box", TRUE, type="Figure")`, this was an attempt to determine how the software performed when presented with smaller faces. The boxplot uses the size of the Face Bounding Boxes, and contrasts based on the software the Boxes were found from.
@@ -319,7 +318,7 @@ ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab(
 The bar chart in 
 `r figr("Face-Bounding-Box-Data", TRUE, type="Figure")` above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more faces than the next best software, Microsoft.
 
-
+-Google more than others
 
 ```{r Face-Bounding-Box-UpSet, results='hide', type="figure", caption="Face Bounding Box Data:", anchor="figure"}
 createUpSet(ALLmetaIMGFaces)
