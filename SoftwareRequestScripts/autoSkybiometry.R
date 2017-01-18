@@ -4,8 +4,8 @@ setwd("~/Desktop/face-recognition/")
 reqsize <- 97
 
 # Starting script for SkyBiometry API
-api_key <- "2411ca5a7294462b9923e6ef7f97eb24"
-api_secret <- "f57d0bc3b0eb427389f6c890700b4749"
+api_key <- ""
+api_secret <- ""
 
 getFacesSkyBiometry <- function(faceTags){
   if(length(faceTags$photos$tags[[1]]) > 1){

@@ -1,0 +1,5 @@
+Name,Input,FileType,ImageSizeMin,ImageSizeMax
+Animetrics-FaceR,Images,NA,NA,NA
+Google-Vision,Images,"JPEG, RAW",NA,4MB
+Microsoft,Images,"JPEG,PNG",1KB,4MB
+Skybiometry,Images,"JPEG,PNG,BMP",NA,2MB
