@@ -5,3 +5,5 @@ MicrosoftBackup/
 SkybiometryBackup/
 *_cache/
 *_files/
+GoogleBackup/
+.Rproj.user
