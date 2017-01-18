@@ -1,3 +1,4 @@
+# Prepare data
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
   hit <- allType %in% x$type
@@ -10,15 +11,14 @@ glmFits <- ALLmetaIMGFaces %>%
   split(.$FaceKey) %>%
   map_df(~ hitmiss(.)) %>%
   split(.$type) %>%
-  map(~ select(., -type, -file, -boxID)) %>%
-  map(~ glm(hit ~ ., data=.))
+  map(~ glm(hit ~ ., data = select(., -type, -file, -boxID)))
 
 glmSummary <- glmFits %>%
-  map(~ cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.))))))) %>%
-  map(~ rename(., variable = rowname))
+  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname))
 
 glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary)))
 
+# Graphs
 ## Coefficient of variables by software
 glmPlot %>%
   ggplot(aes(x=type, y=Estimate)) +
