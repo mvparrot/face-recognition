@@ -83,7 +83,7 @@ boxOverlap <- function(boxes){
           if(!is.null(intersectPoly)){ #If they actually intersect
             intersectArea <- area(intersectPoly)
             totalArea <- area(newPoly) + area(comparePoly) - intersectArea
-            if(intersectArea/totalArea > 0.1){
+            if(intersectArea/totalArea > 1/3){
               boxes[compareBox,"boxID"] <- boxes[newBox,"boxID"]
             }
           }
