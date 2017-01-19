@@ -38,7 +38,7 @@ options("citation_format" = "pandoc")
 
 BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", cite.style = 'alphabetic')
 
-setwd("C:/Users/steff/Github/face-recognition")
+
 
 #csv files:
 ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
@@ -71,14 +71,14 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
                y1 = minY, y2 = maxY, y3 = maxY, y4 = minY, y5 = minY) %>%
         gather(corner, boxPos, x1:y5) %>%
         mutate(posCoord = substr(corner, 1, 1), posID = substr(corner, 2, 2)) %>%
-        select(-corner) %>% spread(posCoord, boxPos)
+        dplyr::select(-corner) %>% spread(posCoord, boxPos)
       
     }
     if(matchBox){
       p <- p + geom_path(aes(x=x, y=450-y, group = c(type, boxID), colour=boxID), faceData) + guides(colour="none")
     }
     else{
-      p <- p + geom_path(aes(x=x, y=450-y, group = c(FaceID), colour=type), faceData)
+      p <- p + geom_path(aes(x=x, y=450-y, group = c(FaceID), colour=type), faceData) + scale_color_manual(values = c(Skybiometry="#ffe093", Microsoft="#5cc3f6", Google="#5cba82", Animetrics="#FF959c", Manual="#db70ff"))
     }
   return(p)
   }
@@ -121,7 +121,7 @@ ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
 
 # change this to facesVenn with binary information
 ALLmetaIMGFaces<-ALLmetaIMG%>%
-  filter(!is.na(boxID)) %>% 
+  filter(matchesManual) %>% 
   dplyr::select(-ID, -facecounter)%>%
   mutate(fileID = as.numeric(factor(file))) %>%
   mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
@@ -198,7 +198,7 @@ We were able to try the online demos to see whether these software were viable, 
 
 ```{r Trial-Image, caption="This is a player", message=TRUE, warning=TRUE, anchor="figure"}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
-overlayGgplot(imagesList0, ALLmetaIMG, matchBox = FALSE)
+overlayGgplot(imagesList0, ALLmetaIMGFaces, matchBox = FALSE)
 ```
 
 
@@ -302,6 +302,25 @@ finding faces that were recognized and grouping them by the softwares
 Skybiometry results accounted for the 255 smallest recognized faces. However this is not necessarily a benefit to this research, as these are not all faces.
 
 
+## Regression 
+
+
+```{r}
+ALLmetaIMGFaces
+#for each face there
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -327,37 +346,21 @@ createUpSet(ALLmetaIMGFaces)
 
 
 `r figr("Face-Bounding-Box-Upset", TRUE, type="Figure")` Bar Chart shows the Face Bounding Boxes that were recognized by multiple software.
-The largest group with 809 faces is Face Bounding Boxes only found by Manual annotations. The following groups were Boxes recognized by both Manual annotations and the Google API.
+The largest group with 809 faces is Face Bounding Boxes only found by Manual annotations. The following group was Boxes representing the same faces being recognized by both Manual annotations and the Google API.
 
 
 
-```{r Face-Bounding-Box-Data-Box, anchor="figure"}
-ggplot(ALLmetaIMG, aes(x = factor(x = factor(type)), fill=type, y = size)) + geom_boxplot() + scale_y_continuous() +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Google","Animetrics","Manual","Microsoft","Skybiometry"))+ylab("Size of Face Bounding Boxes")+guides(fill=FALSE)
-
-```
-
-
-
-The box and whisker plot in 
-`r figr("Face-Bounding-Box-Data-Box", TRUE, type="Figure")` shows the differences between the sizes of the 'Face Bounding Boxes' produced by each software. Where a 'Face Bounding Box' refers to the size of the square the software provided as a location in the image of a face that was detected. On average, Google maps the largest boxes around faces, and has the largest box recognized in the set. On average, the smallest Face Boxes are created by Skybiometry.
+On average, Google maps the largest boxes around faces, and has the largest box recognized in the set. On average, the smallest Face Boxes are created by Skybiometry.
 
 
 
 
-```{r I2, results=TRUE, caption="2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0014.png", anchor="figure"}
-imagesList2<-as.list("2016_CT6_R02_FLopez_ESP_vs_GPella_ARG_MS227_clip.0009.png")
-overlayGgplot(imagesList2, ALLmetaIMG, matchBox = FALSE)
-```
-
-
-
-The image above shows the smallest Face Bounding Box recognized. However visual inspection shows it only captures the player's eye and nose, not their whole face. 
 
 
 
 ```{r I3, results=TRUE, caption="2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png", anchor="figure"}
 imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
-overlayGgplot(imagesList3, ALLmetaIMG, matchBox = FALSE)
+overlayGgplot(imagesList3, ALLmetaIMGFaces, matchBox = FALSE)
 ```
 
 

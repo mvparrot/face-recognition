@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  17 JAN 2017 20:27
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  18 JAN 2017 16:36
 entering extended mode
 **./Report06-12.tex
 (Report06-12.tex
@@ -1023,90 +1023,74 @@ File: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet
--1.pdf used on input line 454.
+-1.pdf used on input line 456.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[7 <./Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>]
-<Report06-12_files/figure-latex/Face-Bounding-Box-Data-Box-1.pdf, id=152, 469.7
-55pt x 325.215pt>
-File: Report06-12_files/figure-latex/Face-Bounding-Box-Data-Box-1.pdf Graphic f
-ile (type pdf)
-<use Report06-12_files/figure-latex/Face-Bounding-Box-Data-Box-1.pdf>
-Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-Data-
-Box-1.pdf used on input line 461.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[8 <./Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>] <Report06-
-12_files/figure-latex/I2-1.pdf, id=167, 469.755pt x 325.215pt>
-File: Report06-12_files/figure-latex/I2-1.pdf Graphic file (type pdf)
-<use Report06-12_files/figure-latex/I2-1.pdf>
-Package pdftex.def Info: Report06-12_files/figure-latex/I2-1.pdf used on input 
-line 471.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[9 <./Report06-12_files/figure-latex/Face-Bounding-Box-Data-Box-1.pdf>] <Report
-06-12_files/figure-latex/I3-1.pdf, id=177, 469.755pt x 325.215pt>
+[7 <./Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>] <Report06-1
+2_files/figure-latex/I3-1.pdf, id=152, 469.755pt x 325.215pt>
 File: Report06-12_files/figure-latex/I3-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/I3-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/I3-1.pdf used on input 
-line 477.
+line 468.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[10 <./Report06-12_files/figure-latex/I2-1.pdf>] <Report06-12_files/figure-late
-x/I4-1.pdf, id=188, 469.755pt x 325.215pt>
+[8 <./Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>] <Report06-
+12_files/figure-latex/I4-1.pdf, id=167, 469.755pt x 325.215pt>
 File: Report06-12_files/figure-latex/I4-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/I4-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/I4-1.pdf used on input 
-line 483.
+line 474.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[11 <./Report06-12_files/figure-latex/I3-1.pdf>] <Report06-12_files/figure-late
-x/I5-1.pdf, id=197, 469.755pt x 325.215pt>
+[9 <./Report06-12_files/figure-latex/I3-1.pdf>] <Report06-12_files/figure-latex
+/I5-1.pdf, id=178, 469.755pt x 325.215pt>
 File: Report06-12_files/figure-latex/I5-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/I5-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/I5-1.pdf used on input 
-line 489.
+line 480.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[12 <./Report06-12_files/figure-latex/I4-1.pdf>] [13 <./Report06-12_files/figur
+[10 <./Report06-12_files/figure-latex/I4-1.pdf>] [11 <./Report06-12_files/figur
 e-latex/I5-1.pdf>]
-<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=217, 469.755p
+<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=197, 469.755p
 t x 325.215pt>
 File: Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Typical-Best-Recognised
--1.pdf used on input line 571.
+-1.pdf used on input line 562.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[14] [15 <./Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>]
-<Report06-12_files/figure-latex/Glasses-Figure-1.pdf, id=237, 469.755pt x 325.2
+[12] [13 <./Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>]
+<Report06-12_files/figure-latex/Glasses-Figure-1.pdf, id=218, 469.755pt x 325.2
 15pt>
 File: Report06-12_files/figure-latex/Glasses-Figure-1.pdf Graphic file (type pd
 f)
 <use Report06-12_files/figure-latex/Glasses-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Glasses-Figure-1.pdf us
-ed on input line 644.
+ed on input line 635.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[16]
-<Report06-12_files/figure-latex/Headangle-Figure-1.pdf, id=244, 469.755pt x 325
+[14]
+<Report06-12_files/figure-latex/Headangle-Figure-1.pdf, id=225, 469.755pt x 325
 .215pt>
 File: Report06-12_files/figure-latex/Headangle-Figure-1.pdf Graphic file (type 
 pdf)
 <use Report06-12_files/figure-latex/Headangle-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Headangle-Figure-1.pdf 
-used on input line 665.
+used on input line 656.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[17 <./Report06-12_files/figure-latex/Glasses-Figure-1.pdf>] [18 <./Report06-12
-_files/figure-latex/Headangle-Figure-1.pdf>] [19] [20] (Report06-12.bbl [21])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 881.
-[22]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 881.
+[15 <./Report06-12_files/figure-latex/Glasses-Figure-1.pdf>] [16 <./Report06-12
+_files/figure-latex/Headangle-Figure-1.pdf>] [17] [18] (Report06-12.bbl [19])
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 872.
+[20]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 872.
 (Report06-12.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 881.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 881.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 872.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 872.
 Package rerunfilecheck Info: File `Report06-12.out' has not changed.
 (rerunfilecheck)             Checksum: 1E885D47D8E46F5F3D8A3BC2417A940A;663.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 881.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 872.
  ) 
 Here is how much of TeX's memory you used:
- 13026 strings out of 493329
- 188001 string characters out of 3139062
+ 13016 strings out of 493329
+ 187533 string characters out of 3139062
  294664 words of memory out of 3000000
- 16189 multiletter control sequences out of 15000+200000
+ 16181 multiletter control sequences out of 15000+200000
  68682 words of font info for 109 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
  32i,8n,38p,238b,442s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1119,9 +1103,9 @@ onts/type1/public/lm/lmr6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/l
 m/lmr8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmr9.pfb><C:/Prog
 ram Files/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/MiKTeX 
 2.9/fonts/type1/public/lm/lmri12.pfb>
-Output written on Report06-12.pdf (22 pages, 3630300 bytes).
+Output written on Report06-12.pdf (20 pages, 3173762 bytes).
 PDF statistics:
- 343 PDF objects out of 1000 (max. 8388607)
- 72 named destinations out of 1000 (max. 500000)
- 14456 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 324 PDF objects out of 1000 (max. 8388607)
+ 70 named destinations out of 1000 (max. 500000)
+ 14446 words of extra memory for PDF output out of 17280 (max. 10000000)
 
