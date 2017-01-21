@@ -1,4 +1,7 @@
 # Prepare data
+library(purrr)
+library(dplyr)
+library(ggplot2)
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
   hit <- allType %in% x$type

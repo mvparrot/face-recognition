@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  18 JAN 2017 16:36
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  21 JAN 2017 22:37
 entering extended mode
 **./Report06-12.tex
 (Report06-12.tex
@@ -751,28 +751,22 @@ Now handling font encoding PU ...
 ... no UTF-8 mapping file for font encoding PU
 )
 Package hyperref Info: Option `breaklinks' set `true' on input line 30.
-("C:\Program Files\MiKTeX 2.9\tex\latex\natbib\natbib.sty"
-Package: natbib 2010/09/13 8.31b (PWD, AO)
-\bibhang=\skip48
-\bibsep=\skip49
-LaTeX Info: Redefining \cite on input line 694.
-\c@NAT@ctr=\count114
-) ("C:\Program Files\MiKTeX 2.9\tex\latex\tools\longtable.sty"
+("C:\Program Files\MiKTeX 2.9\tex\latex\tools\longtable.sty"
 Package: longtable 2014/10/28 v4.11 Multi-page Table package (DPC)
-\LTleft=\skip50
-\LTright=\skip51
-\LTpre=\skip52
-\LTpost=\skip53
-\LTchunksize=\count115
+\LTleft=\skip48
+\LTright=\skip49
+\LTpre=\skip50
+\LTpost=\skip51
+\LTchunksize=\count114
 \LTcapwidth=\dimen125
 \LT@head=\box28
 \LT@firsthead=\box29
 \LT@foot=\box30
 \LT@lastfoot=\box31
-\LT@cols=\count116
-\LT@rows=\count117
-\c@LT@tables=\count118
-\c@LT@chunks=\count119
+\LT@cols=\count115
+\LT@rows=\count116
+\c@LT@tables=\count117
+\c@LT@chunks=\count118
 \LT@p@ftn=\toks25
 ) ("C:\Program Files\MiKTeX 2.9\tex\latex\booktabs\booktabs.sty"
 Package: booktabs 2005/04/14 v1.61803 publication quality tables
@@ -786,12 +780,12 @@ Package: booktabs 2005/04/14 v1.61803 publication quality tables
 \cmidrulesep=\dimen133
 \cmidrulekern=\dimen134
 \defaultaddspace=\dimen135
-\@cmidla=\count120
-\@cmidlb=\count121
+\@cmidla=\count119
+\@cmidlb=\count120
 \@aboverulesep=\dimen136
 \@belowrulesep=\dimen137
-\@thisruleclass=\count122
-\@lastruleclass=\count123
+\@thisruleclass=\count121
+\@lastruleclass=\count122
 \@thisrulewidth=\dimen138
 ) ("C:\Program Files\MiKTeX 2.9\tex\latex\graphics\graphicx.sty"
 Package: graphicx 2014/10/28 v1.0g Enhanced LaTeX Graphics (DPC,SPQR)
@@ -805,7 +799,7 @@ File: graphics.cfg 2016/06/04 v1.11 sample graphics configuration
 Package graphics Info: Driver file: pdftex.def on input line 99.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\graphics-def\pdftex.def"
 File: pdftex.def 2016/07/10 v0.06j Graphics/color for pdfTeX
-\Gread@gobject=\count124
+\Gread@gobject=\count123
 ))
 \Gin@req@height=\dimen139
 \Gin@req@width=\dimen140
@@ -819,39 +813,39 @@ Package grffile Info: \Gin@ii of package `graphicx' fixed on input line 486.
 Package: parskip 2001/04/09 non-zero parskip adjustments
 ) ("C:\Program Files\MiKTeX 2.9\tex\latex\titling\titling.sty"
 Package: titling 2009/09/04 v2.1d maketitle typesetting
-\thanksmarkwidth=\skip54
-\thanksmargin=\skip55
-\droptitle=\skip56
+\thanksmarkwidth=\skip52
+\thanksmargin=\skip53
+\droptitle=\skip54
 ) (Report06-12.aux)
 \openout1 = `Report06-12.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 91.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 91.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 89.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 89.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\base\ts1cmr.fd"
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 91.
-LaTeX Font Info:    ... okay on input line 91.
-LaTeX Font Info:    Try loading font information for T1+lmr on input line 91.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 89.
+LaTeX Font Info:    ... okay on input line 89.
+LaTeX Font Info:    Try loading font information for T1+lmr on input line 89.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
 File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
-LaTeX Info: Redefining \microtypecontext on input line 91.
+LaTeX Info: Redefining \microtypecontext on input line 89.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using protrusion set `basicmath'.
@@ -900,33 +894,33 @@ File: mt-cmr.cfg 2013/05/19 v2.2 microtype config. file: Computer Modern Roman
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 \AtBeginShipoutBox=\box32
-Package hyperref Info: Link coloring OFF on input line 91.
+Package hyperref Info: Link coloring OFF on input line 89.
 ("C:\Program Files\MiKTeX 2.9\tex\latex\hyperref\nameref.sty"
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 ("C:\Program Files\MiKTeX 2.9\tex\generic\oberdiek\gettitlestring.sty"
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count125
+\c@section@level=\count124
 )
-LaTeX Info: Redefining \ref on input line 91.
-LaTeX Info: Redefining \pageref on input line 91.
-LaTeX Info: Redefining \nameref on input line 91.
+LaTeX Info: Redefining \ref on input line 89.
+LaTeX Info: Redefining \pageref on input line 89.
+LaTeX Info: Redefining \nameref on input line 89.
 (Report06-12.out) (Report06-12.out)
 \@outlinefile=\write3
 \openout3 = `Report06-12.out'.
 
 ("C:\Program Files\MiKTeX 2.9\tex\context\base\supp-pdf.mkii"
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count126
+\scratchcounter=\count125
 \scratchdimen=\dimen141
 \scratchbox=\box33
-\nofMPsegments=\count127
-\nofMParguments=\count128
+\nofMPsegments=\count126
+\nofMParguments=\count127
 \everyMPshowfont=\toks26
-\MPscratchCnt=\count129
+\MPscratchCnt=\count128
 \MPscratchDim=\dimen142
-\MPnumerator=\count130
-\makeMPintoPDFobject=\count131
+\MPnumerator=\count129
+\makeMPintoPDFobject=\count130
 \everyMPtoPDFconversion=\toks27
 ) ("C:\Program Files\MiKTeX 2.9\tex\latex\oberdiek\epstopdf-base.sty"
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -980,120 +974,153 @@ File: mt-msb.cfg 2005/06/01 v1.0 microtype config. file: AMS symbols (b) (RS)
 [1
 
 {C:/ProgramData/MiKTeX/2.9/pdftex/config/pdftex.map}]
-LaTeX Font Info:    Try loading font information for TS1+lmr on input line 155.
+LaTeX Font Info:    Try loading font information for TS1+lmr on input line 153.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\lm\ts1lmr.fd"
 File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 ) [2]
-<Report06-12_files/figure-latex/Trial-Image-1.pdf, id=65, 469.755pt x 325.215pt
+<Report06-12_files/figure-latex/Trial-Image-1.pdf, id=58, 469.755pt x 325.215pt
 >
 File: Report06-12_files/figure-latex/Trial-Image-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/Trial-Image-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Trial-Image-1.pdf used 
-on input line 229.
+on input line 230.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Overfull \hbox (158.2708pt too wide) in alignment at lines 237--241
+Overfull \hbox (158.2708pt too wide) in alignment at lines 240--247
  [] [] 
  []
 
 
-Overfull \hbox (158.2708pt too wide) in alignment at lines 241--249
+Overfull \hbox (158.2708pt too wide) in alignment at lines 247--251
+ [] [] 
+ []
+
+
+Overfull \hbox (158.2708pt too wide) in alignment at lines 251--259
  [] [] 
  []
 
 [3 <./Report06-12_files/figure-latex/Trial-Image-1.pdf>]
+
+LaTeX Warning: Reference `tab:Solution-Specifications-Table' on page 4 undefine
+d on input line 265.
+
+[4]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 314.
+(Font)              <9> on input line 312.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 314.
-[4] [5] [6]
-<Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf, id=140, 469.755pt
+(Font)              <5> on input line 312.
+[5]
+<Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf, id=117, 469.755pt
  x 325.215pt>
 File: Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf Graphic file 
 (type pdf)
 <use Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-Data-
-1.pdf used on input line 447.
+1.pdf used on input line 434.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-
-<Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf, id=141, 469.755p
+[6]
+<Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf, id=130, 469.755p
 t x 325.215pt>
 File: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet
--1.pdf used on input line 456.
+-1.pdf used on input line 444.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[7 <./Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>] <Report06-1
-2_files/figure-latex/I3-1.pdf, id=152, 469.755pt x 325.215pt>
+<Report06-12_files/figure-latex/I3-1.pdf, id=131, 469.755pt x 325.215pt>
 File: Report06-12_files/figure-latex/I3-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/I3-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/I3-1.pdf used on input 
-line 468.
+line 455.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[8 <./Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>] <Report06-
-12_files/figure-latex/I4-1.pdf, id=167, 469.755pt x 325.215pt>
-File: Report06-12_files/figure-latex/I4-1.pdf Graphic file (type pdf)
-<use Report06-12_files/figure-latex/I4-1.pdf>
-Package pdftex.def Info: Report06-12_files/figure-latex/I4-1.pdf used on input 
-line 474.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[9 <./Report06-12_files/figure-latex/I3-1.pdf>] <Report06-12_files/figure-latex
-/I5-1.pdf, id=178, 469.755pt x 325.215pt>
-File: Report06-12_files/figure-latex/I5-1.pdf Graphic file (type pdf)
-<use Report06-12_files/figure-latex/I5-1.pdf>
-Package pdftex.def Info: Report06-12_files/figure-latex/I5-1.pdf used on input 
-line 480.
-(pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[10 <./Report06-12_files/figure-latex/I4-1.pdf>] [11 <./Report06-12_files/figur
-e-latex/I5-1.pdf>]
-<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=197, 469.755p
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 472.
+
+("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmtt.fd"
+File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
+) [7 <./Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>] [8 <./Rep
+ort06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>] [9 <./Report06-12_f
+iles/figure-latex/I3-1.pdf>]
+
+LaTeX Warning: Reference `Type-Matches-Manual' on page 10 undefined on input li
+ne 499.
+
+
+LaTeX Warning: Reference `Image-Characteristics-Table' on page 10 undefined on 
+input line 542.
+
+[10]
+<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=175, 469.755p
 t x 325.215pt>
 File: Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Typical-Best-Recognised
--1.pdf used on input line 562.
+-1.pdf used on input line 553.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[12] [13 <./Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>]
-<Report06-12_files/figure-latex/Glasses-Figure-1.pdf, id=218, 469.755pt x 325.2
+
+LaTeX Warning: Reference `Google-Errors-Characteristics-Table' on page 11 undef
+ined on input line 581.
+
+
+LaTeX Warning: Reference `Face-Characteristics-Table' on page 11 undefined on i
+nput line 589.
+
+[11 <./Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>]
+
+LaTeX Warning: Reference `Face-Characteristics-Table' on page 12 undefined on i
+nput line 614.
+
+
+<Report06-12_files/figure-latex/Glasses-Figure-1.pdf, id=189, 469.755pt x 325.2
 15pt>
 File: Report06-12_files/figure-latex/Glasses-Figure-1.pdf Graphic file (type pd
 f)
 <use Report06-12_files/figure-latex/Glasses-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Glasses-Figure-1.pdf us
-ed on input line 635.
+ed on input line 640.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[14]
-<Report06-12_files/figure-latex/Headangle-Figure-1.pdf, id=225, 469.755pt x 325
+
+LaTeX Warning: Reference `HeadAngles' on page 12 undefined on input line 668.
+
+
+<Report06-12_files/figure-latex/Headangle-Figure-1.pdf, id=190, 469.755pt x 325
 .215pt>
 File: Report06-12_files/figure-latex/Headangle-Figure-1.pdf Graphic file (type 
 pdf)
 <use Report06-12_files/figure-latex/Headangle-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Headangle-Figure-1.pdf 
-used on input line 656.
+used on input line 675.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-[15 <./Report06-12_files/figure-latex/Glasses-Figure-1.pdf>] [16 <./Report06-12
-_files/figure-latex/Headangle-Figure-1.pdf>] [17] [18] (Report06-12.bbl [19])
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 872.
-[20]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 872.
+[12] [13 <./Report06-12_files/figure-latex/Glasses-Figure-1.pdf>] [14 <./Report
+06-12_files/figure-latex/Headangle-Figure-1.pdf>]
+
+LaTeX Warning: Reference `Google-Characteristics-Table' on page 15 undefined on
+ input line 725.
+
+[15] [16] [17]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 915.
+[18]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 915.
 (Report06-12.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 872.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 872.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 915.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 915.
 Package rerunfilecheck Info: File `Report06-12.out' has not changed.
-(rerunfilecheck)             Checksum: 1E885D47D8E46F5F3D8A3BC2417A940A;663.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 872.
+(rerunfilecheck)             Checksum: D75586249F7E4D4774E77E8558ED75A6;702.
+
+LaTeX Warning: There were undefined references.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 915.
  ) 
 Here is how much of TeX's memory you used:
- 13016 strings out of 493329
- 187533 string characters out of 3139062
- 294664 words of memory out of 3000000
- 16181 multiletter control sequences out of 15000+200000
- 68682 words of font info for 109 fonts, out of 3000000 for 9000
+ 12727 strings out of 493329
+ 184293 string characters out of 3139062
+ 291299 words of memory out of 3000000
+ 15895 multiletter control sequences out of 15000+200000
+ 68741 words of font info for 108 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 32i,8n,38p,238b,442s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 32i,8n,38p,472b,457s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program Files/M
 iKTeX 2.9/fonts/enc/dvips/lm/lm-ts1.enc}<C:/Program Files/MiKTeX 2.9/fonts/type
 1/public/lm/lmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmbx1
@@ -1102,10 +1129,11 @@ Files/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Program Files/MiKTeX 2.9/f
 onts/type1/public/lm/lmr6.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/l
 m/lmr8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmr9.pfb><C:/Prog
 ram Files/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/MiKTeX 
-2.9/fonts/type1/public/lm/lmri12.pfb>
-Output written on Report06-12.pdf (20 pages, 3173762 bytes).
+2.9/fonts/type1/public/lm/lmri12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/p
+ublic/lm/lmtt10.pfb>
+Output written on Report06-12.pdf (18 pages, 1852121 bytes).
 PDF statistics:
- 324 PDF objects out of 1000 (max. 8388607)
- 70 named destinations out of 1000 (max. 500000)
- 14446 words of extra memory for PDF output out of 17280 (max. 10000000)
+ 309 PDF objects out of 1000 (max. 8388607)
+ 73 named destinations out of 1000 (max. 500000)
+ 14428 words of extra memory for PDF output out of 17280 (max. 10000000)
 
