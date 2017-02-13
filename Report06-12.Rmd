@@ -1,7 +1,7 @@
 ---
 title: "Detecting Facial Expressions in Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalcik"
-date: '2017'
+date: "13 February 2017"
 output: bookdown::pdf_document2
 fontsize: 11pt
 documentclass: article
@@ -27,6 +27,7 @@ library(kfigr)
 library(UpSetR)
 library(descr)
 library(tables)
+library(xtable)
 
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
 
@@ -200,18 +201,20 @@ These manual Classifications involved describing the features of the Scenes.
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-kable(SceneAttributes, format = "pandoc", booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
+kable(SceneAttributes, format = "markdown", booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
 ```
 
 
-The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. This was based on the attributes provided in Table  \@ref(tab:Solution-Specifications-Table), below:
+
+The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. This was based on the attributes provided in Table
+\@ref(tab:Solution-Specifications-Table), below:
 
 
 
-```{r Solution-Specifications-Table, results='asis', fig.cap = "\\label{tab:Solution-Specifications-Table}"}
-kable(SolutionSpecs, format = "pandoc", booktabs = TRUE)
-
+```{r Solution-Specifications-Table, fig.cap = "\\label{tab:Solution-Specifications-Table}", results='asis',}
+kable(SolutionSpecs, format = "markdown", booktabs = TRUE, caption="")
 ```
+ 
 
 
 It was decided that it would be reasonable for a software to detect was decided to be a face size larger than 20 by 20 pixels, as it was specified that the software had minimum distances between the eyes on a face for recognition. (reference table with values)
@@ -221,16 +224,12 @@ The same face size standard applied to crowd members, but focus was placed on th
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "Attributes of an individual face within an image. The most appropriate option from the list was selected for each attribute.\\label{tab:Face-Attribute-Tables}"}
-kable(FaceAttributes, format = "pandoc", booktabs = TRUE)
+kable(FaceAttributes, format = "markdown", booktabs = TRUE)
 ```
 
 
 ####Manual Annotation
 To record the details of attributes for each face and scene a Shiny [-@shiny] App was created. We called this Application our ManualClassificationProgram^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassificationProgram.R]. This helped to provide information for all attributes quickly and consistently.
-The Shiny [@shinyw] package provides a 'framework for building web applications using R'. It allows for the creation of web applications using R rather than 'requiring HTML, CSS, or JavaScript knowledge.'
-
-
-The program we created was an interactive application that worked by presenting an image, using the imager @imager package, from the sample of images that had not yet been considered, appearing underneath were a set of radio buttons corresponding to the Scene Attributes in \@ref(tab:Scene-Attributes-Table) as shown above.
 
 
 If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This changed the display and presented a set of Attributes with radio buttons, this allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the corner points of a box drawn by the mouse, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassifiedFaces.csv]. 
@@ -272,22 +271,54 @@ Firstly, we considered how many individual faces the software were able to detec
 However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(Face-Bounding-Box-Upset) was created by defining groups depending on the softwares that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance Face Bounding Boxes may overlap on the same face, each bar shows the number of individual faces that have Face Bounding Boxes resulting from each of the softwares highlighted below the bar.
 
 
-
-
-
 ## Regression 
 
 
+```{r Regression, fig.cap = "\\label{Regression}"}
+hitmiss <- function(x){
+  allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
+  hit <- allType %in% x$type
+  x[1,] %>%
+    dplyr::select(file:visorhat) %>%
+    cbind(type = allType, hit = hit)
+}
+
+glmFits <- ALLmetaIMGFaces %>%
+  split(.$FaceKey) %>%
+  map_df(~ hitmiss(.)) %>%
+  split(.$type) %>%
+  map(~ glm(hit ~ ., data = select(., -type, -file), family=binomial(link='logit')))
 
 
+glmSummary <- glmFits %>%
+  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname))
+
+glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary)))
+
+## Significance of variables by software
+#glmPlot %>%
+#  mutate(significant = `Pr(>|t|)` < 0.05) %>%
+#  filter(significant==TRUE) %>% 
+#  droplevels(glmPlot$variable) %>% 
+#  ggplot(aes(x=type, y=`Pr(>|t|)`)) + 
+#  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+#  geom_col(aes(fill=significant))
+
+glmx <- glmPlot %>%
+  mutate(significant = `Pr(>|z|)` < 0.05) %>%
+  filter(significant==TRUE) %>% 
+  droplevels(glmPlot$variable) %>% 
+  ggplot(aes(x=variable, y=`Pr(>|z|)`)) + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  geom_col(aes(fill=type)) 
+glmx
+
+```
 
 
+This shows how influential certain attributes are in determining whether a face will be detected or not.
 
-
-
-
-
-
+Regression analysis showed 
 
 
 
@@ -316,17 +347,17 @@ overlayGgplot(imagesList3, ALLmetaIMGFaces, matchBox = FALSE)
 ```
 
 
+
 To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the Bounding Boxes that do not match manually annotated faces.
 
 
 ```{r Type-Matches-Manual, fig.cap = "\\label{tab:Type-Matches-Manual}"}
-
 NoManual<-ALLmetaIMG %>% filter(ALLmetaIMG$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type) 
 Accuracy<-with(NoManual, table(NoManual$matchesManual, NoManual$type))
-CrossTable(Accuracy, prop.chisq = FALSE, cell.layout = TRUE, digits=4)
+ct<-CrossTable(Accuracy, prop.chisq = FALSE, cell.layout = TRUE, digits=4)
+print(ct)
 ```
-
 
 
 Table \@ref(Type-Matches-Manual) shows whether the potential Face Bounding Boxes match faces that were annotated during the manual classifications. Where the FALSE row denotes where software's Face Bounding Boxes do not coincide with manually annotated faces. The tables shows that Google found 38.70% of the 90.34% of the Faces found that matched Faces also identified manually.
@@ -343,7 +374,7 @@ We then considered the characteristics of the images that the software found Pot
 ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:10,]
-kable(ImageCharacteristics, booktabs = TRUE)
+kable(ImageCharacteristics, booktabs = TRUE, caption="", format = "markdown")
 ```
 
 
@@ -372,7 +403,7 @@ GoogleNoMatch <- ALLmetaIMG %>%
 #GoogleImages<-as.list(GoogleImages)
 
 GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
-kable(GoogleNoMatch[1:10,], type = 'table')
+kable(GoogleNoMatch[1:10,], caption="", format = "markdown")
 
 #overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
 ```
@@ -388,10 +419,14 @@ The best scenes for facial recognition have been found, given this information t
 
 
 ```{r Face-Characteristics-Table, fig.cap = "\\label{tab:Face-Characteristics-Table}"}
-FaceCharacteristics <- ALLmetaIMGPlayers %>%   filter(type=="Google")%>% filter(matchesManual==TRUE)%>% group_by(visorhat, glasses, headangle, lighting, obscured, detect) %>% dplyr::summarise(count=n())
+FaceCharacteristics <- ALLmetaIMGPlayers %>%
+  filter(type=="Google") %>%
+  filter(matchesManual==TRUE) %>%
+  group_by(visorhat, glasses, headangle, lighting, obscured, detect) %>% dplyr::summarise(count=n())
+
 FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
 FaceCharacteristics<-as.tbl(FaceCharacteristics[1:10,])
-kable(FaceCharacteristics, type = 'table')
+kable(FaceCharacteristics, caption="", format = "markdown")
 ```
 
 
@@ -446,7 +481,7 @@ Table 3= Evaluate the performance: what is the overall accuracy of each algorith
 
 ```{r Accuracy}
 Accuracy<-with(ALLmetaIMG, table(ALLmetaIMG$matchesManual, ALLmetaIMG$type))
-kable(Accuracy)
+kable(Accuracy, caption="", format = "markdown")
 # make this a proportional table, would this be necessary if we have the UpSetR
 ```
 
@@ -463,7 +498,7 @@ Table 4 = Identify possible explanatory factors to performance; Does accuracy va
 GoogleCharacteristics <- ALLmetaIMG %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
 
-kable(GoogleCharacteristics, format = "pandoc", booktabs = TRUE)
+kable(GoogleCharacteristics, format = "markdown", booktabs = TRUE, caption="")
 ```
 
 
