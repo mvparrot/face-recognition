@@ -260,9 +260,6 @@ To find whether the software were recognizing the same faces a function was crea
 This function uses the information of each face and compares the intersecting regions of the polygons created by the x,y coordinates of Manual Faces and other software's faces, to determine if the same face was recognized. We determined the ratio of intersecting area to total area must be greater than 0.1 to be considered the same face. This allowed us to compare the identification areas, as well as contrast the identified faces of each software. This contributed another variable, boxID, to the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv].  
 
 ####Analysis
-The statistical analysis conducted to summarize and assess the validity of the method.
-This method allowed all the software and the faces they found to be compared.
-
 
 Using the data set^[ALLmetaIMG] of the combined API and manual results, we were able to compare the performance of the software.
 Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(Face-Bounding-Box-Data).
@@ -274,7 +271,16 @@ However, individual faces are not beneficial if they do not correspond to the fa
 ## Regression 
 
 
-```{r Regression, fig.cap = "\\label{Regression}"}
+This shows how influential certain attributes are in determining whether a face will be detected or not.
+
+Regression analysis showed that the situation attribute of an image was most influential in increasing the likelihood of a hit.
+And head angle was most influential in decreasing.
+
+```{r}
+# Prepare data
+library(purrr)
+library(dplyr)
+library(ggplot2)
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
   hit <- allType %in% x$type
@@ -287,46 +293,89 @@ glmFits <- ALLmetaIMGFaces %>%
   split(.$FaceKey) %>%
   map_df(~ hitmiss(.)) %>%
   split(.$type) %>%
-  map(~ glm(hit ~ ., data = select(., -type, -file), family=binomial(link='logit')))
-
+  map(~ glm(hit ~ . + visorhat*glasses, data = select(., -type, -file), binomial(link = "logit")))
 
 glmSummary <- glmFits %>%
   map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname))
 
 glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary)))
 
+```
+
+```{r, Regression-Significance-Plot, fig.cap = "\\label{Regression--Significance-Plot}"}
 ## Significance of variables by software
-#glmPlot %>%
-#  mutate(significant = `Pr(>|t|)` < 0.05) %>%
-#  filter(significant==TRUE) %>% 
-#  droplevels(glmPlot$variable) %>% 
-#  ggplot(aes(x=type, y=`Pr(>|t|)`)) + 
-#  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
-#  geom_col(aes(fill=significant))
-
-glmx <- glmPlot %>%
+glmPlot %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
-  filter(significant==TRUE) %>% 
-  droplevels(glmPlot$variable) %>% 
-  ggplot(aes(x=variable, y=`Pr(>|z|)`)) + 
+  mutate(`Pr(<|z|)` = 1 - `Pr(>|z|)`) %>%
+  ggplot(aes(x=type, y=`Pr(<|z|)`)) + 
   theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
-  geom_col(aes(fill=type)) 
-glmx
+  geom_col(aes(fill=significant)) + 
+  facet_wrap(~ variable)
+```
 
+The bar chart of the interaction of Glasses and Visors in \@ref(Regression--Significance-Plot) or Hats shows that when the face is accessorised with both, Google has a significantly increased chance of finding the face 
+
+```{r, Regression-Estimates-Plot, fig.cap = "\\label{Regression--Estimates-Plot}"}
+## Significance of Estimated variable influences by software
+glmPlot %>%
+  mutate(significant = `Pr(>|z|)` < 0.05) %>%
+  ggplot(aes(x=type, y=Estimate)) + 
+  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  geom_col(aes(fill=significant)) + 
+  facet_wrap(~ variable, scales = "free_y")
+
+#parallel coordinate plot, vars on x????
+#unpack intercept
+#don't force to zero
+#convert into full model decription - every single level combination
+#have every level and cross level - order combinations by p value
+#function for estimates for each treatment
+#multinomail 
 ```
 
 
-This shows how influential certain attributes are in determining whether a face will be detected or not.
 
-Regression analysis showed 
+```{r Regression-Situation-Table, fig.cap = "\\label{Regression-Situation-Table}"}
+
+RegSituation<-glmPlot %>% subset(grepl("situation*", variable)) %>% select(variable, Estimate, type)
+
+#RegSituation
+
+
+data_wide <- spread(RegSituation, variable, Estimate)
+
+names(data_wide)[names(data_wide)=="situationCourt player close-up"] <- "Court player close-up"
+names(data_wide)[names(data_wide)=="situationCrowd"] <- "Crowd"
+names(data_wide)[names(data_wide)=="situationOff court close up of player"] <- "Off court close up of player"
+names(data_wide)[names(data_wide)=="situationCourt close-up not player"] <- "Court close-up not player"
+
+kable(data_wide, format = "markdown", booktabs = TRUE, caption = "")
+```
+
+
+
+```{r Regression-Angle-Table, fig.cap = "\\label{Regression-Angle-Table}"}
+
+RegHeadAngle<-glmPlot %>% subset(grepl("headangle*", variable)) %>% select(variable, Estimate, type)
+
+#RegSituation
+
+
+data_wideHead <- spread(RegHeadAngle, variable, Estimate)
+
+names(data_wideHead)[names(data_wideHead)=="headangleOther"] <- "Other"
+names(data_wideHead)[names(data_wideHead)=="headangleProfile"] <- "Profile"
+
+kable(data_wideHead, format = "markdown", booktabs = TRUE, caption = "")
+```
 
 
 
 ## Results
 
 
-```{r Face-Bounding-Box-Data, results='hide', fig.cap = "Face Bounding Boxes Per Software: The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more faces than the next best software, Microsoft.\\label{Face-Bounding-Box-Data}"}
-ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE)
+```{r Face-Bounding-Box-Data, results='hide', fig.cap = "\\label{Face-Bounding-Box-Data} Face Bounding Boxes Per Software: The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more faces than the next best software, Microsoft."}
+ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE) + labs(caption="")
 ```
 
 
@@ -335,13 +384,13 @@ To evaluate the performance in terms of the overall accuracy of each algorithm w
 The sample used contains all the manually annotated faces and all the faces recognized by the four software.
 
 
-```{r Face-Bounding-Box-UpSet, fig.cap = "Face Bounding Boxes Per Software Combination. The Bar Chart shows the Face Bounding Boxes that were recognised by multiple software. The largest group with 809 faces is Face Bounding Boxes only found by Manual annotations. The following group was Boxes representing the same faces being recognized by both Manual annotations and the Google API.\\label{Face-Bounding-Box-Upset}"}
+```{r Face-Bounding-Box-UpSet, fig.cap = "\\label{Face-Bounding-Box-Upset} Face Bounding Boxes Per Software Combination. The Bar Chart shows the Face Bounding Boxes that were recognised by multiple software. The largest group with 809 faces is Face Bounding Boxes only found by Manual annotations. The following group was Boxes representing the same faces being recognized by both Manual annotations and the Google API."}
 createUpSet(ALLmetaIMGFaces)
 ```
 
 
 
-```{r I3, results=TRUE, fig.cap = "There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face.\\label{fig:I3}"}
+```{r I3, results=TRUE, fig.cap = "\\label{fig:I3} There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face."}
 imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
 overlayGgplot(imagesList3, ALLmetaIMGFaces, matchBox = FALSE)
 ```
@@ -437,7 +486,7 @@ The head angle describing the face angle was 'Other'^[Definition for head-angle 
 for nine of the top ten facial characteristic combinations.
 
 
-```{r Glasses, fig.cap = "This table shows the amount of faces recognised by google wearing glasses. The strong disparity between the amount of faces with glasses to faces without them means that the occurrence of these attributes across the software must be considered proportionally.\\label{tab:Glasses}"}
+```{r Glasses, fig.cap = "\\label{tab:Glasses} This table shows the amount of faces recognised by google wearing glasses. The strong disparity between the amount of faces with glasses to faces without them means that the occurrence of these attributes across the software must be considered proportionally."}
 GlassesGoogle <- ALLmetaIMGFaces %>% filter(type=="Google") %>%
 filter(matchesManual==TRUE)
 pander(table(GlassesGoogle$glasses))
@@ -446,7 +495,7 @@ pander(table(GlassesGoogle$glasses))
 
 
 
-```{r Glasses-Figure, fig.cap = "The figure above shows that Google outperforms the other software, with or without glasses. When there are no glasses worn Google finds over 60% of the manually annotated faces.\\label{fig:Glasses-Figure}"}
+```{r Glasses-Figure, fig.cap = "\\label{fig:Glasses-Figure} The figure above shows that Google outperforms the other software, with or without glasses. When there are no glasses worn Google finds over 60% of the manually annotated faces."}
 ggplotProportion(ALLmetaIMGPlayers, glasses)+xlab("Glasses on Face")
 ```
 
@@ -464,7 +513,7 @@ pander(table(HeadangleGoogle$headangle))
 In Table \@ref(HeadAngles), the amount of faces found by Google with the head-angle "Other", is much larger than the amount of faces with the head-angle "Profile" or "Front On". Therefore this should also be considered proportionately.
 
 
-```{r Headangle-Figure, fig.cap = "Google performs much better in comparison to the other software when the head-angle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the software in this circumstance.\\label{fig:Headangle-Figure}"}
+```{r Headangle-Figure, fig.cap = "\\label{fig:Headangle-Figure} Google performs much better in comparison to the other software when the head-angle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the software in this circumstance."}
 ggplotProportion(ALLmetaIMGPlayers, headangle)+xlab("Head Angle of Face")
 ```
 
