@@ -55,5 +55,13 @@ glmFits <- ALLmetaIMGFaces %>%
   map_df(~ hitmiss(.)) %>% 
   #split(.$type) %>%
   map(~ glm(hit ~ 0 + type*., data = select(., -file), binomial(link = "logit")))
+ 
 
 
+#### 
+# Create new data structure to model from
+
+ALLmetaIMGFacesWide<-ALLmetaIMGFaces %>%
+  split(.$FaceKey) %>%
+  map_df(~ hitmiss(.)) %>%
+  spread(type, hit)

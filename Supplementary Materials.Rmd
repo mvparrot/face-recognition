@@ -149,7 +149,7 @@ glmFits <- ALLmetaIMGFaces %>%
   split(.$FaceKey) %>%
   map_df(~ hitmiss(.)) %>%
   split(.$type) %>%
-  map(~ glm(hit ~ ., data = select(., -type, -file)))
+  map(~ glm(hit ~ 0+., data = select(., -type, -file)))
 
 glmSummary <- glmFits %>%
   map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname))
@@ -217,5 +217,46 @@ names(data_wideHead)[names(data_wideHead)=="headangleOther"] <- "Other"
 names(data_wideHead)[names(data_wideHead)=="headangleProfile"] <- "Profile"
 
 kable(data_wideHead, format = "markdown", booktabs = TRUE, caption = "")
+```
+
+
+
+
+
+```{r Caret, fig.cap = "\\label{Caret}"}
+library(caret)
+library(e1071)
+set.seed(100)
+
+ALLmetaIMGFaces
+inTrain <- createDataPartition(y = ALLmetaIMG$matchesManual, p = .75, 
+                               list = FALSE)
+
+training <- ALLmetaIMG[ inTrain,]
+testing <- ALLmetaIMG[-inTrain,]
+
+
+
+ctrl <- trainControl(method = "repeatedcv",
+repeats = 3,
+classProbs = TRUE,
+summaryFunction = twoClassSummary)
+
+plsFit <- train(hit ~ .,
+ data = training,
+ method = "pls",
+ ## Center and scale the predictors for the training
+ ## set and all future samples.
+ preProc = c("center", "scale"), metric="Accuracy")
+
+# plsFit <- train(hit ~ .,
+# data = training,
+# method = "glm", 
+# tuneLength = 15,
+# trControl = ctrl,
+# metric = "ROC",
+# preProc = c("center", "scale"))
+plsFit
+
 ```
 

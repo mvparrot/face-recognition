@@ -331,6 +331,7 @@ glmPlot %>%
 #have every level and cross level - order combinations by p value
 #function for estimates for each treatment
 #multinomail 
+#add hit or miss column, to utilise caret package
 ```
 
 
