@@ -37,7 +37,7 @@ BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", 
 
 
 #csv files:
-ALLmetaIMG<-read_csv("ALLmetaIMG1.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
 SceneAttributes<-read_csv("TableCSVs/SceneAttributes.csv")
 FaceAttributes<-read_csv("TableCSVs/FaceAttributes.csv")
 SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
