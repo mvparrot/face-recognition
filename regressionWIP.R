@@ -119,9 +119,20 @@ GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
   map(~ glm(model, data = select(., -type, -file, -boxID), binomial(link = "logit")))
 }
 
+ConvertModel2Table <- function(model){
+  model %>%
+    summary %>%
+    coef %>%
+    as.data.frame %>%
+    cbind %>%
+    rownames_to_column %>%
+    cbind %>%
+    dplyr::rename(variable = rowname)
+}
+
 GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
   glmSummary <- data %>% 
-    map(~ dplyr::rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname)) 
+    map(~ ConvertModel2Table(.)) 
   
   glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
   return(glmPlot)
