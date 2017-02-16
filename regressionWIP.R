@@ -166,5 +166,6 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
 }
 
 
-ModelPlotResults(hit ~ glasses + visorhat + bg + visorhat*glasses)
-
+ModelPlotResults(hit ~ . -person)
+a <- GlmModelCreation(hit ~ . -person)
+map(a, ~ .$aic)
