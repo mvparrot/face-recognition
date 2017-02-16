@@ -1,7 +1,5 @@
 # Prepare data
-library(purrr)
 library(tidyverse)
-library(ggplot2)
 library(gridExtra)
 
 
@@ -113,22 +111,23 @@ ALLmetaIMGFacesWide$Microsoft<-as.numeric(ALLmetaIMGFacesWide$Microsoft)
 
 
 
-GlmModelCreation <- function(model) {
-
-  glmFits <- ALLmetaIMGFaces %>% 
+GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
+  glmFits <- data %>% 
   split(.$FaceKey) %>% 
   map_df(~ hitmiss(.)) %>% 
   split(.$type) %>% 
-  map(~ glm(model, data = select(., -type, -file, -boxID), binomial(link = "logit"))) 
-
-glmSummary <- glmFits %>% 
-  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname)) 
-
-return(glmSummary)
+  map(~ glm(model, data = select(., -type, -file, -boxID), binomial(link = "logit")))
 }
 
-SignificancePlot <- function(model, data) {
+GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
+  glmSummary <- data %>% 
+    map(~ dplyr::rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname)) 
   
+  glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
+  return(glmPlot)
+}
+
+SignificancePlot <- function(model, data = GlmModelEstimates(model)) {
   data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
   mutate(`Pr(<|z|)` = 1 - `Pr(>|z|)`) %>%
@@ -138,8 +137,7 @@ SignificancePlot <- function(model, data) {
   facet_wrap(~ variable)
 }
 
-EstimatesPlot <- function(model, data) {
-  
+EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
   data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
   ggplot(aes(x=type, y=Estimate)) +  
@@ -150,17 +148,12 @@ EstimatesPlot <- function(model, data) {
 
 
 
-ModelResults<-function(model){
-  glmSummary<-GlmModelCreation(model)
-  
-  glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
-  
-  
-ep<-EstimatesPlot(model, glmPlot)
-sp<- SignificancePlot(model, glmPlot)
-grid.arrange(ep, sp)
+ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
+  ep<-EstimatesPlot(model, data)
+  sp<- SignificancePlot(model, data)
+  grid.arrange(ep, sp)
 }
 
 
-ModelResults(hit ~ glasses + visorhat + bg + visorhat*glasses)
+ModelPlotResults(hit ~ glasses + visorhat + bg + visorhat*glasses)
 
