@@ -46,19 +46,18 @@ SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
 #plot images with overlaid boxes
 overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
-    
     img <- image_read(paste0("images/", i))
-    
+   
     p <- ggplot(data.frame(x=c(0,800), y=c(0,450)), aes(x,y)) +
       theme_void()+ coord_fixed()+
       annotation_custom(rasterGrob(img)) +
-      scale_x_continuous(expand = c(0,0), limits = c(0,800)) +
-      scale_y_continuous(expand = c(0,0), limits = c(0,450))
+    coord_cartesian(xlim=c(0, 800), ylim=c(0,450)) 
     
     faceData <- ALLmetaIMGFaces %>% filter(file == i)
     
     if(nrow(faceData) == 0){
-      return(p)
+      print(p)
+      next
     } else{
       
       
@@ -75,8 +74,8 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
     }
     else{
       p <- p + geom_path(aes(x=x, y=450-y, group = c(FaceID), colour=type), faceData) + scale_color_manual(values = c(Skybiometry="#ffe093", Microsoft="#5cc3f6", Google="#5cba82", Animetrics="#FF959c", Manual="#db70ff"))
-    }
-  return(p)
+    } 
+  print(p)
   }
 }
 
@@ -102,7 +101,7 @@ ALLmetaIMG$person<-factor(ALLmetaIMG$person, levels = 0:1, labels = c("No Person
 ALLmetaIMG$shotangle<-factor(ALLmetaIMG$shotangle, levels = 0:2, labels = c("Player Shoulder Height", "Birds Eye", "Upward Angle"))
 ALLmetaIMG$situation<-factor(ALLmetaIMG$situation, levels = 0:5, labels = c("Court in play", "Court player close-up", "Court close-up not player", "Crowd", "Off court close up of player", "Transition"))
 
-ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:3, labels = c("Player", "Other staff on court", "Fan", "None"))
+ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:2, labels = c("Player", "Other staff on court", "Fan"))
 ALLmetaIMG$obscured<-factor(ALLmetaIMG$obscured, levels = 0:1, labels = c("No", "Yes"))
 ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 0:2, labels = c("Direct sunlight", "Shaded", "Partially shaded"))
 ALLmetaIMG$headangle<-factor(ALLmetaIMG$headangle, levels = 0:3, labels = c("Front on", "Back of head", "Profile", "Other"))
