@@ -52,8 +52,7 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
     p <- ggplot(data.frame(x=c(0,800), y=c(0,450)), aes(x,y)) +
       theme_void()+ coord_fixed()+
       annotation_custom(rasterGrob(img)) +
-      scale_x_continuous(expand = c(0,0), limits = c(0,800)) +
-      scale_y_continuous(expand = c(0,0), limits = c(0,450))
+      coord_cartesian(xlim=c(0, 800), ylim=c(0,450))
     
     faceData <- ALLmetaIMGFaces %>% filter(file == i)
     
