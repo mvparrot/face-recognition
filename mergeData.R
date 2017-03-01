@@ -137,3 +137,4 @@ ALLmetaIMG <- merge(ALLmetaIMG, fileInfo, by="file")
 #Finding duplicates
 ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
   mutate(duplicates = duplicated(type))
+
