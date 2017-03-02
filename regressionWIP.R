@@ -16,14 +16,12 @@ ALLmetaIMG$situation<-factor(ALLmetaIMG$situation, levels = 0:5, labels = c("Cou
 
 ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:3, labels = c("Player", "Other staff on court", "Fan", "None"))
 ALLmetaIMG$obscured<-factor(ALLmetaIMG$obscured, levels = 0:1, labels = c("No", "Yes"))
-ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 0:2, labels = c("Direct sunlight", "Shaded", "Partially shaded"))
+ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 1:2, labels = c("Shaded", "Partially shaded"))
 ALLmetaIMG$headangle<-factor(ALLmetaIMG$headangle, levels = 0:3, labels = c("Front on", "Back of head", "Profile", "Other"))
 ALLmetaIMG$glasses<-factor(ALLmetaIMG$glasses, levels = 0:1, labels = c("No", "Yes"))
 ALLmetaIMG$visorhat<-factor(ALLmetaIMG$visorhat, levels = 0:1, labels = c("No", "Yes"))
 
-ALLmetaIMG$headangle <- as.character(ALLmetaIMG$headangle)
-ALLmetaIMG$headangle[ALLmetaIMG$headangle == "Back of head"] <- "Other"
-ALLmetaIMG$headangle <- as.factor(ALLmetaIMG$headangle)
+
 
 ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
 
@@ -110,7 +108,6 @@ ALLmetaIMGFacesWide$Skybiometry<-as.numeric(ALLmetaIMGFacesWide$Skybiometry)
 ALLmetaIMGFacesWide$Microsoft<-as.numeric(ALLmetaIMGFacesWide$Microsoft)
 
 
-
 GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
   glmFits <- data %>% 
   split(.$FaceKey) %>% 
@@ -166,6 +163,38 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
 }
 
 
-ModelPlotResults(hit ~ . -person)
-a <- GlmModelCreation(hit ~ . -person)
+#ModelPlotResults(hit ~ . + visorhat*glasses -person)
+a <- GlmModelCreation(hit ~ shotangle + graphic + bg + situation + lighting + glasses + visorhat + visorhat*glasses)
 map(a, ~ .$aic)
+
+#Only better for google by 11 points
+#hit ~ . + visorhat*glasses -person
+
+#Google highest at 3002.235
+#hit ~ graphic + visorhat*glasses -person
+
+#Google still the highest at 2596.151
+#hit ~ situation + visorhat*glasses
+
+# Google 2522
+#hit ~ situation+lighting + visorhat*glasses
+
+# Google 2522
+#hit ~ situation + lighting + glasses + visorhat + visorhat*glasses
+
+#Google 2501.013
+#hit ~ graphic + situation + lighting + glasses + visorhat + visorhat*glasses
+
+# Google 2441
+#hit ~ graphic + bg + situation + lighting + glasses + visorhat + visorhat*glasses
+
+# Google 2436.914
+#hit ~ graphic + shotangle + bg + situation + lighting + glasses + visorhat + visorhat*glasses
+
+#Google  2423.614
+#hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat + visorhat*glasses
+
+a <- GlmModelCreation(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
+map(a, ~ .$)
+
+ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
