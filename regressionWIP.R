@@ -1,7 +1,7 @@
 # Prepare data
 library(tidyverse)
 library(gridExtra)
-
+library(dplyr)
 
 ALLmetaIMG<-read_csv("ALLmetaIMG.csv",
                      col_types = cols(type = col_factor(levels = c("Manual", 
@@ -23,7 +23,7 @@ ALLmetaIMG$visorhat<-factor(ALLmetaIMG$visorhat, levels = 0:1, labels = c("No", 
 
 
 
-ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
+#ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
 
 # change this to facesVenn with binary information
 ALLmetaIMGFaces<-ALLmetaIMG%>%
@@ -97,10 +97,10 @@ hitmiss <- function(x){
 #### 
 # Create new data structure to model from
 
-ALLmetaIMGFacesWide<-ALLmetaIMGFaces %>%
-  split(.$FaceKey) %>%
-  map_df(~ hitmiss(.)) %>%
-  spread(type, hit)
+#ALLmetaIMGFacesWide<-ALLmetaIMGFaces %>%
+#  split(.$FaceKey) %>%
+#  map_df(~ hitmiss(.)) %>%
+#  spread(type, hit)
 
 ALLmetaIMGFacesWide$Animetrics<-as.numeric(ALLmetaIMGFacesWide$Animetrics)
 ALLmetaIMGFacesWide$Google<-as.numeric(ALLmetaIMGFacesWide$Google)
@@ -113,7 +113,7 @@ GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
   split(.$FaceKey) %>% 
   map_df(~ hitmiss(.)) %>% 
   split(.$type) %>% 
-  map(~ glm(model, data = select(., -type, -file, -boxID), binomial(link = "logit")))
+  map(~ glm(model, data = dplyr::select(., -type, -file, -boxID), binomial(link = "logit")))
 }
 
 ConvertModel2Table <- function(model){
@@ -155,7 +155,6 @@ EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
 }
 
 
-
 ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
   ep<-EstimatesPlot(model, data)
   sp<- SignificancePlot(model, data)
@@ -164,37 +163,14 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
 
 
 #ModelPlotResults(hit ~ . + visorhat*glasses -person)
-a <- GlmModelCreation(hit ~ shotangle + graphic + bg + situation + lighting + glasses + visorhat + visorhat*glasses)
+a <- GlmModelCreation(hit ~ graphic + visorhat*glasses -person)
+
 map(a, ~ .$aic)
 
-#Only better for google by 11 points
-#hit ~ . + visorhat*glasses -person
-
-#Google highest at 3002.235
-#hit ~ graphic + visorhat*glasses -person
-
-#Google still the highest at 2596.151
-#hit ~ situation + visorhat*glasses
-
-# Google 2522
-#hit ~ situation+lighting + visorhat*glasses
-
-# Google 2522
-#hit ~ situation + lighting + glasses + visorhat + visorhat*glasses
-
-#Google 2501.013
-#hit ~ graphic + situation + lighting + glasses + visorhat + visorhat*glasses
-
-# Google 2441
-#hit ~ graphic + bg + situation + lighting + glasses + visorhat + visorhat*glasses
-
-# Google 2436.914
-#hit ~ graphic + shotangle + bg + situation + lighting + glasses + visorhat + visorhat*glasses
-
-#Google  2423.614
+#Google  2455.407
 #hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat + visorhat*glasses
 
 a <- GlmModelCreation(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
-map(a, ~ .$)
+a$Google$aic
 
 ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)

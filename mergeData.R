@@ -13,10 +13,10 @@ ManualClassifiedFaces <- read.csv("ManualClassifiedFaces.csv")
 ManualClassifiedScenes <- read.csv("ManualClassifiedScenes.csv")
 
 #Check all equal length
-length(unique(ManualClassifiedScenes$file))
-length(unique(AnimetricsClassifiedFaces$file))
-length(unique(SkybiometryClassifiedFaces$file))
-length(unique(GoogleClassifiedFaces$file))
+#length(unique(ManualClassifiedScenes$file))
+#length(unique(AnimetricsClassifiedFaces$file))
+#length(unique(SkybiometryClassifiedFaces$file))
+#length(unique(GoogleClassifiedFaces$file))
 
 #Remove images with no faces
 MicrosoftClassifiedFaces <- MicrosoftClassifiedFaces[!is.na(MicrosoftClassifiedFaces$faceRectangle.top),]
@@ -33,17 +33,17 @@ MicrosoftMerge <- MicrosoftClassifiedFaces %>%
   mutate(type = "Microsoft", ID=NA,
          minX = faceRectangle.left, maxX = faceRectangle.left + faceRectangle.width,
          minY = faceRectangle.top, maxY = faceRectangle.top + faceRectangle.height) %>%
-  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)# %>% filter(file=="2016_RLA_R01_JDuckworth_AUS_vs_LHewitt_AUS_MS150_clip.0056.png")  
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)  
 AnimetricsMerge <- AnimetricsClassifiedFaces %>%
   mutate(type = "Animetrics",  ID=NA,
          minX = topLeftX, maxX = topLeftX + width,
          minY = topLeftY, maxY = topLeftY + height) %>%
-  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY) #%>% filter(file=="2016_RLA_R01_JDuckworth_AUS_vs_LHewitt_AUS_MS150_clip.0056.png")  
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)  
 SkyBiometryMerge <- SkybiometryClassifiedFaces %>% 
   mutate(type = "Skybiometry", ID=NA,
          minX = (center.x - width/2)*8, maxX = (center.x + width/2)*8,
          minY = (center.y - height/2)*4.5, maxY = (center.y + height/2)*4.5) %>%
-  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY) #%>% filter(file=="2016_RLA_R01_JDuckworth_AUS_vs_LHewitt_AUS_MS150_clip.0056.png")  
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)  
 GoogleMerge <- GoogleClassifiedFaces %>% 
   rowwise() %>%
   mutate(type = "Google", ID=NA,
@@ -51,7 +51,7 @@ GoogleMerge <- GoogleClassifiedFaces %>%
          minY = min(boundingPoly.y1, boundingPoly.y2), maxY = min(boundingPoly.y3, boundingPoly.y4)) %>%
   ungroup() %>%
   mutate(minX = ifelse(is.na(minX), 0, minX), minY = ifelse(is.na(minY), 0, minY)) %>%
-  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY)#%>% filter(file=="2016_RLA_R01_JDuckworth_AUS_vs_LHewitt_AUS_MS150_clip.0056.png")  
+  dplyr::select(file, type, ID, time.user.self, time.sys.self, time.elapsed, minX, maxX, minY, maxY) 
 ManualMerge <- ManualClassifiedFaces %>%
   mutate(type = "Manual")%>%
   rename(minX = xmin, maxX = xmax,

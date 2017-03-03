@@ -3,9 +3,11 @@ title: "Detecting Facial Expressions in Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalcik"
 date: "13 February 2017"
 output: bookdown::pdf_document2
+fig_caption: yes
 fontsize: 11pt
 documentclass: article
 bibliography: references.bib
+link_citations: yes
 ---
 
 
@@ -269,17 +271,21 @@ However, individual faces are not beneficial if they do not correspond to the fa
 
 ## Regression 
 
-
 This shows how influential certain attributes are in determining whether a face will be detected or not.
 
-Regression analysis showed that the situation attribute of an image was most influential in increasing the likelihood of a hit.
-And head angle was most influential in decreasing.
+Regression analysis showed that the situation variable had significant differences between all levels and the interecept level of "Court in Play".
 
-```{r}
+ The bar charts of the situations show that the situation is important in influencing the detection of a face. When the face is accessorised with them, all softwares have a significantly increased chance of finding the face in comparison to the base rate category of the "Court in Play". While the image being a Graphic had a large impact it was not significant, this is likely because of the small number of images with this attribute. It also shows that the shot angle is only significant for one or two softwares at each level.
+ 
+
+```{r Regression, fig.height=9.5, fig.width=7.5, fig.cap = "\\label{Regression} "}
 # Prepare data
 library(purrr)
+library(tidyverse)
+library(gridExtra)
 library(dplyr)
 library(ggplot2)
+
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
   hit <- allType %in% x$type
@@ -288,86 +294,68 @@ hitmiss <- function(x){
     cbind(type = allType, hit = hit)
 }
 
-glmFits <- ALLmetaIMGFaces %>%
-  split(.$FaceKey) %>%
-  map_df(~ hitmiss(.)) %>%
-  split(.$type) %>%
-  map(~ glm(hit ~ . + visorhat*glasses, data = select(., -type, -file), binomial(link = "logit")))
 
-glmSummary <- glmFits %>%
-  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname))
+GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
+  glmFits <- data %>% 
+  split(.$FaceKey) %>% 
+  map_df(~ hitmiss(.)) %>% 
+  split(.$type) %>% 
+  map(~ glm(model, data = dplyr::select(., -type, -file, -boxID), binomial(link = "logit")))
+}
 
-glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary)))
 
-```
+ConvertModel2Table <- function(model){
+  model %>%
+    summary %>%
+    coef %>%
+    as.data.frame %>%
+    cbind %>%
+    rownames_to_column %>%
+    cbind %>%
+    dplyr::rename(variable = rowname)
+}
 
-```{r, Regression-Significance-Plot, fig.cap = "\\label{Regression--Significance-Plot}"}
-## Significance of variables by software
-glmPlot %>%
+GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
+  glmSummary <- data %>% 
+    map(~ ConvertModel2Table(.)) 
+  
+  glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
+  return(glmPlot)
+}
+
+SignificancePlot <- function(model, data = GlmModelEstimates(model)) {
+  data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
   mutate(`Pr(<|z|)` = 1 - `Pr(>|z|)`) %>%
-  ggplot(aes(x=type, y=`Pr(<|z|)`)) + 
-  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ggplot(aes(x=type, y=`Pr(<|z|)`)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
   geom_col(aes(fill=significant)) + 
   facet_wrap(~ variable)
-```
+}
 
-The bar chart of the interaction of Glasses and Visors in \@ref(Regression--Significance-Plot) or Hats shows that when the face is accessorised with both, Google has a significantly increased chance of finding the face 
-
-```{r, Regression-Estimates-Plot, fig.cap = "\\label{Regression--Estimates-Plot}"}
-## Significance of Estimated variable influences by software
-glmPlot %>%
+EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
+  data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
-  ggplot(aes(x=type, y=Estimate)) + 
-  theme(axis.text.x = element_text(angle = 60, hjust = 1)) +
+  ggplot(aes(x=type, y=Estimate)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1), 
+        axis.text.y = element_text(angle = 30, hjust = 1)) +
   geom_col(aes(fill=significant)) + 
   facet_wrap(~ variable, scales = "free_y")
+}
 
-#parallel coordinate plot, vars on x????
-#unpack intercept
-#don't force to zero
-#convert into full model decription - every single level combination
-#have every level and cross level - order combinations by p value
-#function for estimates for each treatment
-#multinomail 
-#add hit or miss column, to utilise caret package
+
+ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
+  ep<-EstimatesPlot(model, data)
+  sp<- SignificancePlot(model, data)
+  grid.arrange(ep, sp)
+}
+
+ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
+
 ```
 
-
-
-```{r Regression-Situation-Table, fig.cap = "\\label{Regression-Situation-Table}"}
-
-RegSituation<-glmPlot %>% subset(grepl("situation*", variable)) %>% select(variable, Estimate, type)
-
-#RegSituation
-
-
-data_wide <- spread(RegSituation, variable, Estimate)
-
-names(data_wide)[names(data_wide)=="situationCourt player close-up"] <- "Court player close-up"
-names(data_wide)[names(data_wide)=="situationCrowd"] <- "Crowd"
-names(data_wide)[names(data_wide)=="situationOff court close up of player"] <- "Off court close up of player"
-names(data_wide)[names(data_wide)=="situationCourt close-up not player"] <- "Court close-up not player"
-
-kable(data_wide, format = "markdown", booktabs = TRUE, caption = "")
-```
-
-
-
-```{r Regression-Angle-Table, fig.cap = "\\label{Regression-Angle-Table}"}
-
-RegHeadAngle<-glmPlot %>% subset(grepl("headangle*", variable)) %>% select(variable, Estimate, type)
-
-#RegSituation
-
-
-data_wideHead <- spread(RegHeadAngle, variable, Estimate)
-
-names(data_wideHead)[names(data_wideHead)=="headangleOther"] <- "Other"
-names(data_wideHead)[names(data_wideHead)=="headangleProfile"] <- "Profile"
-
-kable(data_wideHead, format = "markdown", booktabs = TRUE, caption = "")
-```
+A stepwise method was used to determin the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Back Ground, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken.
+It also included the lighting on the particular face, and whether the specific face was accessorised with Glasses and a Visor or Hat. 
 
 
 
@@ -643,14 +631,6 @@ Given that certain Scene attribute combinations produced more facial recognition
 
 To undertake sentiment analysis, we would take the boxes of faces found in this set of images. Allowing each face a border of pixels, we would crop the images and produce an individual face image that would form the data set for emotion recognition.
 We also feel that incorporating audio information from the microphones worn by players may assist in sentiment analysis. By including this information we would be able to define differences between certain emotions that may not be able to be found by facial features only.
-
-
-
-
-
-
-
-
 
 
 
