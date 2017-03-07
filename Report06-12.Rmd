@@ -7,7 +7,8 @@ fig_caption: yes
 fontsize: 11pt
 documentclass: article
 bibliography: references.bib
-link_citations: yes
+biblio-style: apalike
+link-citations: true
 ---
 
 
@@ -202,7 +203,7 @@ These manual Classifications involved describing the features of the Scenes.
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-kable(SceneAttributes, format = "markdown", booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
+knitr::kable(SceneAttributes, format = "markdown", longtable=TRUE, booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
 ```
 
 
@@ -213,7 +214,7 @@ The aim was to collect specific information on each different face within the sc
 
 
 ```{r Solution-Specifications-Table, fig.cap = "\\label{tab:Solution-Specifications-Table}", results='asis',}
-kable(SolutionSpecs, format = "markdown", booktabs = TRUE, caption="")
+knitr::kable(SolutionSpecs, format = "markdown", longtable=TRUE, booktabs = TRUE, caption="")
 ```
  
 
@@ -225,7 +226,7 @@ The same face size standard applied to crowd members, but focus was placed on th
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "Attributes of an individual face within an image. The most appropriate option from the list was selected for each attribute.\\label{tab:Face-Attribute-Tables}"}
-kable(FaceAttributes, format = "markdown", booktabs = TRUE)
+knitr::kable(FaceAttributes, format = "markdown", longtable=TRUE, booktabs = TRUE)
 ```
 
 
@@ -411,7 +412,7 @@ We then considered the characteristics of the images that the software found Pot
 ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:10,]
-kable(ImageCharacteristics, booktabs = TRUE, caption="", format = "markdown")
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="", format = "markdown")
 ```
 
 
@@ -440,7 +441,7 @@ GoogleNoMatch <- ALLmetaIMG %>%
 #GoogleImages<-as.list(GoogleImages)
 
 GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
-kable(GoogleNoMatch[1:10,], caption="", format = "markdown")
+knitr::kable(GoogleNoMatch[1:10,], caption="", longtable=TRUE, format = "markdown")
 
 #overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
 ```
@@ -463,7 +464,7 @@ FaceCharacteristics <- ALLmetaIMGPlayers %>%
 
 FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
 FaceCharacteristics<-as.tbl(FaceCharacteristics[1:10,])
-kable(FaceCharacteristics, caption="", format = "markdown")
+knitr::kable(FaceCharacteristics, caption="", longtable=TRUE, format = "markdown")
 ```
 
 
@@ -518,7 +519,7 @@ Table 3= Evaluate the performance: what is the overall accuracy of each algorith
 
 ```{r Accuracy}
 Accuracy<-with(ALLmetaIMG, table(ALLmetaIMG$matchesManual, ALLmetaIMG$type))
-kable(Accuracy, caption="", format = "markdown")
+knitr::kable(Accuracy, caption="", longtable=TRUE, format = "markdown")
 # make this a proportional table, would this be necessary if we have the UpSetR
 ```
 
@@ -535,7 +536,7 @@ Table 4 = Identify possible explanatory factors to performance; Does accuracy va
 GoogleCharacteristics <- ALLmetaIMG %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
 
-kable(GoogleCharacteristics, format = "markdown", booktabs = TRUE, caption="")
+knitr::kable(GoogleCharacteristics, format = "markdown", longtable=TRUE, booktabs = TRUE, caption="")
 ```
 
 
