@@ -138,3 +138,5 @@ ALLmetaIMG <- merge(ALLmetaIMG, fileInfo, by="file")
 ALLmetaIMG <- ALLmetaIMG %>% group_by(file, boxID) %>%
   mutate(duplicates = duplicated(type))
 
+
+#write.csv(ALLmetaIMG,file = "ALLmetaIMG.csv")
