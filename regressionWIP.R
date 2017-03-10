@@ -45,17 +45,16 @@ hitmiss <- function(x){
     cbind(type = allType, hit = hit)
 }
 
-#glmFits <- ALLmetaIMGFaces %>% 
-#  split(.$FaceKey) %>% 
-#  map_df(~ hitmiss(.)) %>% 
-#  split(.$type) %>% 
-#  map(~ glm(hit ~ . + visorhat*glasses, data = select(., -type, -file, -boxID), binomial(link = "logit"))) 
-#
-#glmSummary <- glmFits %>% 
-#  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname)) 
-#
-#glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
+glmFits <- ALLmetaIMGFaces %>% 
+  split(.$FaceKey) %>% 
+  map_df(~ hitmiss(.)) %>% 
+  split(.$type) %>% 
+  map(~ glm(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat, data = select(., -type, -file, -boxID), binomial(link = "logit"))) 
 
+glmSummary <- glmFits %>% 
+  map(~ rename(cbind(rownames_to_column(cbind(as.data.frame(coef(summary(.)))))), variable = rowname)) 
+
+glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
 
 # Graphs
 ## Coefficient of variables by software
@@ -174,3 +173,6 @@ a <- GlmModelCreation(hit ~ shotangle + bg + bg*shotangle + graphic + situation 
 a$Google$aic
 
 ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
+
+
+
