@@ -40,7 +40,7 @@ BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", 
 
 
 #csv files:
-ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+ALLmetaIMGnamed<-read_csv("ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
 SceneAttributes<-read_csv("TableCSVs/SceneAttributes.csv")
 FaceAttributes<-read_csv("TableCSVs/FaceAttributes.csv")
 SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
@@ -56,7 +56,7 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
       annotation_custom(rasterGrob(img)) +
       coord_cartesian(xlim=c(0, 800), ylim=c(0,450))
     
-    faceData <- ALLmetaIMGFaces %>% filter(file == i)
+    faceData <- ALLmetaIMGnamedFaces %>% filter(file == i)
     
     if(nrow(faceData) == 0){
       print(p)
@@ -97,29 +97,11 @@ ggplotProportion <- function(dataset, factorVar){
 
 
 
-#Factor Names 
-ALLmetaIMG$graphic<-factor(ALLmetaIMG$graphic, levels = 0:1, labels = c("Live image", "Graphic"))
-ALLmetaIMG$person<-factor(ALLmetaIMG$person, levels = 0:1, labels = c("No Person", "Person"))
-ALLmetaIMG$situation<-factor(ALLmetaIMG$situation, levels = 0:5, labels = c("Court in play", "Court player close-up", "Court close-up not player", "Crowd", "Off court close up of player", "Transition"))
-ALLmetaIMG$bg<-factor(ALLmetaIMG$bg, levels = 0:3, labels = c("Crowd", "Court", "Logo wall", "Not applicable"))
-ALLmetaIMG$shotangle<-factor(ALLmetaIMG$shotangle, levels = 0:2, labels = c("Player Shoulder Height", "Birds Eye", "Upward Angle"))
-
-ALLmetaIMG$detect<-factor(ALLmetaIMG$detect, levels = 0:2, labels = c("Player", "Other staff on court", "Fan"))
-ALLmetaIMG$obscured<-factor(ALLmetaIMG$obscured, levels = 0:1, labels = c("No", "Yes"))
-ALLmetaIMG$lighting<-factor(ALLmetaIMG$lighting, levels = 1:2, labels = c("Shaded", "Partially shaded"))
-ALLmetaIMG$headangle<-factor(ALLmetaIMG$headangle, levels = 0:3, labels = c("Front on", "Back of head", "Profile", "Other"))
-ALLmetaIMG$glasses<-factor(ALLmetaIMG$glasses, levels = 0:1, labels = c("No", "Yes"))
-ALLmetaIMG$visorhat<-factor(ALLmetaIMG$visorhat, levels = 0:1, labels = c("No", "Yes"))
-
-ALLmetaIMG$headangle <- as.character(ALLmetaIMG$headangle)
-ALLmetaIMG$headangle[ALLmetaIMG$headangle == "Back of head"] <- "Other"
-ALLmetaIMG$headangle <- as.factor(ALLmetaIMG$headangle)
-
-ALLmetaIMGPlayers<- ALLmetaIMG %>% filter(detect=="Player")
+ALLmetaIMGPlayers<- ALLmetaIMGnamed %>% filter(detect=="Player")
 
 # change this to facesVenn with binary information
-ALLmetaIMGFaces<-ALLmetaIMG%>%
-  filter(matchesManual) %>% 
+ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
+  #filter(matchesManual) %>% 
   dplyr::select(-ID, -facecounter)%>%
   mutate(fileID = as.numeric(factor(file))) %>%
   mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
@@ -193,7 +175,7 @@ We were able to try the online demos to see whether these software were viable, 
 
 ```{r Trial-Image, fig.cap = "Initial Image Used For Testing\\label{Trial-Image}", message=TRUE, warning=TRUE}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
-overlayGgplot(imagesList0, ALLmetaIMGFaces, matchBox = FALSE)
+overlayGgplot(imagesList0, ALLmetaIMGnamedFaces, matchBox = FALSE)
 ```
 
 
@@ -203,7 +185,7 @@ These manual Classifications involved describing the features of the Scenes.
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-knitr::kable(SceneAttributes, format = "markdown", longtable=TRUE, booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
+knitr::kable(SceneAttributes, format = "latex", longtable=TRUE, booktabs = TRUE, caption = "Attributes of a Scene of an image. The most appropriate option from the list was selected for each attribute.")
 ```
 
 
@@ -213,8 +195,8 @@ The aim was to collect specific information on each different face within the sc
 
 
 
-```{r Solution-Specifications-Table, fig.cap = "\\label{tab:Solution-Specifications-Table}", results='asis',}
-knitr::kable(SolutionSpecs, format = "markdown", longtable=TRUE, booktabs = TRUE, caption="")
+```{r Solution-Specifications-Table, fig.cap = "\\label{tab:Solution-Specifications-Table}", results='asis'}
+knitr::kable(SolutionSpecs, format = "latex", longtable=TRUE, booktabs = TRUE, caption="")
 ```
  
 
@@ -226,7 +208,7 @@ The same face size standard applied to crowd members, but focus was placed on th
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "Attributes of an individual face within an image. The most appropriate option from the list was selected for each attribute.\\label{tab:Face-Attribute-Tables}"}
-knitr::kable(FaceAttributes, format = "markdown", longtable=TRUE, booktabs = TRUE)
+knitr::kable(FaceAttributes, format = "latex", longtable=TRUE, booktabs = TRUE)
 ```
 
 
@@ -263,7 +245,7 @@ This function uses the information of each face and compares the intersecting re
 
 ####Analysis
 
-Using the data set^[ALLmetaIMG] of the combined API and manual results, we were able to compare the performance of the software.
+Using the data set^[ALLmetaIMGnamed] of the combined API and manual results, we were able to compare the performance of the software.
 Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(Face-Bounding-Box-Data).
 
 
@@ -296,7 +278,7 @@ hitmiss <- function(x){
 }
 
 
-GlmModelCreation <- function(model, data = ALLmetaIMGFaces) {
+GlmModelCreation <- function(model, data = ALLmetaIMGnamedFaces) {
   glmFits <- data %>% 
   split(.$FaceKey) %>% 
   map_df(~ hitmiss(.)) %>% 
@@ -364,7 +346,7 @@ It also included the lighting on the particular face, and whether the specific f
 
 
 ```{r Face-Bounding-Box-Data, results='hide', fig.cap = "\\label{Face-Bounding-Box-Data} Face Bounding Boxes Per Software: The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more faces than the next best software, Microsoft."}
-ggplot(ALLmetaIMG, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE) + labs(caption="")
+ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) + geom_bar(position="dodge") +xlab("Facial Recognition Softwares")+scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +ylab("Number of Potential Faces") + guides(fill=FALSE) + labs(caption="")
 ```
 
 
@@ -374,14 +356,14 @@ The sample used contains all the manually annotated faces and all the faces reco
 
 
 ```{r Face-Bounding-Box-UpSet, fig.cap = "\\label{Face-Bounding-Box-Upset} Face Bounding Boxes Per Software Combination. The Bar Chart shows the Face Bounding Boxes that were recognised by multiple software. The largest group with 809 faces is Face Bounding Boxes only found by Manual annotations. The following group was Boxes representing the same faces being recognized by both Manual annotations and the Google API."}
-createUpSet(ALLmetaIMGFaces)
+createUpSet(ALLmetaIMGnamedFaces)
 ```
 
 
 
 ```{r I3, results=TRUE, fig.cap = "\\label{fig:I3} There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face."}
 imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
-overlayGgplot(imagesList3, ALLmetaIMGFaces, matchBox = FALSE)
+overlayGgplot(imagesList3, ALLmetaIMGnamedFaces, matchBox = FALSE)
 ```
 
 
@@ -390,7 +372,7 @@ To consider how many Type I errors occurred, where a face was detected incorrect
 
 
 ```{r Type-Matches-Manual, fig.cap = "\\label{tab:Type-Matches-Manual}"}
-NoManual<-ALLmetaIMG %>% filter(ALLmetaIMG$type!="Manual")
+NoManual<-ALLmetaIMGnamed %>% filter(ALLmetaIMGnamed$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type) 
 Accuracy<-with(NoManual, table(NoManual$matchesManual, NoManual$type))
 ct<-CrossTable(Accuracy, prop.chisq = FALSE, cell.layout = TRUE, digits=4)
@@ -409,10 +391,10 @@ We then considered the characteristics of the images that the software found Pot
 
 
 ```{r Image-Characteristics-Table, fig.cap = "\\label{tab:Image-Characteristics-Table}"}
-ImageCharacteristics <- ALLmetaIMG %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+ImageCharacteristics <- ALLmetaIMGnamed %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:10,]
-knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="", format = "markdown")
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="", format = "latex")
 ```
 
 
@@ -422,16 +404,18 @@ The second row in the table with 830 faces recognized is more interesting than t
 
 These attributes typically represent an image similar to the following:
 
+
 ```{r Typical-Best-Recognised, results=FALSE, fig.cap = "\\label{fig:Typical-Best-Recognised}"}
 imagesList1<-as.list("2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0013.png")
-overlayGgplot(imagesList1, ALLmetaIMG, matchBox = FALSE)
+overlayGgplot(imagesList1, ALLmetaIMGnamed, matchBox = FALSE)
 ```
+
 
 
 ```{r Google-Errors-Characteristics-Table, fig.cap = "\\label{tab:Google-Errors-Characteristics-Table}"}
 library(dplyr)
 
-GoogleNoMatch <- ALLmetaIMG %>%
+GoogleNoMatch <- ALLmetaIMGnamed %>%
   filter(type=="Google") %>%
   filter(matchesManual==FALSE) %>%
   group_by(person, situation, bg, shotangle) %>% dplyr::summarise(count=n())
@@ -441,7 +425,7 @@ GoogleNoMatch <- ALLmetaIMG %>%
 #GoogleImages<-as.list(GoogleImages)
 
 GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
-knitr::kable(GoogleNoMatch[1:10,], caption="", longtable=TRUE, format = "markdown")
+knitr::kable(GoogleNoMatch[1:10,], caption="", longtable=TRUE, format = "latex")
 
 #overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
 ```
@@ -464,7 +448,7 @@ FaceCharacteristics <- ALLmetaIMGPlayers %>%
 
 FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
 FaceCharacteristics<-as.tbl(FaceCharacteristics[1:10,])
-knitr::kable(FaceCharacteristics, caption="", longtable=TRUE, format = "markdown")
+knitr::kable(FaceCharacteristics, caption="", longtable=TRUE, format = "latex")
 ```
 
 
@@ -476,7 +460,7 @@ for nine of the top ten facial characteristic combinations.
 
 
 ```{r Glasses, fig.cap = "\\label{tab:Glasses} This table shows the amount of faces recognised by google wearing glasses. The strong disparity between the amount of faces with glasses to faces without them means that the occurrence of these attributes across the software must be considered proportionally."}
-GlassesGoogle <- ALLmetaIMGFaces %>% filter(type=="Google") %>%
+GlassesGoogle <- ALLmetaIMGnamedFaces %>% filter(type=="Google") %>%
 filter(matchesManual==TRUE)
 pander(table(GlassesGoogle$glasses))
 ```
@@ -518,8 +502,8 @@ Table 3= Evaluate the performance: what is the overall accuracy of each algorith
   
 
 ```{r Accuracy}
-Accuracy<-with(ALLmetaIMG, table(ALLmetaIMG$matchesManual, ALLmetaIMG$type))
-knitr::kable(Accuracy, caption="", longtable=TRUE, format = "markdown")
+Accuracy<-with(ALLmetaIMGnamed, table(ALLmetaIMGnamed$matchesManual, ALLmetaIMGnamed$type))
+knitr::kable(Accuracy, caption="", longtable=TRUE, format = "latex")
 # make this a proportional table, would this be necessary if we have the UpSetR
 ```
 
@@ -533,10 +517,10 @@ Table 4 = Identify possible explanatory factors to performance; Does accuracy va
 
 
 ```{r Google-Characteristics-Table, fig.cap = "\\label{tab:Google-Characteristics-Table}"}
-GoogleCharacteristics <- ALLmetaIMG %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+GoogleCharacteristics <- ALLmetaIMGnamed %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
 
-knitr::kable(GoogleCharacteristics, format = "markdown", longtable=TRUE, booktabs = TRUE, caption="")
+knitr::kable(GoogleCharacteristics, format = "latex", longtable=TRUE, booktabs = TRUE, caption="")
 ```
 
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  6 MAR 2017 21:31
+This is pdfTeX, Version 3.14159265-2.6-1.40.17 (MiKTeX 2.9.6100 64-bit) (preloaded format=pdflatex 2016.11.25)  13 MAR 2017 15:16
 entering extended mode
 **./Report06-12.tex
 (Report06-12.tex
@@ -821,6 +821,9 @@ Package: titling 2009/09/04 v2.1d maketitle typesetting
 LaTeX Warning: Label `fig:I3' multiply defined.
 
 
+LaTeX Warning: Label `fig:Typical-Best-Recognised' multiply defined.
+
+
 LaTeX Warning: Label `fig:Glasses-Figure' multiply defined.
 
 
@@ -997,32 +1000,32 @@ Package pdftex.def Info: Report06-12_files/figure-latex/Trial-Image-1.pdf used
 on input line 230.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-Overfull \hbox (1.86403pt too wide) in paragraph at lines 242--244
+Overfull \hbox (1.86403pt too wide) in paragraph at lines 243--245
 []|\T1/lmr/m/n/10.95 (-20) Attribute|  
  []
 
 
-Overfull \hbox (13.63779pt too wide) in paragraph at lines 254--256
+Overfull \hbox (13.63779pt too wide) in paragraph at lines 255--257
 []|\T1/lmr/m/n/10.95 (-20) Background|  
  []
 
 [3 <./Report06-12_files/figure-latex/Trial-Image-1.pdf>]
 
 LaTeX Warning: Reference `tab:Solution-Specifications-Table' on page 4 undefine
-d on input line 282.
+d on input line 283.
 
 [4]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <9> on input line 356.
+(Font)              <9> on input line 357.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 356.
+(Font)              <5> on input line 357.
 [5]
 <Report06-12_files/figure-latex/Regression-1.pdf, id=123, 542.025pt x 686.565pt
 >
 File: Report06-12_files/figure-latex/Regression-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/Regression-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Regression-1.pdf used o
-n input line 480.
+n input line 481.
 (pdftex.def)             Requested size: 469.77148pt x 595.04388pt.
 [6]
 <Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf, id=135, 469.755pt
@@ -1031,7 +1034,7 @@ File: Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf Graphic file
 (type pdf)
 <use Report06-12_files/figure-latex/Face-Bounding-Box-Data-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-Data-
-1.pdf used on input line 496.
+1.pdf used on input line 497.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
 <Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf, id=136, 469.755p
@@ -1040,22 +1043,22 @@ File: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Face-Bounding-Box-UpSet-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Face-Bounding-Box-UpSet
--1.pdf used on input line 513.
+-1.pdf used on input line 514.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 <Report06-12_files/figure-latex/I3-1.pdf, id=137, 469.755pt x 325.215pt>
 File: Report06-12_files/figure-latex/I3-1.pdf Graphic file (type pdf)
 <use Report06-12_files/figure-latex/I3-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/I3-1.pdf used on input 
-line 524.
+line 525.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
-LaTeX Font Info:    Try loading font information for T1+lmtt on input line 534.
+LaTeX Font Info:    Try loading font information for T1+lmtt on input line 535.
 
 ("C:\Program Files\MiKTeX 2.9\tex\latex\lm\t1lmtt.fd"
 File: t1lmtt.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 
 LaTeX Warning: Reference `Type-Matches-Manual' on page 7 undefined on input lin
-e 561.
+e 552.
 
 [7] [8 <./Report06-12_files/figure-latex/Regression-1.pdf>] [9 <./Report06-12_f
 iles/figure-latex/Face-Bounding-Box-Data-1.pdf>] [10 <./Report06-12_files/figur
@@ -1063,29 +1066,29 @@ e-latex/Face-Bounding-Box-UpSet-1.pdf>] [11 <./Report06-12_files/figure-latex/I
 3-1.pdf>]
 
 LaTeX Warning: Reference `Image-Characteristics-Table' on page 12 undefined on 
-input line 708.
+input line 699.
 
 
-<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=189, 469.755p
+<Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf, id=191, 469.755p
 t x 325.215pt>
 File: Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf Graphic file
  (type pdf)
 <use Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Typical-Best-Recognised
--1.pdf used on input line 719.
+-1.pdf used on input line 710.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
+
+LaTeX Warning: Reference `Google-Errors-Characteristics-Table' on page 12 undef
+ined on input line 732.
+
+
+LaTeX Warning: Reference `Face-Characteristics-Table' on page 12 undefined on i
+nput line 740.
+
 [12] [13 <./Report06-12_files/figure-latex/Typical-Best-Recognised-1.pdf>]
 
-LaTeX Warning: Reference `Google-Errors-Characteristics-Table' on page 14 undef
-ined on input line 741.
-
-
 LaTeX Warning: Reference `Face-Characteristics-Table' on page 14 undefined on i
-nput line 749.
-
-
-LaTeX Warning: Reference `Face-Characteristics-Table' on page 14 undefined on i
-nput line 774.
+nput line 765.
 
 
 <Report06-12_files/figure-latex/Glasses-Figure-1.pdf, id=210, 469.755pt x 325.2
@@ -1094,10 +1097,10 @@ File: Report06-12_files/figure-latex/Glasses-Figure-1.pdf Graphic file (type pd
 f)
 <use Report06-12_files/figure-latex/Glasses-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Glasses-Figure-1.pdf us
-ed on input line 800.
+ed on input line 791.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 
-LaTeX Warning: Reference `HeadAngles' on page 14 undefined on input line 828.
+LaTeX Warning: Reference `HeadAngles' on page 14 undefined on input line 819.
 
 
 <Report06-12_files/figure-latex/Headangle-Figure-1.pdf, id=211, 469.755pt x 325
@@ -1106,21 +1109,21 @@ File: Report06-12_files/figure-latex/Headangle-Figure-1.pdf Graphic file (type
 pdf)
 <use Report06-12_files/figure-latex/Headangle-Figure-1.pdf>
 Package pdftex.def Info: Report06-12_files/figure-latex/Headangle-Figure-1.pdf 
-used on input line 835.
+used on input line 826.
 (pdftex.def)             Requested size: 469.75386pt x 325.2142pt.
 [14] [15 <./Report06-12_files/figure-latex/Glasses-Figure-1.pdf>] [16 <./Report
 06-12_files/figure-latex/Headangle-Figure-1.pdf>]
 
 LaTeX Warning: Reference `Google-Characteristics-Table' on page 17 undefined on
- input line 886.
+ input line 877.
 
 [17] [18] [19]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1068.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 1059.
 [20]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 1068.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 1059.
 (Report06-12.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1068.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1068.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 1059.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 1059.
 
 Package rerunfilecheck Info: File `Report06-12.out' has not changed.
 (rerunfilecheck)             Checksum: D75586249F7E4D4774E77E8558ED75A6;702.
@@ -1130,16 +1133,16 @@ LaTeX Warning: There were undefined references.
 
 LaTeX Warning: There were multiply-defined labels.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1068.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 1059.
  ) 
 Here is how much of TeX's memory you used:
- 12734 strings out of 493329
- 184557 string characters out of 3139062
- 294033 words of memory out of 3000000
- 15901 multiletter control sequences out of 15000+200000
+ 12735 strings out of 493329
+ 184574 string characters out of 3139062
+ 300085 words of memory out of 3000000
+ 15902 multiletter control sequences out of 15000+200000
  68741 words of font info for 108 fonts, out of 3000000 for 9000
  1141 hyphenation exceptions out of 8191
- 32i,8n,38p,474b,439s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 32i,8n,38p,474b,437s stack positions out of 5000i,500n,10000p,200000b,50000s
 {C:/Program Files/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program Files/M
 iKTeX 2.9/fonts/enc/dvips/lm/lm-ts1.enc}<C:/Program Files/MiKTeX 2.9/fonts/type
 1/public/lm/lmbx10.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmbx1
@@ -1150,7 +1153,7 @@ m/lmr8.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/public/lm/lmr9.pfb><C:/Prog
 ram Files/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Program Files/MiKTeX 
 2.9/fonts/type1/public/lm/lmri12.pfb><C:/Program Files/MiKTeX 2.9/fonts/type1/p
 ublic/lm/lmtt10.pfb>
-Output written on Report06-12.pdf (20 pages, 1865120 bytes).
+Output written on Report06-12.pdf (20 pages, 1864509 bytes).
 PDF statistics:
  322 PDF objects out of 1000 (max. 8388607)
  74 named destinations out of 1000 (max. 500000)
