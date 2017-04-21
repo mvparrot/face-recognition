@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "pure-karma-163023",
+  "private_key_id": "a1e934c04ce3ea03dcb705751394d9136a79fb67",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDIUbmcFXTChjND\nXtgRAD5BZNZ2/xb8Of09qJ6EXWSmyd1TGSCbW0vQUqZAsRigcMIDAKwCr53Tev1S\nv10Pv+IXAjDKd0jyb7G/DhvH60cDSaqcGEbhtHf1AQBnHK61yPapKg8SFru5t1Jb\nFTBRwgLngW4jmsxd/xmhWvPse7m3xdfx+I9uyBnCNf/EHvPEAjC3jchxFW+v7S/U\nxWtA1TuEf75e7Xp3qZsF5EChqLJYUjj/BCAuRUXEyCbbPvCHXRUpj0Fr0FNgNnpd\nXoVR8K/CapbTWVfVYdppabUV9gq8eToZmkhWvkiAqxQQ3MSIGmB76u+eUz4/7e03\n3tHAChbNAgMBAAECggEAUH+G9xIoOYN0Vj5m1W4jlmPPS0J3GiSzf3OjP83IBL5a\nEmqmj8fAT5bm+FgybUbisBI1DV9FLRbfdcEwxIN3d4eJ09LbnZEE/KHOyCfkAY44\n4UFgOpMrIWmln8oG60Y22QPtyncYOSlSDwgUwsYUJLP+bpBmT9+TjSPfociWeSJx\ndKkGNUvkSVHcjISg1VhD+6MAiJPOXhfQRhShdO3KfRwptt4YTz9n0isEq96UeTWF\nr/CHrXtK9H0+93WSnYYQoftSyrD6YFN0Vc9hvftsKDH8CAe5ve4CwO6UkuYWbqAf\n8yew5McBeNsS2dNfD/6Cd7zEXRGDmniydjzBpOLwAQKBgQD061OOBuVEgI8F4+sX\n1vZUypvSjQ4zu0Suqt4iNiJ0WN15tFUqHpyISfixoQSPIAxsudQtrODKZPM416ok\nKF6C503xbfx1ROkgZo9S/v2uWRYr7q0Elc/K6pLuHEXONP1omICBt2CWZm/ziRtJ\nGLEQa/wy+MYZK82siRIh74HzYQKBgQDRYdaDcan40mO7DtmF0lzMfYTREszX7rAk\nLZal9HcPinEOC+FDxp+q+zFTDptstYgQVrObHiLsInlKMlnpHR8YPwdBAJcphnt/\ngw9bQO98PmwETXZ+vcjMyLO61GnYyiRFB7bSAqwFd5Topd4rJlYopx0fT8xIbDDs\njV5XJbeG7QKBgQCp8Qe/CuXWjGWxLp6Xoh62YweQJzPtjUlw8TrE/k8V7/ttUUWu\nviLbJoibqCBjt1cnsiGZt9UaWsWxcWOrRx+dMSYSGcENFc21H7TfX/NiIIqT3T7M\naa8PG4jsE04UcQxMoVS5rSYl9dpEX6RBKhLiVCtgquG54X0K9OlSBsBiwQKBgQCA\n1upP0bZchOGXbijNnsc5kZcTq7TevmImsOK9VbOZnX+5u/euY99GL/GHATsEZqPG\nIgO81It6sC/gRyFqP2At5ELLbdiWVclSikv9w/RZiHOhJiVfEdson+twcFp9as1s\nqLWHfttpNc8sZTxTYvCrbUGPTeQPQHvOY6MEjxHidQKBgQCzjpgdzI9iMvILON7u\n4zPO9oezaCTvh3wu8yCDpmVOLlh6ty+Q/N/nxSSwMw5ySyWqOm/Rj5M4b/rc3U+q\nmSEu1YYCE9BFUbBFFCPPhqU8SYrmtY5C4tBP3qpqusYrs3ui7Ueo18sXMDoyd9vA\npJVE4dGCWlW9rj0BmSmAWL+fcQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "accessgva@pure-karma-163023.iam.gserviceaccount.com",
+  "client_id": "100712722563139429005",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://accounts.google.com/o/oauth2/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/accessgva%40pure-karma-163023.iam.gserviceaccount.com"
+}

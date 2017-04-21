@@ -1,0 +1,164 @@
+---
+title: "Facial Recognition in Tennis"
+author: "Stephanie Kobakian"
+date: "18 July 2016"
+output: slidy_presentation
+highlight: pygments
+---
+
+
+# Project Aim
+
+##Begin to develop methods to collect accurate information about the facial expressions of elite tennis athletes during matchplay.
+
+This beginning involves testing how well currently available facial recognition software performs at identifying faces of the two players in a tennis match.
+
+# Current Recognition Software
+
+### Current software has been intended for security purposes including: 
+
+- Access Points
+- International Airports Passpoint points
+- Watch List Screening in crowds
+
+This presents issues as our use on Tennis Broadcasts provides multiple interchanging angles.
+This is unlike the intended use of the softwares as a full frontal scan at an access point.
+
+---
+
+# Challenges
+
+- The multiple angles presents issues of whether the faces will be detectable
+- There are many softwares available for purchase online. The most accessible during our time frame were APIs
+- Softwares were intended for use beyond latent still detection, they were intended for real time detection and alerts. These softwares had capabilities far beyond what is needed
+
+# Opportunity
+
+- We have a great opportunity to apply facial recognition software in an unusual and previously untested application
+- Algorithms have certain capabilities that will allow for faces to be detected 
+
+# Our Sample 
+
+105 Singles Matches from 2016 AO differing by:
+
+- Gender, either Male or Female
+- Court, one of 7 possible courts
+
+We then took:
+
+- 5 minute segments from the 105 Broadcast video files
+- Of these segments, a still was taken at every 3 seconds
+
+## Computation Times for recognition of stills
+
+- Skybiometry: 1.461
+- Microsoft: 2.29
+- Animetrics: 3.924
+
+# Examples of Application
+
+The following slides include stills and what was recognised when the softwares were applied.
+
+- Green: Microsoft
+- Red: Animetrics
+- Blue: Skybiometry
+
+# Accuracte Facial Recognition ![](presentationimages/GoodRecognition1.png)
+The software that is chosen should be able to recognise this face even though it is not a front on angle.
+
+# Accuracte Facial Recognition ![](presentationimages/GoodRecognition2.png)
+The software that is chosen should also be able to recognise this face.
+
+# Accuracte Facial Recognition ![](presentationimages/GoodRecognition3.png)
+We would hope that this angle would still allow for accurate recognition, however it was only recognised by one software.
+
+# Accuracte Facial Recognition ![](presentationimages/GoodRecognition4.png)
+It would be unexpected that this size would still allow for recognition. It was only recognised by one software, note that the minimum pixel distance that will allow for recognition is 36.
+
+# Accuracte Facial Recognition ![](presentationimages/plot15.png)
+Only Animetrics was able to recognise this face, these shaded angles should be a high priority for recognition.
+
+# Emotion Facial Recognition ![](presentationimages/plot16.png)
+As this is the intended future use we would need the software to detect emotions and angles such as this.
+
+# Emotion Facial Recognition ![](presentationimages/plot18.png)
+This angle should also be detected by any software we would consider for this use.
+
+# Emotion Facial Recognition ![](presentationimages/plot19.png)
+This angle should also be detected by any software we would consider for this use.
+
+# Inaccuracte Facial Recognition ![](presentationimages/plot5.png)
+It was surprising that the softwares were not able to detect this face. Profile shots should also be distinguishable.
+
+# Inaccuracte Facial Recognition ![](presentationimages/plot6.png)
+The glasses and facial features may have impacted the lack of recognition, this will be investigated further.
+
+# Inaccuracte Facial Recognition ![](presentationimages/plot7.png)
+The glasses, facial features and face angle in this still frame may have impacted the lack of recognition, this will also be investigated further.
+
+# Interesting Recognition ![](presentationimages/InterestingImage1.png)
+Skybiometry was able to identify this 'face', created by the creases in the shirt.
+
+# Interesting Recognition ![](presentationimages/InterestingImages2.png)
+Animetrics was able to identify two faces in this image, one being a towel, the sensitivity will be investigated further.
+
+# Interesting Recognition ![](presentationimages/Weird1.png)
+Animetrics was able to correctly identify this face, twice. This presents an issue as the algorithm did not identify this.
+
+# Interesting Recognition ![](presentationimages/plot4.png)
+Animetrics also presented an interesting recognition on the 'face' despite it not being the intended face for recognition.
+
+# Crowd Recognition ![](presentationimages/plot1.png)
+In looking at the crowd shots insights can be gained as to how to programs contrast in their abilities. Skybiometry showed interesting recognition on a fist and Animetrics only found one face.
+
+# Crowd Recognition ![](presentationimages/plot13.png)
+This showed that the softwares struggled during a transition.
+
+# Crowd Recognition ![](presentationimages/plot14.png)
+Where the previous image only on software found one face. In this image all three softwares were able to locate both faces. This contrast gives insight into capabilities.  
+
+# Impractical Shots
+
+Some shots result in difficulties when applying recognition software
+
+### Upward Angle
+This was difficult for recognition softwares that were intended for recognition of clear and well-lit faces.
+### Birdseye View
+This was difficult as the range of the angles meant that faces were too small and could not be distinguished.
+
+# Upward Angle
+![](presentationimages/plot2.png)
+It was hoped that these situations would be able to be used in recognition as it is at these moments that emotions would be able to effect gameplay.
+
+# Birds-eye View
+![](presentationimages/plot3.png)
+This view is common and completely impractical. There are no recognisable faces in this image. 
+
+# Obstructed Faces 
+![](presentationimages/InterestingImages2.png)
+It was expected that when faces are covered by objects used by players courtside that the recognition would be stunted. However it was unexpected that the recognition would be found on the towel. It was also unexpected that the face in the crowd would be recognised.
+
+# Manual Recognition
+
+Our Gold Standard to compare to the softwares selected
+
+- The Shiny App was created to hasten the process of manual detection of faces using the packages imager, shiny and shinyjs
+- We collected information on the general scenes, this included live shot, person in the frame, situation, background, angle of the shot
+- For each individual face in the frame we found the location, how obscured is was, the light on the face, angle of the head and whether they were wearing glasses, and a hat or visor.
+
+# Data Frame Creation
+The information collected by myself and the three softwares differed. We collated it so that comparable information was captured in a single data frame for analysis. This allows us to create the mapped face boxes as seen in the previous images.
+
+# Future Analysis to be reported
+### Comparisons of:
+- Facial features and structures that influence recognition
+- The resulting recogised areas
+
+# Intriguing Results
+![](presentationimages/Rplot.png)
+Two softwares both distinguished a face in the creases of the shirt.
+
+# ![](presentationimages/Rplot01.png)
+The different colours detail the faces found by all three softwares. It shows that only one software considered the Adidas shirt a face, and glasses tended to result in only two softwares recognising the face.
+
+# Questions and Recommendations

@@ -1,0 +1,257 @@
+---
+title: "BEX3012 Project Report \n Detecting Facial Expressions in Professional Tennis Matches"
+author: "Stephanie Kobakian"
+date: "28 March 2017"
+output: bookdown::pdf_document2
+fig_caption: yes
+fontsize: 11pt
+link-citations: true
+---
+
+
+```{r cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
+
+
+library(tidyverse)
+library(readr)
+library(GGally)
+
+#Read in data files
+ME <- read_csv("data/MicrosoftEmotions.csv")
+SB <- read_csv("data/SkybiometryEmotions.csv")
+GE <- read_csv("data/GoogleFacesEmotions.csv")
+
+
+EmotionSoftwareSpecs<-read_csv("Figures/EmotionSoftwareSpecifications.csv")
+
+#Create normalised SB values
+SB <- SB %>%
+  rowwise %>% mutate(z = (anger.confidence+
+               disgust.confidence+
+               fear.confidence+
+               happiness.confidence+
+               neutral_mood.confidence+
+               sadness.confidence+
+               surprise.confidence)) %>%
+  mutate(anger = anger.confidence/z,
+         disgust = disgust.confidence/z,
+         fear = fear.confidence/z,
+         happiness = happiness.confidence/z,
+         neutral = neutral_mood.confidence/z,
+         sadness = sadness.confidence/z,
+         surprise = surprise.confidence/z)
+
+
+```
+
+
+```{r}
+
+#Create normalised GE values
+Conf <- function(Emot){
+ifelse(Emot=="VERY_UNLIKELY", 10,  
+        ifelse(Emot == "UNLIKELY", 30, 
+                ifelse(Emot == "POSSIBLE", 50, 
+                ifelse(Emot == "LIKELY", 70, 
+                ifelse(Emot == "VERY_LIKELY", 90, NA)))))
+}
+  
+GE <- GE %>% mutate(joyConf = Conf(joyLikelihood)) %>%
+  mutate(sorrowConf = Conf(sorrowLikelihood)) %>%
+  mutate(angerConf = Conf(angerLikelihood)) %>%
+  mutate(surpriseConf = Conf(surpriseLikelihood))
+
+GE <- GE %>%
+  rowwise %>% 
+  mutate(neutralConf = 100 - (pmax(joyConf, sorrowConf, angerConf, surpriseConf))) %>%
+  mutate(z = (joyConf+
+                sorrowConf+
+                angerConf+
+                surpriseConf+
+                neutralConf)) %>%
+  mutate(anger = angerConf/z,
+         joy = joyConf/z,
+         neutral = neutralConf/z,
+         sorrow = sorrowConf/z,
+         surprise = surpriseConf/z)
+
+```
+
+\newpage
+
+# Introduction
+
+Facial Recognition is beginning to be explored in sports environments, this presents quality issues.
+
+
+helpful for applications
+
+
+\newpage
+
+# Method
+
+## Materials
+
+### Pre Processing Images
+
+A subset of faces was created specifically for emotion recognition purposes. To present only a single face to each software required cropping the region of the image based on Google’s bounding box result^[coordinates derived from prior study].
+Each new image created contained the area within the face bounding boxes found in the previous study, as well as a small border to frame the face. This resulted in images of differing sizes to be passed to the APIs. These 1319 new images were hosted on Google Drive to allow for URL access from the API to the individual images.
+
+
+```{r VisualSet, echo=F, fig.cap = "Here are six examples of Faces in the image set after extracting faces from the full broadcast video stills. \\label{tab:VisualSet}"}
+
+library(magick)
+library(grid)
+library(gridExtra)
+library(ggplot2)
+
+plotFaces <- function(imgList){
+  for(i in imgList){
+
+  img <- image_read(paste0("Faces/", i))
+   
+    p <- ggplot(data.frame(x=c(0,350), y=c(0,350)), aes(x,y))+
+      theme_classic() + xlab("") + ylab("") + 
+      annotation_custom(rasterGrob(img)) +
+      coord_cartesian(xlim=c(0, 350), ylim=c(0,400))
+    
+    } 
+  return(p)
+  }
+
+f1 <- plotFaces("face-1635-1-Go.png")
+f2 <- plotFaces("face-1128-1-Go.png")
+f3 <- plotFaces("face-1746-1-Go.png")
+f4 <- plotFaces("face-626-1-Go.png")
+f5 <- plotFaces("face-450-1-Go.png")
+f6 <- plotFaces("face-816-1-Go.png")
+
+
+
+grid.arrange(f1, f2, f3, f4, f5, f6,nrow=2)
+
+```
+
+
+
+\newpage
+
+### Software APIs
+
+We will consider three Emotion Recognition software.
+
+
+```{r Emotion-Software-Specs-Table, echo=F, fig.cap = "\\label{tab:Emotion-Software-Specs-Table}"}
+
+knitr::kable(EmotionSoftwareSpecs, longtable=TRUE, booktabs = TRUE, caption="This details the capabilities we considered important in recognising emotions in images of faces.")
+```
+
+
+As can be seen above, a noticeable difference between the three is the amount of times the API can be called. Skybiometry had the largest imposition on Bath Processing as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within an hour, after accounting for the wait time between each group of 20.
+Google Vision's API batch processing limit had a minimal effect.
+
+
+The range of outputs from the software is displayed as Google provides likelihoods of an emotion occurring on a particular face. Microsoft and Skybiometry provide outputs on the same emotions^[Based on Paul Ekmans emotion theories]. However the values that they provide differ as Microsoft provide Proportions whereas Skybiometry results in a Confidence of the emotion occurring in the specified face.
+
+### Processing API results
+
+As the results provided by each of the software differed, processing was needed to create comparable sets.
+
+#### Microsoft
+
+```{r MEexample, echo=F, message=F, fig.cap = "\\label{tab:MEexample}"}
+library(dplyr)
+MEexample <- ME %>% subset(FileName=="face-1745-1-Go.png")
+
+
+knitr::kable(MEexample[2:9], digits=6, longtable=TRUE, booktabs = TRUE, caption="The Microsoft API provided 8 numerical values, one for each emotion.")
+```
+
+#### Skybiometry
+
+```{r SBexample, echo=F, fig.cap = "\\label{tab:SBexample}"}
+SBexample <- SB %>% subset(aname=="face-1745-1-Go.png") %>% select(ends_with(".confidence"))
+
+
+knitr::kable(SBexample[3:9], digits=6, longtable=TRUE, booktabs = TRUE,
+             col.names = c("neutral", "anger", "disgust", "fear",
+                           "happiness", "sadness", "surprise"),
+             caption="The Skybiometry API provided 7 numerical Confidence values, one for each emotion.")
+```
+
+
+#### Google
+
+```{r GEexample, echo=F, fig.cap = "\\label{tab:GEexample}"}
+GEexample <- GE %>% subset(FileName=="face-1745-1-Go.png") %>% select(ends_with("Likelihood"))
+
+
+knitr::kable(GEexample, longtable=TRUE, booktabs = TRUE,
+             col.names = c("joy", "sorrow", "anger", "surprise"),
+             caption="The Google Vision API provided four likelihood possibilities, one for each emotion.")
+```
+
+
+These differing outputs needed to be arranged in a comparable manner.
+We began by considering the Microsoft output. Noticing that the sums of all emotion values was approximately one we considered that dividing the individual Skybiometry emotion confidences by the sum of the confidences would give the likelihood of each emotion being the dominant emotion in a face.
+
+This calculation was simple to perform and resulted in numeric values comparable to Microsoft's values.
+
+Skybiometry Transformed:
+
+```{r SBT, echo=F, fig.cap = "\\label{tab:SBT}"}
+SBT <- SB %>% subset(aname=="face-1745-1-Go.png") %>% select(neutral, anger, disgust, fear, happiness, sadness, surprise)
+
+
+knitr::kable(SBT, digits=6, longtable=TRUE, booktabs = TRUE,
+               caption="The Skybiometry API provided 7 numerical Confidence values, one for each emotion.")
+```
+
+
+We then needed to transform the Google output to also be comparable. This was the most challenging due to it's unusual form.
+
+A numeric value was assigned to each possible likelihood value. This would allow for numeric comparisons to be made.
+The values were assigned according to the table below:
+
+
+```{r LT, echo=F, fig.cap = "\\label{tab:LT}"}
+Likelihood <-c("VERY_UNLIKELY", "UNLIKELY", "POSSIBLE", "LIKELY", "VERY_LIKELY")
+Value <- c(10, 30, 50, 70, 90)
+LT <- cbind(Likelihood, Value)
+
+knitr::kable(LT, longtable=TRUE, booktabs = TRUE,
+               caption="")
+
+```
+
+As both Microsoft and Skybiometry included a neutral category we considered how we may incorporate this for the Google results.
+
+Google Transformed 
+
+Our approach considered that when a face was "very unlikely" to be any of the four emotion categories it could be deemed "neutral". However when one emotion was stronger than other it could still be possible that the face only had a small lean toward this emotion. Therefore the Confidence value for neutral was derived as: 
+
+$$neutralConf_i = 100 - max(joyConf_i, sorrowConf_i, angerConf_i, surpriseConf_i)$$
+  
+The process to derive the numeric values followed the process undertaken for Skybiometry values. Where the individual emotion confidences were divided by the sum of the emotion confidence values for each face. 
+
+This resulted in congruent emotion data to be compared
+
+
+```{r GET, echo=F, fig.cap = "\\label{tab:GET}"}
+
+GET <- GE %>% subset(FileName=="face-1745-1-Go.png") %>% 
+  select(joy, sorrow, anger, surprise, neutral)
+
+knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
+             col.names = c("joy", "sorrow", "anger", "surprise", "neutral"),
+             caption="The Google Vision API provided four likelihoods, one for each emotion.")
+```
+
+
+
+# Analysis
+# Validation
+We considered a subset of images where the emotions on the faces were manually considered.
+
