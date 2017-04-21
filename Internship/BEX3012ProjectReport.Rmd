@@ -12,7 +12,6 @@ link-citations: true
 ```{r cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
 
-
 library(tidyverse)
 library(readr)
 library(GGally)
@@ -21,9 +20,10 @@ library(GGally)
 ME <- read_csv("data/MicrosoftEmotions.csv")
 SB <- read_csv("data/SkybiometryEmotions.csv")
 GE <- read_csv("data/GoogleFacesEmotions.csv")
+DE <- read_csv("data/DominantEmotion.csv")
 
 
-EmotionSoftwareSpecs<-read_csv("Figures/EmotionSoftwareSpecifications.csv")
+EmotionSoftwareSpecs <- read_csv("Figures/EmotionSoftwareSpecifications.csv")
 
 #Create normalised SB values
 SB <- SB %>%
@@ -47,7 +47,6 @@ SB <- SB %>%
 
 
 ```{r}
-
 #Create normalised GE values
 Conf <- function(Emot){
 ifelse(Emot=="VERY_UNLIKELY", 10,  
@@ -100,7 +99,7 @@ A subset of faces was created specifically for emotion recognition purposes. To 
 Each new image created contained the area within the face bounding boxes found in the previous study, as well as a small border to frame the face. This resulted in images of differing sizes to be passed to the APIs. These 1319 new images were hosted on Google Drive to allow for URL access from the API to the individual images.
 
 
-```{r VisualSet, echo=F, fig.cap = "Here are six examples of Faces in the image set after extracting faces from the full broadcast video stills. \\label{tab:VisualSet}"}
+```{r VisualSet, echo=F, fig.cap = "Three Faces in the image set, after extracting faces from the full broadcast video stills, and the dominant emotion each software recognised for them. \\label{fig:VisualSet}"}
 
 library(magick)
 library(grid)
@@ -113,24 +112,50 @@ plotFaces <- function(imgList){
   img <- image_read(paste0("Faces/", i))
    
     p <- ggplot(data.frame(x=c(0,350), y=c(0,350)), aes(x,y))+
-      theme_classic() + xlab("") + ylab("") + 
+      theme_void() + 
       annotation_custom(rasterGrob(img)) +
       coord_cartesian(xlim=c(0, 350), ylim=c(0,400))
     
     } 
   return(p)
+}
+
+TableEmotions <- function(imgList){
+  for(i in imgList){
+
+   d <- DE %>% filter(FileName== i)
+  
+  dl <- d %>% 
+  select(Skybiometry = SEmotion, Microsoft = MEmotion, Google = GEmotion) %>%
+    gather(key = Software, value = Emotion, Microsoft, Skybiometry, Google)
+   
+  t <- tableGrob(dl, theme = ttheme_minimal(), rows = c("", "", ""))
+    
+  } 
+  return(t)
   }
 
-f1 <- plotFaces("face-1635-1-Go.png")
-f2 <- plotFaces("face-1128-1-Go.png")
-f3 <- plotFaces("face-1746-1-Go.png")
-f4 <- plotFaces("face-626-1-Go.png")
-f5 <- plotFaces("face-450-1-Go.png")
-f6 <- plotFaces("face-816-1-Go.png")
+#Faces 
+f1 <- "face-1635-1-Go.png"
+f2 <- "face-1128-1-Go.png"
+f3 <- "face-1746-1-Go.png"
+
+i1 <- plotFaces(f1)
+i2 <- plotFaces(f2)
+i3 <- plotFaces(f3)
+
+# Tables of their resulting emotion value
+t1 <- TableEmotions(f1)
+t2 <- TableEmotions(f2)
+t3 <- TableEmotions(f3)
 
 
+#f4 <- "face-626-1-Go.png"
+#f5 <- "face-450-1-Go.png"
+#f6 <- "face-816-1-Go.png"
 
-grid.arrange(f1, f2, f3, f4, f5, f6,nrow=2)
+
+grid.arrange(i1, i2, i3, t1, t2, t3, nrow=2)
 
 ```
 
@@ -140,7 +165,8 @@ grid.arrange(f1, f2, f3, f4, f5, f6,nrow=2)
 
 ### Software APIs
 
-We will consider three Emotion Recognition software.
+We have considered three Emotion Recognition APIS.
+They were chosen for their accessibility and online reviews, as these are well recognised options for Facial recongition currently available.
 
 
 ```{r Emotion-Software-Specs-Table, echo=F, fig.cap = "\\label{tab:Emotion-Software-Specs-Table}"}
@@ -149,11 +175,13 @@ knitr::kable(EmotionSoftwareSpecs, longtable=TRUE, booktabs = TRUE, caption="Thi
 ```
 
 
-As can be seen above, a noticeable difference between the three is the amount of times the API can be called. Skybiometry had the largest imposition on Bath Processing as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within an hour, after accounting for the wait time between each group of 20.
-Google Vision's API batch processing limit had a minimal effect.
+As can be seen above, a noticeable difference between the three is the amount of times the API can be called within a given time frame. Skybiometry had the largest imposition on Call Limits as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within one hour, after accounting for the wait time between each group of 20.
+Google Vision's API call limit had a minimal effect for our purposes.
 
+The number of emotions shown in the results were not congruent. These differences required pre processing to find the most comparable results for analysis.
+Microsoft provided the most emotion options, contempt being the addition that was not provided by Skybiometry. Google provided the least, only giving the options for four different emotions.
 
-The range of outputs from the software is displayed as Google provides likelihoods of an emotion occurring on a particular face. Microsoft and Skybiometry provide outputs on the same emotions^[Based on Paul Ekmans emotion theories]. However the values that they provide differ as Microsoft provide Proportions whereas Skybiometry results in a Confidence of the emotion occurring in the specified face.
+The outputs from the APIs were very different. Google provides likelihoods of an emotion occurring on a particular face in categorical options ranging from Very Unlikely to Very Likely. Microsoft provide Proportions, ranging between 0 and , whereas Skybiometry results in a Confidence of the emotion occurring in the specified face in values from 0 to 100.
 
 ### Processing API results
 
@@ -162,7 +190,7 @@ As the results provided by each of the software differed, processing was needed 
 #### Microsoft
 
 ```{r MEexample, echo=F, message=F, fig.cap = "\\label{tab:MEexample}"}
-library(dplyr)
+
 MEexample <- ME %>% subset(FileName=="face-1745-1-Go.png")
 
 
@@ -180,7 +208,6 @@ knitr::kable(SBexample[3:9], digits=6, longtable=TRUE, booktabs = TRUE,
                            "happiness", "sadness", "surprise"),
              caption="The Skybiometry API provided 7 numerical Confidence values, one for each emotion.")
 ```
-
 
 #### Google
 

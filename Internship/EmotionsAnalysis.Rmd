@@ -8,7 +8,7 @@ output: bookdown::pdf_document2
 
 Emotions Analysis
 
-```{r cache=TRUE, echo=FALSE, message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = F, warning = F, cache=T)
 
 library(tidyverse)
@@ -23,11 +23,11 @@ SB: Skybiometry's results, emotion data
 GE: Google's results, emotion data
 GoogleFaces: The Set of Faces found by Google in the intital study
 
-```{r}
+```{r readdata}
 #EmoM <-read_csv("data/EmotionsMerged.csv")
 ME <- read_csv("data/MicrosoftEmotions.csv")
 SB <- read_csv("data/SkybiometryEmotions.csv")
-GE <- read_csv("SoftwareRequestScripts/GoogleClassifiedFaces.csv")
+GE <- read_csv("data/GoogleFacesEmotions.csv")
 GF <- read_csv("data/GoogleFaces.csv")
 #ALLmetaIMGnamed <- read.csv("ALLmetaIMGnamed.csv")
 
@@ -46,28 +46,54 @@ GF <- read_csv("data/GoogleFaces.csv")
 
 #EmotionsMerged<-EmotionsMerged %>% mutate(s = sum(anger, contempt, disgust, fear, happiness, neutral, sadness, surprise, na.rm=TRUE))
 
+
+#Create column for Player Names
+#GF$PlayerNumber<-NA
+
+
+# PlayerSubset <- function(PlayerName, data = GF1) {
+#   
+#   PlayerSet<-filter(data, player1==PlayerName | player2==PlayerName)
+#   
+#   return(as.list(PlayerSet$FileName))
+# }
+  
+# 
+# MSlist <- PlayerSubset("MSakkari")
+# MSlist
+
+GF <- GF %>% rowwise %>%
+  mutate(playerName = ifelse(PlayerNumber == 1, player1,
+                                            ifelse(PlayerNumber == 2, player2,
+                                                   ifelse(is.na(PlayerNumber), NA, NA))))
+
+GE <- GE %>% rowwise %>%
+  mutate(playerName = ifelse(PlayerNumber == 1, player1,
+                                            ifelse(PlayerNumber == 2, player2,
+                                                   ifelse(is.na(PlayerNumber), NA, NA))))
+
 ```
 
 
 Connect face id to original Google set
-```{r}
-GEsub <- GE[,c(1, 10:13, 17:24)]
-
-GE1 <- GEsub %>% 
-  rowwise() %>%
-  mutate(minX = pmin(cbind(boundingPoly.x1, boundingPoly.x4)), 
-         maxX = pmin(cbind(boundingPoly.x2, boundingPoly.x3)),
-         minY = pmin(cbind(boundingPoly.y1, boundingPoly.y2)), 
-         maxY = pmin(cbind(boundingPoly.y3, boundingPoly.y4))) %>%
-  ungroup()
-
-GE1 <- GE1[,c(1:5, 14:17)]
+```{r googleSubset}
+# GEsub <- GE[,c(1, 10:13, 17:24)]
+# 
+# GE1 <- GEsub %>% 
+#   rowwise() %>%
+#   mutate(minX = pmin(cbind(boundingPoly.x1, boundingPoly.x4)), 
+#          maxX = pmin(cbind(boundingPoly.x2, boundingPoly.x3)),
+#          minY = pmin(cbind(boundingPoly.y1, boundingPoly.y2)), 
+#          maxY = pmin(cbind(boundingPoly.y3, boundingPoly.y4))) %>%
+#   ungroup()
+# 
+# GE1 <- GE1[,c(1:5, 14:17)]
 ```
 
 
 Add meta data to Emotion results
-```{r}
-GE <- left_join(GF, GE1, by = c("file","minX","maxX","minY","maxY"))
+```{r mergeEmotMeta}
+#GE <- left_join(GF, GE1, by = c("file","minX","maxX","minY","maxY"))
 
 ME <- left_join(ME, GF, by = "FileName") 
 SB <- left_join(SB, GF, by = c("aname"="FileName")) 
@@ -75,7 +101,7 @@ SB <- left_join(SB, GF, by = c("aname"="FileName"))
 
 
 Create normalized SB values
-```{r}
+```{r normaliseSB}
 SB<-SB %>%
   rowwise %>% mutate(z = (anger.confidence+
                disgust.confidence+
@@ -99,7 +125,7 @@ SB<-SB %>%
 Create normalized GE values
 GE: Google results of player facial emotions in numeric confidences
 
-```{r}
+```{r normaliseGE}
 Conf <- function(Emot){
 ifelse(Emot=="VERY_UNLIKELY", 10,  
         ifelse(Emot == "UNLIKELY", 30, 
@@ -126,11 +152,9 @@ GE <- GE %>%
 ```
 
 
-
-
 Convert to true or false emotion values
 
-```{r}
+```{r TFemotions}
 
 ME <- ME %>% mutate(HappinessTF = ifelse(happiness > 0.5,TRUE,FALSE)) %>%
              mutate(SadnessTF = ifelse(sadness > 0.5,TRUE,FALSE))%>%
@@ -156,22 +180,12 @@ SB <- SB %>% mutate(HappinessTF = ifelse(happiness > 0.5,TRUE,FALSE)) %>%
   mutate(NeutralTF = ifelse(neutral > 0.5,TRUE,FALSE))
 ```
 
-Parallel coordinate plots
-```{r}
-#p1 <- ggparcoord(data = set1, columns = 2:9, groupColumn="file", order = "allClass")
-
-#p2 <- ggparcoord(data = set2, columns = 2:9, groupColumn="file", order = "allClass")
-
-#p3 <- ggparcoord(data = set3, columns = 2:9, groupColumn="file", order = "allClass")
-```
-
-
 
 Consider just players,
 GEP: Microsoft's results, emotion data for only players
 MEP: Skybiometry's results, emotion data for only players
 SBP: Google's results, emotion data for only players
-```{r}
+```{r playerSubset}
 GEP <- GE %>% filter(detect=="Player")
 MEP <- ME %>% filter(detect=="Player")
 SBP <- SB %>% filter(detect=="Player")
@@ -185,18 +199,15 @@ SBP$anger %>% is.na() %>% sum
 
 Skybiometry Emotion plots
 
-```{r}
+```{r SBhists}
 
-ggSBPne <- ggplot(SBP, aes(x=neutral))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBne <- ggplot(SB, aes(x=neutral))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-
-
-ggSBPan <- ggplot(SBP, aes(x=anger))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBPdi <- ggplot(SBP, aes(x=disgust))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBPfe <- ggplot(SBP, aes(x=fear))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBPha <- ggplot(SBP, aes(x=happiness))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBPsa <- ggplot(SBP, aes(x=sadness))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggSBPsu <- ggplot(SBP, aes(x=surprise))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
+ggSBPne <- ggplot(SBP, aes(x=neutral))+geom_histogram(binwidth=0.025) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPan <- ggplot(SBP, aes(x=anger))+geom_histogram(binwidth=0.025) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPdi <- ggplot(SBP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPfe <- ggplot(SBP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPha <- ggplot(SBP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPsa <- ggplot(SBP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggSBPsu <- ggplot(SBP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
 
 
 grid.arrange(ggSBPne,
@@ -206,7 +217,6 @@ grid.arrange(ggSBPne,
              ggSBPha,
              ggSBPsa,
              ggSBPsu, nrow=3)
-
 ```
 
 
@@ -254,13 +264,13 @@ ggplot(GEPCL1, aes(x=Emotion, y=EmotionValue)) + theme(axis.text.x = element_tex
 
 Microsoft Emotion plots
 ```{r}
-ggMEPne<-ggplot(MEP, aes(x=neutral))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPan<-ggplot(MEP, aes(x=anger))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPdi<-ggplot(MEP, aes(x=disgust))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPfe<-ggplot(MEP, aes(x=fear))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPha<-ggplot(MEP, aes(x=happiness))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPsa<-ggplot(MEP, aes(x=sadness))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
-ggMEPsu<-ggplot(MEP, aes(x=surprise))+geom_histogram(bins=15) +coord_cartesian(xlim = c(0, 1))
+ggMEPne<-ggplot(MEP, aes(x=neutral)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPan<-ggplot(MEP, aes(x=anger)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPdi<-ggplot(MEP, aes(x=disgust)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPfe<-ggplot(MEP, aes(x=fear)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPha<-ggplot(MEP, aes(x=happiness)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPsa<-ggplot(MEP, aes(x=sadness)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPsu<-ggplot(MEP, aes(x=surprise)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 
 grid.arrange(ggMEPne,
              ggMEPan,
@@ -311,6 +321,7 @@ Tables
 
 ###
 Join emotions for each face
+J2: Table of FileNames and associated dominant emotion
 ```{r}
 S1 <- select(SBPCL1, FileName = aname , SEmotion = Emotion)
 S2 <- select(MEPCL1, FileName, MEmotion = Emotion)
@@ -322,13 +333,11 @@ PS1 <- J2 %>% filter(SEmotion==MEmotion|SEmotion==GEmotion|MEmotion==GEmotion)
 nrow(PS1)
 
 
-J2L<-J2 %>% 
+J2L <- J2 %>% 
   gather(key = Software, value = Emotion, SEmotion, MEmotion, GEmotion)
 
 
 ggplot(J2L, aes(x=Emotion)) + geom_bar(aes(fill = Software), position = "dodge")
-
-
 
 ```
 
@@ -357,7 +366,7 @@ Plot images and compare to emotion data
 # 
 # }
 
-SER<-read_csv("SampleEmotionResults.csv")
+SER<-read_csv("Figures/SampleEmotionResults.csv")
 
 t1<-table(SER$Manual, SER$SEmotion)
 ftable(t1)
@@ -382,21 +391,9 @@ PJ$sum<-PJ$Freq.x+PJ$Freq.y
 
 
 Player Subsetting
-```{r}
-#Create column for Player Names
-#GoogleFaces$PlayerName<-NA
+```{r DisplayFaces}
 
 
-# PlayerSubset <- function(PlayerName, data = GF1) {
-#   
-#   PlayerSet<-filter(data, player1==PlayerName | player2==PlayerName)
-#   
-#   return(as.list(PlayerSet$FileName))
-# }
-  
-# 
-# MSlist <- PlayerSubset("MSakkari")
-# MSlist
 
 
 MSimgsG<-GEPCL1 %>% filter(player1=="ARadwanska")
@@ -453,4 +450,36 @@ DisplayFaces(EF)
 
 
 Player Emotion Tables
+Distribution of emotion values for particular emotions across all images of a player
+```{r Playerhists}
+ggplot(na.omit(SBP), aes(x=playerName))+geom_bar()+ theme(axis.text.x = element_text(angle = 20)) 
+
+Name <- "GSimon"
+
+  SBPplayer <- SBP %>% filter(playerName == Name)
+  
+  ggSBPan <- 
+    ggplot(SBPplayer, aes(x = anger)) + ggtitle("Skybiometry") +
+    geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
+  
+  GEPplayer <- GEP %>% filter(playerName == Name)
+  
+  ggGEPan <-
+    ggplot(GEPplayer, aes(x = anger)) +  ggtitle("Google") +
+    geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
+  
+  MEPplayer <- MEP %>% filter(playerName == Name)
+  
+  ggMEPan <-
+    ggplot(MEPplayer, aes(x = anger)) +  ggtitle("Microsoft") +
+    geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
+
+
+grid.arrange(ggMEPan,ggSBPan,ggGEPan, nrow = 3) 
+
+TB<- as.list(MEPplayer$FileName)
+DisplayFaces(TB)
+```
+
+
 

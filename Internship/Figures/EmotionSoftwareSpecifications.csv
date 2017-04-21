@@ -1,6 +1,6 @@
 Attribute,Google,Microsoft,Skybiometry
-Batch Processing,10 per second,20 per minute,100 per hour
+Call Limits,10 per second,20 per minute,100 per hour
 Emotion Output,Categorical Likelihood,"Numeric Proportions, (0.0-1.0)","Confidence Value, (0-100)"
-Number of Emotions,4,7,7
+Number of Emotions,4,8,7
 Cost and Access,Account and Payment,Account,Account and Payment
 API Access,REST,REST,REST
