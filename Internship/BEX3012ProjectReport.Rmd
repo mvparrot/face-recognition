@@ -10,11 +10,16 @@ link-citations: true
 
 
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE, fig.width = 8)
 
 library(tidyverse)
+library(dplyr)
 library(readr)
 library(GGally)
+library(magick)
+library(grid)
+library(gridExtra)
+library(ggplot2)
 
 #Read in data files
 ME <- read_csv("data/MicrosoftEmotions.csv")
@@ -24,7 +29,10 @@ DE <- read_csv("data/DominantEmotion.csv")
 
 
 EmotionSoftwareSpecs <- read_csv("Figures/EmotionSoftwareSpecifications.csv")
+```
 
+
+```{r normalise, cache=FALSE}
 #Create normalised SB values
 SB <- SB %>%
   rowwise %>% mutate(z = (anger.confidence+
@@ -42,11 +50,6 @@ SB <- SB %>%
          sadness = sadness.confidence/z,
          surprise = surprise.confidence/z)
 
-
-```
-
-
-```{r}
 #Create normalised GE values
 Conf <- function(Emot){
 ifelse(Emot=="VERY_UNLIKELY", 10,  
@@ -55,12 +58,16 @@ ifelse(Emot=="VERY_UNLIKELY", 10,
                 ifelse(Emot == "LIKELY", 70, 
                 ifelse(Emot == "VERY_LIKELY", 90, NA)))))
 }
-  
+```
+
+```{r mutate}
+#confidence columns
 GE <- GE %>% mutate(joyConf = Conf(joyLikelihood)) %>%
   mutate(sorrowConf = Conf(sorrowLikelihood)) %>%
   mutate(angerConf = Conf(angerLikelihood)) %>%
   mutate(surpriseConf = Conf(surpriseLikelihood))
 
+#proportion columns
 GE <- GE %>%
   rowwise %>% 
   mutate(neutralConf = 100 - (pmax(joyConf, sorrowConf, angerConf, surpriseConf))) %>%
@@ -75,10 +82,21 @@ GE <- GE %>%
          sorrow = sorrowConf/z,
          surprise = surpriseConf/z)
 
+#player name column
+GE <- GE %>% rowwise %>%
+  mutate(playerName = ifelse(PlayerNumber == 1, player1,
+                                            ifelse(PlayerNumber == 2, player2,
+                                                   ifelse(is.na(PlayerNumber), NA, NA))))
+```
+
+
+```{r playerSubset}
+GEP <- GE %>% filter(detect == "Player")
+MEP <- ME %>% filter(detect == "Player")
+SBP <- SB %>% filter(detect == "Player")
 ```
 
 \newpage
-
 # Introduction
 
 Facial Recognition is beginning to be explored in sports environments, this presents quality issues.
@@ -89,22 +107,55 @@ helpful for applications
 
 \newpage
 
-# Method
+# Materials
 
-## Materials
+## Images
 
-### Pre Processing Images
+The image set contained 6406 still shot 800x450px size video frames, taken every 3 seconds from 5 minute segments sampled from 105 Australian Open 2016 match broadcast videos.
+The broadcast videos are a combination of multiple camera feeds, these angles vary depending on the court the match was played on.
 
-A subset of faces was created specifically for emotion recognition purposes. To present only a single face to each software required cropping the region of the image based on Google’s bounding box result^[coordinates derived from prior study].
-Each new image created contained the area within the face bounding boxes found in the previous study, as well as a small border to frame the face. This resulted in images of differing sizes to be passed to the APIs. These 1319 new images were hosted on Google Drive to allow for URL access from the API to the individual images.
+```{r ExampleImage, echo=F, fig.cap = "Example Image: 2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0020.png\\label{fig:ExampleImage}"}
+
+img <- image_read("Figures/2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0020.png")
+   
+p <- ggplot() + theme_void() + annotation_custom(rasterGrob(img)) +
+      coord_cartesian(xlim=c(0, 800), ylim=c(0,450))
+p
+```
+
+
+## Software APIs
+
+Three emotion recognition APIS were considered.
+They were chosen for their accessibility and online reviews of their performance, and these are well recognised options for Facial recognition currently available.
+
+
+```{r Emotion-Software-Specs-Table, echo=F, fig.cap = "\\label{tab:Emotion-Software-Specs-Table}"}
+
+knitr::kable(EmotionSoftwareSpecs, longtable=TRUE, booktabs = TRUE, caption="This details the capabilities we considered important in recognising emotions in images of faces.")
+```
+
+
+As can be seen above, a noticeable difference between the three is the amount of times the API can be called within a given time frame. Skybiometry had the largest imposition on Call Limits as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within one hour, after accounting for the wait time between each group of 20.
+Google Vision's API call limit had a minimal effect for our purposes.
+
+The number of emotions shown in the results were not congruent. These differences made it necessary to pre process the result to provide the most comparable results for analysis.
+Microsoft provided the most emotion options, contempt being the addition that was not provided by Skybiometry. Google provided the least, only giving the options for four different emotions.
+
+The outputs from the APIs were very different. Google provides likelihoods of an emotion occurring on a particular face in categorical options ranging from Very Unlikely to Very Likely. Microsoft provide Proportions, ranging between 0 and , whereas Skybiometry results in a Confidence of the emotion occurring in the specified face in values from 0 to 100.
+
+\newpage
+# Procedure
+
+
+## Process Images
+
+The original image set was subset to create images of faces specifically suited for emotion recognition purposes. 
+A crop was performed to create a new image that focused on the area marked as a face by Google^[based on Google’s bounding box coordinates]. A border to frame the face was also included for visual appeal.
+These 1319 new images, of varying sizes, were hosted on Google Drive to allow for URL access from the API to the individual images.
 
 
 ```{r VisualSet, echo=F, fig.cap = "Three Faces in the image set, after extracting faces from the full broadcast video stills, and the dominant emotion each software recognised for them. \\label{fig:VisualSet}"}
-
-library(magick)
-library(grid)
-library(gridExtra)
-library(ggplot2)
 
 plotFaces <- function(imgList){
   for(i in imgList){
@@ -129,7 +180,8 @@ TableEmotions <- function(imgList){
   select(Skybiometry = SEmotion, Microsoft = MEmotion, Google = GEmotion) %>%
     gather(key = Software, value = Emotion, Microsoft, Skybiometry, Google)
    
-  t <- tableGrob(dl, theme = ttheme_minimal(), rows = c("", "", ""))
+  t <- tableGrob(dl, theme = ttheme_minimal(core=list(fg_params=list(hjust=0, x=0.1)),
+                      rowhead=list(fg_params=list(hjust=0, x=0))), rows = c("", "", ""))
     
   } 
   return(t)
@@ -160,56 +212,33 @@ grid.arrange(i1, i2, i3, t1, t2, t3, nrow=2)
 ```
 
 
+## Process API results
 
-\newpage
+The results extracted from each of the APIs differed, re configuring of these results was needed to create comparable sets for analysis.
 
-### Software APIs
-
-We have considered three Emotion Recognition APIS.
-They were chosen for their accessibility and online reviews, as these are well recognised options for Facial recongition currently available.
-
-
-```{r Emotion-Software-Specs-Table, echo=F, fig.cap = "\\label{tab:Emotion-Software-Specs-Table}"}
-
-knitr::kable(EmotionSoftwareSpecs, longtable=TRUE, booktabs = TRUE, caption="This details the capabilities we considered important in recognising emotions in images of faces.")
-```
-
-
-As can be seen above, a noticeable difference between the three is the amount of times the API can be called within a given time frame. Skybiometry had the largest imposition on Call Limits as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within one hour, after accounting for the wait time between each group of 20.
-Google Vision's API call limit had a minimal effect for our purposes.
-
-The number of emotions shown in the results were not congruent. These differences required pre processing to find the most comparable results for analysis.
-Microsoft provided the most emotion options, contempt being the addition that was not provided by Skybiometry. Google provided the least, only giving the options for four different emotions.
-
-The outputs from the APIs were very different. Google provides likelihoods of an emotion occurring on a particular face in categorical options ranging from Very Unlikely to Very Likely. Microsoft provide Proportions, ranging between 0 and , whereas Skybiometry results in a Confidence of the emotion occurring in the specified face in values from 0 to 100.
-
-### Processing API results
-
-As the results provided by each of the software differed, processing was needed to create comparable sets.
-
-#### Microsoft
+Microsoft provided a POST request object in a JSON format. 
+This was easily formatted to create a data set of the eight numeric emotion values provided for each face. In the event that emotion values were not returned for a certain face, NAs were presented in the data set.
 
 ```{r MEexample, echo=F, message=F, fig.cap = "\\label{tab:MEexample}"}
 
 MEexample <- ME %>% subset(FileName=="face-1745-1-Go.png")
 
-
-knitr::kable(MEexample[2:9], digits=6, longtable=TRUE, booktabs = TRUE, caption="The Microsoft API provided 8 numerical values, one for each emotion.")
+knitr::kable(MEexample[2:9], digits=6, longtable=TRUE, booktabs = TRUE, caption="The Microsoft API provided eight numerical values, one for each emotion.")
 ```
 
-#### Skybiometry
+Skybiometry as provided a POST request object in a JSON format. However, unlike Microsoft, the results included a True or False Value for each of the seven emotions and a confidence level   'confidence value as a percentage from 0 to 100'^[https://skybiometry.com/documentation/#document-21] representing the confidence of the emotion being present on a player's face.
 
 ```{r SBexample, echo=F, fig.cap = "\\label{tab:SBexample}"}
-SBexample <- SB %>% subset(aname=="face-1745-1-Go.png") %>% select(ends_with(".confidence"))
 
+SBexample <- SB %>% subset(aname=="face-1745-1-Go.png") %>% select(ends_with(".confidence"))
 
 knitr::kable(SBexample[3:9], digits=6, longtable=TRUE, booktabs = TRUE,
              col.names = c("neutral", "anger", "disgust", "fear",
                            "happiness", "sadness", "surprise"),
-             caption="The Skybiometry API provided 7 numerical Confidence values, one for each emotion.")
+             caption="The Skybiometry API provided seven numerical Confidence values, one for each emotion.")
 ```
 
-#### Google
+The process undertaken to receive results Google produces was the same as the previous APIs. However rather than numeric values, it returned categorical likelihoods for the four emotions it considered.
 
 ```{r GEexample, echo=F, fig.cap = "\\label{tab:GEexample}"}
 GEexample <- GE %>% subset(FileName=="face-1745-1-Go.png") %>% select(ends_with("Likelihood"))
@@ -222,7 +251,7 @@ knitr::kable(GEexample, longtable=TRUE, booktabs = TRUE,
 
 
 These differing outputs needed to be arranged in a comparable manner.
-We began by considering the Microsoft output. Noticing that the sums of all emotion values was approximately one we considered that dividing the individual Skybiometry emotion confidences by the sum of the confidences would give the likelihood of each emotion being the dominant emotion in a face.
+Noticing that the sums of the individual emotions for each face in the Microsoft results was approximately one provided the basis for transformation for the other APIs. Dividing the individual Skybiometry emotion confidences by the sum of the confidences would give the proportional likelihood of each emotion being the dominant emotion in a face.
 
 This calculation was simple to perform and resulted in numeric values comparable to Microsoft's values.
 
@@ -237,38 +266,30 @@ knitr::kable(SBT, digits=6, longtable=TRUE, booktabs = TRUE,
 ```
 
 
-We then needed to transform the Google output to also be comparable. This was the most challenging due to it's unusual form.
+Google's results then required a more complex transformation for the output to also be comparable. 
 
-A numeric value was assigned to each possible likelihood value. This would allow for numeric comparisons to be made.
+As there were five possible categories assigned to each emotion the numeric values were chosen to sit in the middle of five 20 point ranges. This allowed a numerical representation of each possible likelihood value and would allow for numeric comparisons to be made.
 The values were assigned according to the table below:
-
 
 ```{r LT, echo=F, fig.cap = "\\label{tab:LT}"}
 Likelihood <-c("VERY_UNLIKELY", "UNLIKELY", "POSSIBLE", "LIKELY", "VERY_LIKELY")
 Value <- c(10, 30, 50, 70, 90)
 LT <- cbind(Likelihood, Value)
 
-knitr::kable(LT, longtable=TRUE, booktabs = TRUE,
-               caption="")
-
+knitr::kable(LT, longtable=TRUE, booktabs = TRUE, caption="")
 ```
 
-As both Microsoft and Skybiometry included a neutral category we considered how we may incorporate this for the Google results.
+As both Microsoft and Skybiometry included a neutral category we considered how to incorporate a neutral category for the Google results.
 
-Google Transformed 
-
-Our approach considered that when a face was "very unlikely" to be any of the four emotion categories it could be deemed "neutral". However when one emotion was stronger than other it could still be possible that the face only had a small lean toward this emotion. Therefore the Confidence value for neutral was derived as: 
+Our approach considered that when a face was "very unlikely" to be any of the four emotion categories it could be deemed "neutral". However when one emotion was stronger than other it could still be possible that the face only had a small lean toward this emotion and it may not be the obvious choice. Therefore the Confidence value for neutral was calculated according to the formula below: 
 
 $$neutralConf_i = 100 - max(joyConf_i, sorrowConf_i, angerConf_i, surpriseConf_i)$$
   
-The process to derive the numeric values followed the process undertaken for Skybiometry values. Where the individual emotion confidences were divided by the sum of the emotion confidence values for each face. 
-
-This resulted in congruent emotion data to be compared
-
+The process to derive the numeric values for Google followed the process undertaken for Skybiometry values. Where the individual emotion confidences were divided by the sum of the emotion confidence values for each face. This resulted in congruent emotion data.
 
 ```{r GET, echo=F, fig.cap = "\\label{tab:GET}"}
 
-GET <- GE %>% subset(FileName=="face-1745-1-Go.png") %>% 
+GET <- GEP %>% subset(FileName=="face-1745-1-Go.png") %>% 
   select(joy, sorrow, anger, surprise, neutral)
 
 knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
@@ -278,7 +299,65 @@ knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
 
 
 
+\newpage
 # Analysis
+
+Each API returned a different amount of non null results. Microsoft produced emotion results for `r sum(!is.na(ME$anger))` faces. This was more than Skybiometry, as it produced only `r sum(!is.na(SB$anger))` results for emotions on faces. Google provided the most, with  `r sum(!is.na(GE$anger))` emotion results^[As the initial set was faces identified by Google there is the possibility of bias toward being able to identify emotions in faces it was able to find originally.].
+
+
+
+```{r GEPhists}
+gganG <- ggplot(GEP, aes(x=anger))+geom_histogram(binwidth=0.055)+
+  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+ggjoG <- ggplot(GEP, aes(x=joy))+geom_histogram(binwidth=0.055) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+ggneG <- ggplot(GEP, aes(x=neutral))+geom_histogram(binwidth=0.055) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+ggsoG <- ggplot(GEP, aes(x=sorrow))+geom_histogram(binwidth=0.055) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+ggsuG <- ggplot(GEP, aes(x=surprise))+geom_histogram(binwidth=0.055) +
+  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+
+grid.arrange(gganG,ggjoG,ggneG,ggsoG,ggsuG,nrow=2,
+             top=textGrob("Google Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+
+```
+
+
+```{r SBPhists}
+gganS <- ggplot(SBP, aes(x=anger))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+gghaS <- ggplot(SBP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggneS <- ggplot(SBP, aes(x=neutral))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggsaS <- ggplot(SBP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggsuS <- ggplot(SBP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggdiS <- ggplot(SBP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggfeS <- ggplot(SBP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+
+grid.arrange(gganS, gghaS, ggneS, ggsaS, ggsuS, ggdiS, ggfeS,nrow=3,
+             top=textGrob("Skybiometryh Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+
+```
+
+```{r MEPhists}
+gganM <- ggplot(MEP, aes(x=anger))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+gghaM <- ggplot(MEP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggneM <- ggplot(MEP, aes(x=neutral))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggsaM <- ggplot(MEP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggsuM <- ggplot(MEP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggdiM <- ggplot(MEP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggfeM <- ggplot(MEP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+ggcoM <- ggplot(MEP, aes(x=contempt))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+
+grid.arrange(gganM, gghaM, ggneM, ggsaM, ggsuM, ggdiM, ggfeM, ggcoM,nrow=3, 
+             top=textGrob("Microsoft Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+
+
+```
+
+
+
+
+\newpage
 # Validation
 We considered a subset of images where the emotions on the faces were manually considered.
 

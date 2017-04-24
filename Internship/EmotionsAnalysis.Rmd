@@ -200,28 +200,28 @@ SBP$anger %>% is.na() %>% sum
 Skybiometry Emotion plots
 
 ```{r SBhists}
+plotSBHists<-function(data) {
+ggne <- ggplot(data, aes(x=neutral))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggan <- ggplot(data, aes(x=anger))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggdi <- ggplot(data, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggfe <- ggplot(data, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggha <- ggplot(data, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggsa <- ggplot(data, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+ggsu <- ggplot(data, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
 
-ggSBPne <- ggplot(SBP, aes(x=neutral))+geom_histogram(binwidth=0.025) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPan <- ggplot(SBP, aes(x=anger))+geom_histogram(binwidth=0.025) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPdi <- ggplot(SBP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPfe <- ggplot(SBP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPha <- ggplot(SBP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPsa <- ggplot(SBP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
-ggSBPsu <- ggplot(SBP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+grid.arrange(ggne,ggan,ggdi,ggfe,ggha,ggsa,ggsu,nrow=3)
+}
+
+plotEmotion<-function(data, Emotion) {
+ggEmot <- ggplot(data, aes_string(x=Emotion))+geom_histogram(binwidth=0.025) +coord_cartesian(xlim = c(0, 1), ylim = c(0,300))
+}
 
 
-grid.arrange(ggSBPne,
-             ggSBPan,
-             ggSBPdi,
-             ggSBPfe,
-             ggSBPha,
-             ggSBPsa,
-             ggSBPsu, nrow=3)
 ```
 
 
 SBPCL: Long form of Confidence levels of SB results
-```{r}
+```{r SBPlong}
 SBPCL <- SBP %>% group_by(aname) %>% 
   gather(key = Emotion, value=EmotionValue, anger,disgust,fear,happiness,neutral,sadness,surprise)
 
@@ -240,7 +240,7 @@ ggplot(SBPCL, aes(x=Emotion, y=EmotionValue)) + theme(axis.text.x = element_text
 
 GEP: Long form of Confidence levels of GE results
 GEPN:  Long form of Confidence levels of GE results renamed to match
-```{r}
+```{r GEPlong}
 #rename
 GEPN <- GEP %>% select(FileName, anger, happiness=joy, sadness=sorrow, surprise, neutral, everything())
 
@@ -263,7 +263,8 @@ ggplot(GEPCL1, aes(x=Emotion, y=EmotionValue)) + theme(axis.text.x = element_tex
 
 
 Microsoft Emotion plots
-```{r}
+```{r MEhists}
+plotMEHists<-function(data) {
 ggMEPne<-ggplot(MEP, aes(x=neutral)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 ggMEPan<-ggplot(MEP, aes(x=anger)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 ggMEPdi<-ggplot(MEP, aes(x=disgust)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
@@ -271,6 +272,7 @@ ggMEPfe<-ggplot(MEP, aes(x=fear)) + geom_histogram(binwidth=0.055) +coord_cartes
 ggMEPha<-ggplot(MEP, aes(x=happiness)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 ggMEPsa<-ggplot(MEP, aes(x=sadness)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 ggMEPsu<-ggplot(MEP, aes(x=surprise)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
+ggMEPco<-ggplot(MEP, aes(x=contempt)) + geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,420))
 
 grid.arrange(ggMEPne,
              ggMEPan,
@@ -278,14 +280,17 @@ grid.arrange(ggMEPne,
              ggMEPfe,
              ggMEPha,
              ggMEPsa,
-             ggMEPsu, nrow=3)
+             ggMEPsu, 
+             ggMEPco,nrow=3)
+}
+
 
 ```
 
 
 Microsoft Long form 
 MEPCL: Long form of Confidence levels of ME results
-```{r}
+```{r MElong}
 MEPCL<-MEP %>% group_by(FileName) %>% 
   gather(key = Emotion, value=EmotionValue, anger,contempt,disgust,fear,happiness,neutral,sadness,surprise) 
 
@@ -322,7 +327,7 @@ Tables
 ###
 Join emotions for each face
 J2: Table of FileNames and associated dominant emotion
-```{r}
+```{r combined}
 S1 <- select(SBPCL1, FileName = aname , SEmotion = Emotion)
 S2 <- select(MEPCL1, FileName, MEmotion = Emotion)
 S3 <- select(GEPCL1, FileName, GEmotion = Emotion)
@@ -345,7 +350,7 @@ ggplot(J2L, aes(x=Emotion)) + geom_bar(aes(fill = Software), position = "dodge")
 
 Contingency Table of 50 image sample
 
-```{r}
+```{r table}
 set.seed(300)
 J2na<-na.omit(J2)
 FL<-sample(J2na$FileName, 50)
@@ -374,7 +379,7 @@ ftable(t1)
 ```
 
 Find images from matches played by certain players
-```{r}
+```{r playerMatches}
 a <- as.data.frame(table(GEP$player1))
 a <- a %>% arrange(-Freq)
 
@@ -416,7 +421,7 @@ for (i in 1:length(list)){
 
 
 subset of Google where neutral = another category
-```{r}
+```{r GoogleNeutral}
 neutrals <- GEPCL1 %>% filter(neutralConf==joyConf | 
                     neutralConf==sorrowConf | 
                     neutralConf==surpriseConf | 
@@ -433,7 +438,7 @@ neutrals <- GEPCL1 %>% filter(neutralConf==joyConf |
 Emotive Player Faces
 EF: Emotive Player Faces to be used as sample.
 It is hard to classify many of the faces as one of the seven possible options. Where hints of emotive expressions can be attributed to one or more faces
-```{r}
+```{r EmotiveFaces}
 
 EF <- as.list(c("face-70-1-Go.png", "face-227-2-Go.png", "face-399-1-Go.png",
         "face-450-1-Go.png", "face-475-1-Go.png", "face-626-1-Go.png",
@@ -448,38 +453,108 @@ DisplayFaces(EF)
 
 
 
-
 Player Emotion Tables
 Distribution of emotion values for particular emotions across all images of a player
-```{r Playerhists}
+```{r PlayerHists}
 ggplot(na.omit(SBP), aes(x=playerName))+geom_bar()+ theme(axis.text.x = element_text(angle = 20)) 
 
 Name <- "GSimon"
 
+EmotionHists <- function(Emotion, Name){
+  
   SBPplayer <- SBP %>% filter(playerName == Name)
   
   ggSBPan <- 
-    ggplot(SBPplayer, aes(x = anger)) + ggtitle("Skybiometry") +
+    ggplot(SBPplayer, aes_string(x = Emotion)) + ggtitle("Skybiometry") +
     geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
   
-  GEPplayer <- GEP %>% filter(playerName == Name)
+  GEPplayer <- GEPN %>% filter(playerName == Name)
   
   ggGEPan <-
-    ggplot(GEPplayer, aes(x = anger)) +  ggtitle("Google") +
+    ggplot(GEPplayer, aes_string(x = Emotion)) +  ggtitle("Google") +
     geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
   
   MEPplayer <- MEP %>% filter(playerName == Name)
   
   ggMEPan <-
-    ggplot(MEPplayer, aes(x = anger)) +  ggtitle("Microsoft") +
+    ggplot(MEPplayer, aes_string(x = Emotion)) +  ggtitle("Microsoft") +
     geom_histogram(binwidth = 0.05) + coord_cartesian(xlim = c(0, 1))
 
 
 grid.arrange(ggMEPan,ggSBPan,ggGEPan, nrow = 3) 
+}
 
-TB<- as.list(MEPplayer$FileName)
-DisplayFaces(TB)
+EmotionHists(Emotion = "anger", "GSimon")
+EmotionHists(Emotion = "surprise", "GSimon")
+EmotionHists(Emotion = "happiness", "GSimon")
+EmotionHists(Emotion = "sadness", "GSimon")
+
+
 ```
 
 
 
+Neutrality in Faces
+```{r}
+sum(MEPCL1$Emotion=="neutral")/nrow(MEPCL1)
+sum(SBPCL1$Emotion=="neutral")/nrow(SBPCL1)
+sum(GEPCL1$Emotion=="neutral")/nrow(GEPCL1)
+
+nrow(MEPCL1)-sum(MEPCL1$Emotion=="neutral")
+nrow(SBPCL1)-sum(SBPCL1$Emotion=="neutral")
+nrow(GEPCL1)-sum(GEPCL1$Emotion=="neutral")
+
+```
+
+Pairwise comparison of neutral overlaps
+```{r neutrality}
+J2ne<-J2 %>% rowwise() %>%
+  mutate(SEneutral = ifelse(SEmotion=="neutral", "neutral","non-neutral")) %>%
+  mutate(MEneutral = ifelse(MEmotion=="neutral", "neutral","non-neutral")) %>%
+  mutate(GEneutral = ifelse(GEmotion=="neutral", "neutral","non-neutral")) 
+
+S4 <- select(SBP, FileName = aname, Skybiometry = neutral)
+S5 <- select(MEP, FileName, Microsoft = neutral)
+S6 <- select(GEP, FileName, Google = neutral)
+J3 <- full_join(S4, S5, by = "FileName")
+J4 <- full_join(J3, S6, by = "FileName")
+
+J4 <- J4 %>% rowwise %>% mutate(GoogleJitter = jitter(Google)) 
+
+library(GGally)
+ggscatmat(as.data.frame(na.omit(J4[,c(2:3,5)])))
+
+
+table(J2ne$MEmotion, J2$GEmotion)
+table(J2ne$MEneutral, J2ne$GEneutral)
+```
+
+
+Bar chart of attributes for neutral categorisations
+Need to consider that higher levels of values across the population may create misleading plots.
+
+```{r}
+Gneutral <- GEPCL1 %>% filter(Emotion=="neutral")
+Mneutral <- MEPCL1 %>% filter(Emotion=="neutral")
+Sneutral <- SBPCL1 %>% filter(Emotion=="neutral")
+
+
+NeutralBars <- function(Attribute){
+  
+  ggSBPne <- 
+    ggplot(Sneutral, aes_string(x = Attribute)) + ggtitle("Skybiometry") +
+    geom_bar()
+  
+  ggGEPne <-
+    ggplot(Gneutral, aes_string(x = Attribute)) + ggtitle("Google") +
+    geom_bar()
+  
+  ggMEPne <-
+    ggplot(Mneutral, aes_string(x = Attribute)) + ggtitle("Microsoft") +
+    geom_bar()
+
+grid.arrange(ggMEPne,ggSBPne,ggGEPne, nrow = 3) 
+}
+
+NeutralBars(Attribute = "bg")
+```
