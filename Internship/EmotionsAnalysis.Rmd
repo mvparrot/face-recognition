@@ -294,7 +294,9 @@ MEPCL: Long form of Confidence levels of ME results
 MEPCL<-MEP %>% group_by(FileName) %>% 
   gather(key = Emotion, value=EmotionValue, anger,contempt,disgust,fear,happiness,neutral,sadness,surprise) 
 
-MEPCL1 <- MEPCL %>% arrange(FileName, desc(EmotionValue)) %>%
+MEPCL1 <- MEP %>% group_by(FileName) %>% 
+  gather(key = Emotion, value=EmotionValue, anger,contempt,disgust,fear,happiness,neutral,sadness,surprise)  %>% 
+  arrange(FileName, desc(EmotionValue)) %>%
       group_by_(~ FileName) %>% 
       slice(1)
 
@@ -557,4 +559,18 @@ grid.arrange(ggMEPne,ggSBPne,ggGEPne, nrow = 3)
 }
 
 NeutralBars(Attribute = "bg")
+```
+
+
+
+```{r}
+#Find missing player
+nrow(GEP)
+nrow(MEP)
+nrow(SBP)
+
+dupe <- subset(duplicated(SBP$aname))
+duplicated(SBP$aname)
+SBP[264,]
+SBP %>% View()
 ```

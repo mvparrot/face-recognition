@@ -4,13 +4,14 @@ author: "Stephanie Kobakian"
 date: "28 March 2017"
 output: bookdown::pdf_document2
 fig_caption: yes
+out_width: 7
 fontsize: 11pt
 link-citations: true
 ---
 
 
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE, fig.width = 8)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
 
 library(tidyverse)
 library(dplyr)
@@ -25,8 +26,12 @@ library(ggplot2)
 ME <- read_csv("data/MicrosoftEmotions.csv")
 SB <- read_csv("data/SkybiometryEmotions.csv")
 GE <- read_csv("data/GoogleFacesEmotions.csv")
+GF <- read_csv("data/GoogleFaces.csv")
 DE <- read_csv("data/DominantEmotion.csv")
-
+# 
+# MEP <- read_csv("data/MicrosoftEmotions.csv")
+# SBP <- read_csv("data/SkybiometryEmotions.csv")
+# GEP <- read_csv("data/GoogleFacesEmotions.csv")
 
 EmotionSoftwareSpecs <- read_csv("Figures/EmotionSoftwareSpecifications.csv")
 ```
@@ -89,11 +94,24 @@ GE <- GE %>% rowwise %>%
                                                    ifelse(is.na(PlayerNumber), NA, NA))))
 ```
 
+```{r join}
+ME <- left_join(ME, GF, by = "FileName") 
+SB <- left_join(SB, GF, by = c("aname"="FileName")) 
+```
 
 ```{r playerSubset}
-GEP <- GE %>% filter(detect == "Player")
-MEP <- ME %>% filter(detect == "Player")
-SBP <- SB %>% filter(detect == "Player")
+library(dplyr)
+GEP <- GE %>% dplyr::filter(detect == "Player")
+MEP <- ME %>% dplyr::filter(detect == "Player")
+SBP <- SB %>% dplyr::filter(detect == "Player")
+```
+
+```{r NeutralProportions}
+S4 <- select(SBP, FileName = aname, Skybiometry = neutral)
+S5 <- select(MEP, FileName, Microsoft = neutral)
+S6 <- select(GEP, FileName, Google = neutral)
+J3 <- full_join(S4, S5, by = "FileName")
+J4 <- full_join(J3, S6, by = "FileName")
 ```
 
 \newpage
@@ -304,60 +322,141 @@ knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
 
 Each API returned a different amount of non null results. Microsoft produced emotion results for `r sum(!is.na(ME$anger))` faces. This was more than Skybiometry, as it produced only `r sum(!is.na(SB$anger))` results for emotions on faces. Google provided the most, with  `r sum(!is.na(GE$anger))` emotion results^[As the initial set was faces identified by Google there is the possibility of bias toward being able to identify emotions in faces it was able to find originally.].
 
+ 
+
+```{r NonNullFaces, fig.cap = "\\label{fig:NonNullFaces}", results = 'asis'}
+
+J4 <-J4 %>% rowwise() %>%
+  mutate(Gna = ifelse(!is.na(Google), TRUE, FALSE)) %>%
+  mutate(Sna = ifelse(!is.na(Skybiometry), TRUE, FALSE)) %>%
+  mutate(Mna = ifelse(!is.na(Microsoft), TRUE, FALSE)) 
+
+nfft<-ftable(J4$Gna, J4$Mna, J4$Sna, dnn = c("Google", "Microsoft", "Skybiometry"))
+
+library(stargazer)
+stargazer(format(nfft, quote=FALSE, justify="right"),title = "Emotion results were found by all three APIs for 364 common faces, none of the APIs produced results for 10 player faces. Google was able to produce 382 results that Skybiometry and Microoft did not.", header=FALSE, type="latex")
+```
 
 
-```{r GEPhists}
-gganG <- ggplot(GEP, aes(x=anger))+geom_histogram(binwidth=0.055)+
-  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
-ggjoG <- ggplot(GEP, aes(x=joy))+geom_histogram(binwidth=0.055) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
-ggneG <- ggplot(GEP, aes(x=neutral))+geom_histogram(binwidth=0.055) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
-ggsoG <- ggplot(GEP, aes(x=sorrow))+geom_histogram(binwidth=0.055) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
-ggsuG <- ggplot(GEP, aes(x=surprise))+geom_histogram(binwidth=0.055) +
-  coord_cartesian(xlim = c(0, 1), ylim = c(0,800))
+
+
+### Emotion Proportion Distributions
+For the following distributions only the faces of players were considered.
+
+```{r GEPhists, fig.cap = "It can be seen that there are significant proportions of faces where the non neutral emotions occur close to zero. This is balanced by the large percentage, over 75%, where the neutral value of just under .75 occurred. The faces used showed higher levels of Joy than any other non neutral emotion as the percentage occuring at zero was less than the percentages of the other emotions.\\label{fig:GEPhists}"}
+gganG <- ggplot(GEP, aes(x=anger)) + 
+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
+ggjoG <- ggplot(GEP, aes(x=joy)) + 
+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
+ggneG <- ggplot(GEP, aes(x=neutral)) + 
+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
+ggsoG <- ggplot(GEP, aes(x=sorrow)) + 
+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
+ggsuG <- ggplot(GEP, aes(x=surprise)) + 
+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
+  coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganG,ggjoG,ggneG,ggsoG,ggsuG,nrow=2,
-             top=textGrob("Google Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+             top=textGrob("Google Distribution of Emotion Porportions",
+             gp=gpar(fontsize=20,font=3)), 
+             left = ("Percentage of Emotion values"))
 
 ```
 
 
-```{r SBPhists}
-gganS <- ggplot(SBP, aes(x=anger))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-gghaS <- ggplot(SBP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggneS <- ggplot(SBP, aes(x=neutral))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggsaS <- ggplot(SBP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggsuS <- ggplot(SBP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggdiS <- ggplot(SBP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggfeS <- ggplot(SBP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+
+```{r SBPhists, fig.cap = "The distributions show that over 70% of faces had levels of happiness and neutrality at, or close to, 0. The distributions show that there are very little faces with specific emotion levels above 50%. Instead there are low levels of all emotions found on many faces. \\label{fig:SBPhists}"}
+gganS <- ggplot(SBP, aes(x=anger))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+gghaS <- ggplot(SBP, aes(x=happiness))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggneS <- ggplot(SBP, aes(x=neutral))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggsaS <- ggplot(SBP, aes(x=sadness))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggsuS <- ggplot(SBP, aes(x=surprise))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggdiS <- ggplot(SBP, aes(x=disgust))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggfeS <- ggplot(SBP, aes(x=fear))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganS, gghaS, ggneS, ggsaS, ggsuS, ggdiS, ggfeS,nrow=3,
-             top=textGrob("Skybiometryh Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+             top=textGrob("Skybiometry Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)), 
+             left = ("Percentage of Emotion values"))
 
 ```
 
-```{r MEPhists}
-gganM <- ggplot(MEP, aes(x=anger))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-gghaM <- ggplot(MEP, aes(x=happiness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggneM <- ggplot(MEP, aes(x=neutral))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggsaM <- ggplot(MEP, aes(x=sadness))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggsuM <- ggplot(MEP, aes(x=surprise))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggdiM <- ggplot(MEP, aes(x=disgust))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggfeM <- ggplot(MEP, aes(x=fear))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
-ggcoM <- ggplot(MEP, aes(x=contempt))+geom_histogram(binwidth=0.055) +coord_cartesian(xlim = c(0, 1), ylim = c(0,500))
+
+
+```{r MEPhists, fig.cap="Unlike the previous two softwares, there were many faces that returned high neutral values. This is matched by the high percentages of faces where the proportion levels were at, or close to, zero. While the happiness emotion was most varied, with values between 0 and 1, over 40% of faces returned surprise levels above zero.\\label{fig:MEPhists}"}
+
+gganM <- ggplot(MEP, aes(x=anger)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+gghaM <- ggplot(MEP, aes(x=happiness)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggneM <- ggplot(MEP, aes(x=neutral)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggsaM <- ggplot(MEP, aes (x=sadness)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggsuM <- ggplot(MEP, aes(x=surprise)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggdiM <- ggplot(MEP, aes(x=disgust)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggfeM <- ggplot(MEP, aes(x=fear)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+ggcoM <- ggplot(MEP, aes(x=contempt)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganM, gghaM, ggneM, ggsaM, ggsuM, ggdiM, ggfeM, ggcoM,nrow=3, 
-             top=textGrob("Microsoft Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)))
+             top=textGrob("Microsoft Distribution of Emotion Porportions", gp=gpar(fontsize=20,font=3)),
+             left =("Percentage of Emotion values"))
 
 
+```
+
+\newpage
+
+###Predominant Emotions
+To contrast the emotion results for certain faces a 'predominant' emotion was designated to each face. Where the emotion with the maximum proportion value was deemed the 'predominant' emotion for a particular face.
+
+This resulted in one of seven emotions for Google, one of eight for Microsoft, and one of five for Google. This also required the assumption that joy is equivalent to happiness, and sorrow to sadness.
+
+```{r predominant, results = 'asis', fig.cap = "\\label{tab:predominant}"}
+#Table including Google
+#ftable(DE$GEmotion, DE$SEmotion, DE$MEmotion, dnn = c("Google", "Skybiometry", "Microsoft"))
+
+ft<-ftable( DE$MEmotion, DE$SEmotion, dnn = c("Microsoft","Skybiometry"))
+
+stargazer(format(ft, quote=FALSE, justify="right"),title = "This shows the agreement between the emotions recognised by Microsoft and Skybiometry", header=FALSE, type = "latex")
+```
+
+There was only one occurence of all three APIs gaving the same emotional result. This occured when there was agreement for 11 faces that the dominant emotion was anger. 
+In Table \@ref(tab:predominant) where Skybiometry emotion recognitions are shown in the rows, and Microsoft's in the columns. 
+It is reasonable to only consider Microsoft and Skybiomertry it can be seen that they agreed 408 faces were predominantly showing anger, and 12 were showing surprise.
+
+
+As neutral was a prominent category for Microsoft and Google, we considered where neutral was the dominant emotion and grouped the remaining emotions into a non-neutral category.
+
+
+```{r neutral-non, results='asis', fig.cap="\\label{tab:neutral-non}"}
+DEne<-DE %>% rowwise()%>%
+  mutate(GEneutral = ifelse(GEmotion=="neutral", "neutral","non-neutral")) %>%
+  mutate(SEneutral = ifelse(SEmotion=="neutral", "neutral","non-neutral")) %>%
+  mutate(MEneutral = ifelse(MEmotion=="neutral", "neutral","non-neutral")) 
+
+# neutral flat table
+nft<-ftable(DEne$GEneutral, DEne$MEneutral,DEne$SEneutral, dnn = c("Google","Microsoft","Skybiometry"))
+
+stargazer(format(nft, quote=FALSE, justify="right"), header=FALSE, type = "latex", title ="This shows the agreement between non-neutral and neutral faces recognised by Goole, Microsoft and, Skybiometry. Only three faces were categorised as neutral. Of these, Google was much more likely to categorise as neutral.")
+```
+
+The following Figure \@ref(fig:neutrality) displays a Scatter Plot Matrix that captures the pairwise variablitiy in the Neutral proportion levels across APIs.
+
+
+```{r neutrality, fig.cap = "The Scatter Plot Matrix shows the variablitiy in the Neutral proportion levels. The -0.01 correlation value for Google and Skybiometry show that they do not behave either in a similar way, or inversely. They are uncorrelated.\n Some high values of neutrality for Google are matched to some high levels found by Skybiometry. However, in the lower ranges of both there is a lot of variability in proportion values.\\label{fig:neutrality}"}
+
+library(GGally)
+ggscatmat(as.data.frame(na.omit(J4[,c(2:4)])), alpha = 0.4)
 ```
 
 
 
 
 \newpage
-# Validation
+## Validation
 We considered a subset of images where the emotions on the faces were manually considered.
 
