@@ -11,10 +11,9 @@ link-citations: true
 
 
 ```{r cache=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
-knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache=TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, cache = TRUE)
 
 library(tidyverse)
-library(dplyr)
 library(readr)
 library(GGally)
 library(magick)
@@ -55,6 +54,9 @@ SB <- SB %>%
          sadness = sadness.confidence/z,
          surprise = surprise.confidence/z)
 
+```
+
+```{r mutate}
 #Create normalised GE values
 Conf <- function(Emot){
 ifelse(Emot=="VERY_UNLIKELY", 10,  
@@ -63,9 +65,7 @@ ifelse(Emot=="VERY_UNLIKELY", 10,
                 ifelse(Emot == "LIKELY", 70, 
                 ifelse(Emot == "VERY_LIKELY", 90, NA)))))
 }
-```
 
-```{r mutate}
 #confidence columns
 GE <- GE %>% mutate(joyConf = Conf(joyLikelihood)) %>%
   mutate(sorrowConf = Conf(sorrowLikelihood)) %>%
@@ -100,11 +100,37 @@ SB <- left_join(SB, GF, by = c("aname"="FileName"))
 ```
 
 ```{r playerSubset}
-library(dplyr)
 GEP <- GE %>% dplyr::filter(detect == "Player")
 MEP <- ME %>% dplyr::filter(detect == "Player")
 SBP <- SB %>% dplyr::filter(detect == "Player")
 ```
+
+
+```{r predominantEmotion}
+#shows only the rank 1 emotion and value for each face
+GEP1 <- GEP %>% group_by(FileName) %>% 
+  gather(key = Emotion, value=EmotionValue, 
+         anger, joy, sorrow, surprise,neutral)  %>% 
+  arrange(FileName, desc(EmotionValue)) %>%
+      group_by_(~ FileName) %>% 
+      slice(1)
+
+SBP1 <- SBP %>% group_by(aname) %>% 
+  gather(key = Emotion, value=EmotionValue, 
+         anger,disgust,fear,happiness,neutral,sadness,surprise)  %>% 
+  arrange(aname, desc(EmotionValue)) %>%
+      group_by_(~ aname) %>% 
+      slice(1)
+
+MEP1 <- MEP %>% group_by(FileName) %>% 
+  gather(key = Emotion, value=EmotionValue,
+         anger,contempt,disgust,fear,happiness,neutral,sadness,surprise)  %>% 
+  arrange(FileName, desc(EmotionValue)) %>%
+      group_by_(~ FileName) %>% 
+      slice(1)
+
+```
+
 
 ```{r NeutralProportions}
 S4 <- select(SBP, FileName = aname, Skybiometry = neutral)
@@ -375,11 +401,17 @@ grid.arrange(gganG,ggjoG,ggneG,ggsoG,ggsuG,nrow=2,
 
 ```{r SBPhists, fig.cap = "The distributions show that over 70% of faces had levels of happiness and neutrality at, or close to, 0. The distributions show that there are very little faces with specific emotion levels above 50%. Instead there are low levels of all emotions found on many faces. \\label{fig:SBPhists}"}
 gganS <- ggplot(SBP, aes(x=anger))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 gghaS <- ggplot(SBP, aes(x=happiness))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggneS <- ggplot(SBP, aes(x=neutral))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggsaS <- ggplot(SBP, aes(x=sadness))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggsuS <- ggplot(SBP, aes(x=surprise))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggdiS <- ggplot(SBP, aes(x=disgust))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggfeS <- ggplot(SBP, aes(x=fear))+  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganS, gghaS, ggneS, ggsaS, ggsuS, ggdiS, ggfeS,nrow=3,
@@ -393,12 +425,19 @@ grid.arrange(gganS, gghaS, ggneS, ggsaS, ggsuS, ggdiS, ggfeS,nrow=3,
 ```{r MEPhists, fig.cap="Unlike the previous two softwares, there were many faces that returned high neutral values. This is matched by the high percentages of faces where the proportion levels were at, or close to, zero. While the happiness emotion was most varied, with values between 0 and 1, over 40% of faces returned surprise levels above zero.\\label{fig:MEPhists}"}
 
 gganM <- ggplot(MEP, aes(x=anger)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 gghaM <- ggplot(MEP, aes(x=happiness)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggneM <- ggplot(MEP, aes(x=neutral)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggsaM <- ggplot(MEP, aes (x=sadness)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggsuM <- ggplot(MEP, aes(x=surprise)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggdiM <- ggplot(MEP, aes(x=disgust)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggfeM <- ggplot(MEP, aes(x=fear)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+
 ggcoM <- ggplot(MEP, aes(x=contempt)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganM, gghaM, ggneM, ggsaM, ggsuM, ggdiM, ggfeM, ggcoM,nrow=3, 
@@ -449,8 +488,68 @@ The following Figure \@ref(fig:neutrality) displays a Scatter Plot Matrix that c
 
 ```{r neutrality, fig.cap = "The Scatter Plot Matrix shows the variablitiy in the Neutral proportion levels. The -0.01 correlation value for Google and Skybiometry show that they do not behave either in a similar way, or inversely. They are uncorrelated.\n Some high values of neutrality for Google are matched to some high levels found by Skybiometry. However, in the lower ranges of both there is a lot of variability in proportion values.\\label{fig:neutrality}"}
 
-library(GGally)
 ggscatmat(as.data.frame(na.omit(J4[,c(2:4)])), alpha = 0.4)
+```
+
+
+We consider that there were attributes of the faces captured that may have influenced the likelihood of a neutral result in the cases of Google and Skybiometry.
+To understand this we consider the associations between differing attribute values and the neutral results.
+
+
+```{r Regression, fig.height=9.5, fig.width=7.5, fig.cap = "The logistic regression returned statistically significant results when the face was captured in the presence of a graphic. \\label{Regression}"}
+#Add neutral columns to data sets 
+
+GEP1 <- GEP1 %>% rowwise %>% mutate(Gneutral = ifelse(Emotion=="neutral", "neutral","non-neutral")) %>%  mutate(neutral01 = ifelse(Gneutral=="neutral",1,0))  
+
+MEP1 <- MEP1 %>% rowwise %>% mutate(Mneutral = ifelse(Emotion=="neutral", "neutral","non-neutral")) %>% mutate(neutral01 = ifelse(Mneutral=="neutral",1,0))  
+
+SBP1 <- SBP1 %>% rowwise %>% mutate(Sneutral = ifelse(Emotion=="neutral", "neutral","non-neutral")) %>% mutate(neutral01 = ifelse(Sneutral=="neutral",1,0))  
+
+
+ModelTable <- function(model){
+  model %>%
+    summary %>%
+    coef %>%
+    as.data.frame %>%
+    cbind %>%
+    rownames_to_column %>%
+    cbind %>%
+    dplyr::rename(variable = rowname)
+}
+
+
+SignificancePlot <- function(model, data = ModelTable(model)) {
+  data %>%
+  mutate(significant = `Pr(>|t|)` < 0.05) %>%
+  mutate(`Pr(<|t|)` = 1 - `Pr(>|t|)`) %>%
+  ggplot(aes(x=variable, y=`Pr(<|t|)`)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  geom_col(aes(fill=significant))
+}
+
+EstimatesPlot <- function(model, data = ModelTable(model)) {
+  data %>%
+  mutate(significant = `Pr(>|t|)` < 0.05) %>%
+  ggplot(aes(x= variable, y=Estimate)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1), 
+        axis.text.y = element_text(angle = 30, hjust = 1)) +
+  geom_col(aes(fill=significant))
+}
+
+
+ModelPlotResults<-function(model, data = ModelTable(model)){
+  ep<-EstimatesPlot(model, data)
+  sp<- SignificancePlot(model, data)
+  grid.arrange(ep, sp, nrow=1)
+}
+
+
+#A backward stepwise regression approach led to the following nmodel with a low AIC:
+mod <- glm(neutral01 ~ headangle + shotangle, data = GEP1)
+
+
+ModelPlotResults(mod)
+
 ```
 
 
