@@ -330,9 +330,9 @@ Tables
 Join emotions for each face
 J2: Table of FileNames and associated dominant emotion
 ```{r combined}
-S1 <- select(SBPCL1, FileName = aname , SEmotion = Emotion)
-S2 <- select(MEPCL1, FileName, MEmotion = Emotion)
-S3 <- select(GEPCL1, FileName, GEmotion = Emotion)
+S1 <- select(SBP1, FileName = aname , SEmotion = Emotion)
+S2 <- select(MEP1, FileName, MEmotion = Emotion)
+S3 <- select(GEP1, FileName, GEmotion = Emotion)
 J1 <- full_join(S1, S2, by = "FileName")
 J2 <- full_join(J1, S3, by = "FileName")
 
@@ -345,6 +345,7 @@ J2L <- J2 %>%
 
 
 ggplot(J2L, aes(x=Emotion)) + geom_bar(aes(fill = Software), position = "dodge")
+
 
 ```
 
@@ -399,18 +400,16 @@ PJ$sum<-PJ$Freq.x+PJ$Freq.y
 
 Player Subsetting
 ```{r DisplayFaces}
+AKimgsG<-GEP %>% filter(player1=="JSousa")
+AKimgsG<-AKimgsG %>% filter(detect=="Player")
+AKlist <- as.list(AKimgsG$FileName)
+length(AKlist)
 
-
-
-
-MSimgsG<-GEPCL1 %>% filter(player1=="ARadwanska")
-MSimgsG <-MSimgsG %>% filter(detect=="Player")
-MSlist <- as.list(MSimgsG$FileName)
-length(MSlist)
+DisplayFaces(AKlist)
 
 library(imager)
 DisplayFaces <- function(list) {
-for (i in 1:length(list)){
+    for (i in 1:15){
 
    devAskNewPage()
    plot(load.image(paste0("Faces/", list[i])), 
@@ -573,4 +572,16 @@ dupe <- subset(duplicated(SBP$aname))
 duplicated(SBP$aname)
 SBP[264,]
 SBP %>% View()
+```
+
+
+``` {r playerSpecificEmotions}
+player <- "AMurray"
+GEPAM <- GEP %>% filter(playerName == player)
+MEPAM <- MEP %>% filter(playerName == player)
+SBPAM <- SBP %>% filter(playerName == player)
+
+
+
+
 ```
