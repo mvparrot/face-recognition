@@ -400,7 +400,7 @@ PJ$sum<-PJ$Freq.x+PJ$Freq.y
 
 Player Subsetting
 ```{r DisplayFaces}
-AKimgsG<-GEP %>% filter(player1=="JSousa")
+AKimgsG<-GEP %>% filter(player2=="ACornet")
 AKimgsG<-AKimgsG %>% filter(detect=="Player")
 AKlist <- as.list(AKimgsG$FileName)
 length(AKlist)
@@ -585,3 +585,19 @@ SBPAM <- SBP %>% filter(playerName == player)
 
 
 ```
+
+
+
+
+```{r GoogleJoy}
+Gjoy <- GEP1 %>% filter(Emotion=="joy")
+
+Gjoylist<- as.list(Gjoy$FileName)
+
+Mjoy <- MEP1 %>% filter(FileName %in% Gjoylist)
+
+table(Mjoy$Emotion)
+
+```
+
+

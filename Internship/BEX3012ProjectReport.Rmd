@@ -20,6 +20,8 @@ library(magick)
 library(grid)
 library(gridExtra)
 library(ggplot2)
+library(stargazer)
+library(glmnet)
 
 #Read in data files
 ME <- read_csv("data/MicrosoftEmotions.csv")
@@ -27,12 +29,21 @@ SB <- read_csv("data/SkybiometryEmotions.csv")
 GE <- read_csv("data/GoogleFacesEmotions.csv")
 GF <- read_csv("data/GoogleFaces.csv")
 DE <- read_csv("data/DominantEmotion.csv")
-# 
-# MEP <- read_csv("data/MicrosoftEmotions.csv")
-# SBP <- read_csv("data/SkybiometryEmotions.csv")
-# GEP <- read_csv("data/GoogleFacesEmotions.csv")
+
 
 EmotionSoftwareSpecs <- read_csv("Figures/EmotionSoftwareSpecifications.csv")
+
+#player name column
+GE <- GE %>% rowwise %>%
+  mutate(playerName = ifelse(PlayerNumber == 1, player1,
+                                            ifelse(PlayerNumber == 2, player2,
+                                                   ifelse(is.na(PlayerNumber), NA, NA))))
+
+GF <- GF %>% rowwise %>%
+  mutate(playerName = ifelse(PlayerNumber == 1, player1,
+                                            ifelse(PlayerNumber == 2, player2,
+                                                   ifelse(is.na(PlayerNumber), NA, NA))))
+
 ```
 
 
@@ -66,32 +77,29 @@ ifelse(Emot=="VERY_UNLIKELY", 10,
                 ifelse(Emot == "VERY_LIKELY", 90, NA)))))
 }
 
+#refer to joy results as happiness, and sorrow as sadness
+
 #confidence columns
-GE <- GE %>% mutate(joyConf = Conf(joyLikelihood)) %>%
-  mutate(sorrowConf = Conf(sorrowLikelihood)) %>%
+GE <- GE %>% mutate(happinessConf = Conf(joyLikelihood)) %>%
+  mutate(sadnessConf = Conf(sorrowLikelihood)) %>%
   mutate(angerConf = Conf(angerLikelihood)) %>%
   mutate(surpriseConf = Conf(surpriseLikelihood))
 
 #proportion columns
 GE <- GE %>%
   rowwise %>% 
-  mutate(neutralConf = 100 - (pmax(joyConf, sorrowConf, angerConf, surpriseConf))) %>%
-  mutate(z = (joyConf+
-                sorrowConf+
+  mutate(neutralConf = 100 - (pmax(happinessConf, sadnessConf, angerConf, surpriseConf))) %>%
+  mutate(z = (happinessConf+
+                sadnessConf+
                 angerConf+
                 surpriseConf+
                 neutralConf)) %>%
   mutate(anger = angerConf/z,
-         joy = joyConf/z,
+         happiness = happinessConf/z,
          neutral = neutralConf/z,
-         sorrow = sorrowConf/z,
+         sadness = sadnessConf/z,
          surprise = surpriseConf/z)
 
-#player name column
-GE <- GE %>% rowwise %>%
-  mutate(playerName = ifelse(PlayerNumber == 1, player1,
-                                            ifelse(PlayerNumber == 2, player2,
-                                                   ifelse(is.na(PlayerNumber), NA, NA))))
 ```
 
 ```{r join}
@@ -108,27 +116,39 @@ SBP <- SB %>% dplyr::filter(detect == "Player")
 
 ```{r predominantEmotion}
 #shows only the rank 1 emotion and value for each face
-GEP1 <- GEP %>% group_by(FileName) %>% 
+GEP1 <- GEP %>% 
+  filter(!is.na(anger)) %>%
+  group_by(FileName) %>% 
   gather(key = Emotion, value=EmotionValue, 
-         anger, joy, sorrow, surprise,neutral)  %>% 
+         anger, happiness, sadness, surprise, neutral)  %>% 
   arrange(FileName, desc(EmotionValue)) %>%
       group_by_(~ FileName) %>% 
-      slice(1)
+      slice(1) 
 
-SBP1 <- SBP %>% group_by(aname) %>% 
+GEP1$Emotion <- as.factor(GEP1$Emotion)
+
+SBP1 <- SBP %>% 
+  filter(!is.na(anger)) %>%
+  group_by(aname) %>% 
   gather(key = Emotion, value=EmotionValue, 
          anger,disgust,fear,happiness,neutral,sadness,surprise)  %>% 
   arrange(aname, desc(EmotionValue)) %>%
       group_by_(~ aname) %>% 
       slice(1)
 
-MEP1 <- MEP %>% group_by(FileName) %>% 
+SBP1$Emotion <- as.factor(SBP1$Emotion)
+
+
+MEP1 <- MEP %>% 
+  filter(!is.na(anger)) %>%
+  group_by(FileName) %>% 
   gather(key = Emotion, value=EmotionValue,
          anger,contempt,disgust,fear,happiness,neutral,sadness,surprise)  %>% 
   arrange(FileName, desc(EmotionValue)) %>%
       group_by_(~ FileName) %>% 
       slice(1)
 
+MEP1$Emotion <- as.factor(MEP1$Emotion)
 ```
 
 
@@ -139,6 +159,49 @@ S6 <- select(GEP, FileName, Google = neutral)
 J3 <- full_join(S4, S5, by = "FileName")
 J4 <- full_join(J3, S6, by = "FileName")
 ```
+
+```{r regressionFunctions}
+
+ModelTable <- function(model){
+  model %>%
+    summary %>%
+    coef %>%
+    as.data.frame %>%
+    cbind %>%
+    rownames_to_column %>%
+    cbind %>%
+    dplyr::rename(variable = rowname)
+}
+
+
+SignificancePlot <- function(model, data = GlmModelEstimates(model)) {
+  data %>%
+  mutate(significant = `Pr(>|z|)` < 0.05) %>%
+  mutate(`Pr(<|z|)` = 1 - `Pr(>|z|)`) %>%
+  ggplot(aes(x=variable, y=`Pr(<|z|)`)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  geom_col(aes(fill=significant)) 
+}
+
+EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
+  data %>%
+  mutate(significant = `Pr(>|z|)` < 0.05) %>%
+  ggplot(aes(x=variable, y=Estimate)) +  
+  theme(axis.text.x = element_text(angle = 30, hjust = 1), 
+        axis.text.y = element_text(angle = 30, hjust = 1)) +
+  geom_col(aes(fill=significant)) 
+}
+
+ModelPlotResults<-function(model, data = ModelTable(model)){
+  ep<-EstimatesPlot(model, data)
+  sp<- SignificancePlot(model, data)
+  grid.arrange(ep, sp, nrow=1)
+}
+
+
+```
+
+
 
 \newpage
 # Introduction
@@ -155,10 +218,10 @@ helpful for applications
 
 ## Images
 
-The image set contained 6406 still shot 800x450px size video frames, taken every 3 seconds from 5 minute segments sampled from 105 Australian Open 2016 match broadcast videos.
+The image set used to derive emotion information contained 6406 still shot images. These were 800x450px video frames, taken every 3 seconds from 5 minute video segments. These segments were sampled from 105 Australian Open 2016 match broadcast videos.
 The broadcast videos are a combination of multiple camera feeds, these angles vary depending on the court the match was played on.
 
-```{r ExampleImage, echo=F, fig.cap = "Example Image: 2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0020.png\\label{fig:ExampleImage}"}
+```{r ExampleImage, echo=F, fig.cap = "This image was derived from a match played between JMillman and DSchwartzmann in the first Round of the 2016 Australian Open. \\label{fig:ExampleImage}"}
 
 img <- image_read("Figures/2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0020.png")
    
@@ -183,10 +246,10 @@ knitr::kable(EmotionSoftwareSpecs, longtable=TRUE, booktabs = TRUE, caption="Thi
 As can be seen above, a noticeable difference between the three is the amount of times the API can be called within a given time frame. Skybiometry had the largest imposition on Call Limits as it only allowed 100 API calls to be processed per hour. Microsoft also had a limit imposed, but this allowed for much more to be processed with the possibility of 1200 images to be processed within one hour, after accounting for the wait time between each group of 20.
 Google Vision's API call limit had a minimal effect for our purposes.
 
-The number of emotions shown in the results were not congruent. These differences made it necessary to pre process the result to provide the most comparable results for analysis.
-Microsoft provided the most emotion options, contempt being the addition that was not provided by Skybiometry. Google provided the least, only giving the options for four different emotions.
+The number of emotions shown in the results were not congruent. These differences made it necessary to process the outputs to provide the most comparable results for analysis.
+Microsoft provided the most emotion options, contempt being the addition that was not provided by Skybiometry. Google provided the least, only providing four different emotions.
 
-The outputs from the APIs were very different. Google provides likelihoods of an emotion occurring on a particular face in categorical options ranging from Very Unlikely to Very Likely. Microsoft provide Proportions, ranging between 0 and , whereas Skybiometry results in a Confidence of the emotion occurring in the specified face in values from 0 to 100.
+The observations of these emotions from the APIs were also different. Google provides likelihoods of an emotion occurring on a particular face in categorical options ranging from Very Unlikely to Very Likely. Microsoft provide Proportions, ranging between 0 and 1, whereas Skybiometry results in a Confidence value for the emotion occurring in the specified face in values from 0 to 100.
 
 \newpage
 # Procedure
@@ -194,9 +257,9 @@ The outputs from the APIs were very different. Google provides likelihoods of an
 
 ## Process Images
 
-The original image set was subset to create images of faces specifically suited for emotion recognition purposes. 
-A crop was performed to create a new image that focused on the area marked as a face by Google^[based on Google’s bounding box coordinates]. A border to frame the face was also included for visual appeal.
-These 1319 new images, of varying sizes, were hosted on Google Drive to allow for URL access from the API to the individual images.
+To create a set of individual faces for the APIs to consider we derived small images that were cropped subsets of the 450x800px images.
+The crop was performed to create a new image with a unique name that focused on the area marked as a face by Google^[based on Google’s bounding box coordinates]. A border to frame the face was also included for visual appeal.
+These 1319 new images, of varying sizes, were hosted on Google Drive as individual images.
 
 
 ```{r VisualSet, echo=F, fig.cap = "Three Faces in the image set, after extracting faces from the full broadcast video stills, and the dominant emotion each software recognised for them. \\label{fig:VisualSet}"}
@@ -258,10 +321,10 @@ grid.arrange(i1, i2, i3, t1, t2, t3, nrow=2)
 
 ## Process API results
 
-The results extracted from each of the APIs differed, re configuring of these results was needed to create comparable sets for analysis.
+As mentioned previously, the results extracted for each face differed across the APIs this made it necessary to produce a comparable set of results for analysis.
 
 Microsoft provided a POST request object in a JSON format. 
-This was easily formatted to create a data set of the eight numeric emotion values provided for each face. In the event that emotion values were not returned for a certain face, NAs were presented in the data set.
+This was easily manipulated to create a data set of the eight numeric emotion values provided for each face. In the event that emotion values were not returned for a certain face, a row of NAs will be associated with the unique face ID in the data set.
 
 ```{r MEexample, echo=F, message=F, fig.cap = "\\label{tab:MEexample}"}
 
@@ -270,7 +333,7 @@ MEexample <- ME %>% subset(FileName=="face-1745-1-Go.png")
 knitr::kable(MEexample[2:9], digits=6, longtable=TRUE, booktabs = TRUE, caption="The Microsoft API provided eight numerical values, one for each emotion.")
 ```
 
-Skybiometry as provided a POST request object in a JSON format. However, unlike Microsoft, the results included a True or False Value for each of the seven emotions and a confidence level   'confidence value as a percentage from 0 to 100'^[https://skybiometry.com/documentation/#document-21] representing the confidence of the emotion being present on a player's face.
+Skybiometry also provided a POST request object in a JSON format. However, unlike Microsoft, the results included a True or False Value for each of the seven emotions and a 'confidence value as a percentage from 0 to 100'^[https://skybiometry.com/documentation/#document-21] representing the confidence of the emotion being present on a player's face.
 
 ```{r SBexample, echo=F, fig.cap = "\\label{tab:SBexample}"}
 
@@ -282,19 +345,18 @@ knitr::kable(SBexample[3:9], digits=6, longtable=TRUE, booktabs = TRUE,
              caption="The Skybiometry API provided seven numerical Confidence values, one for each emotion.")
 ```
 
-The process undertaken to receive results Google produces was the same as the previous APIs. However rather than numeric values, it returned categorical likelihoods for the four emotions it considered.
+The process undertaken to receive the results Google produced was the same as the previous APIs. However rather than numeric values, it returned categorical likelihoods for the four emotions it considered.
 
 ```{r GEexample, echo=F, fig.cap = "\\label{tab:GEexample}"}
 GEexample <- GE %>% subset(FileName=="face-1745-1-Go.png") %>% select(ends_with("Likelihood"))
 
 
 knitr::kable(GEexample, longtable=TRUE, booktabs = TRUE,
-             col.names = c("joy", "sorrow", "anger", "surprise"),
+             col.names = c("happiness", "sadness", "anger", "surprise"),
              caption="The Google Vision API provided four likelihood possibilities, one for each emotion.")
 ```
 
 
-These differing outputs needed to be arranged in a comparable manner.
 Noticing that the sums of the individual emotions for each face in the Microsoft results was approximately one provided the basis for transformation for the other APIs. Dividing the individual Skybiometry emotion confidences by the sum of the confidences would give the proportional likelihood of each emotion being the dominant emotion in a face.
 
 This calculation was simple to perform and resulted in numeric values comparable to Microsoft's values.
@@ -323,21 +385,21 @@ LT <- cbind(Likelihood, Value)
 knitr::kable(LT, longtable=TRUE, booktabs = TRUE, caption="")
 ```
 
-As both Microsoft and Skybiometry included a neutral category we considered how to incorporate a neutral category for the Google results.
+As both Microsoft and Skybiometry included a neutral category we incorporated a neutral category for the Google results.
 
-Our approach considered that when a face was "very unlikely" to be any of the four emotion categories it could be deemed "neutral". However when one emotion was stronger than other it could still be possible that the face only had a small lean toward this emotion and it may not be the obvious choice. Therefore the Confidence value for neutral was calculated according to the formula below: 
+Our approach considered that when a face was "very unlikely" to be any of the four emotion categories it could be deemed "neutral". However when one emotion was stronger than others it could still be possible that the face only had a small lean toward this emotion and it may not be a dominant expression . Therefore the Confidence value for neutral was calculated according to the formula below: 
 
-$$neutralConf_i = 100 - max(joyConf_i, sorrowConf_i, angerConf_i, surpriseConf_i)$$
+$$neutralConf_i = 100 - max(happinessConf_i, sadnessConf_i, angerConf_i, surpriseConf_i)$$
   
 The process to derive the numeric values for Google followed the process undertaken for Skybiometry values. Where the individual emotion confidences were divided by the sum of the emotion confidence values for each face. This resulted in congruent emotion data.
 
 ```{r GET, echo=F, fig.cap = "\\label{tab:GET}"}
 
 GET <- GEP %>% subset(FileName=="face-1745-1-Go.png") %>% 
-  select(joy, sorrow, anger, surprise, neutral)
+  select(happiness, sadness, anger, surprise, neutral)
 
 knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
-             col.names = c("joy", "sorrow", "anger", "surprise", "neutral"),
+             col.names = c("happiness", "sadness", "anger", "surprise", "neutral"),
              caption="The Google Vision API provided four likelihoods, one for each emotion.")
 ```
 
@@ -348,7 +410,26 @@ knitr::kable(GET, longtable=TRUE, booktabs = TRUE,
 
 Each API returned a different amount of non null results. Microsoft produced emotion results for `r sum(!is.na(ME$anger))` faces. This was more than Skybiometry, as it produced only `r sum(!is.na(SB$anger))` results for emotions on faces. Google provided the most, with  `r sum(!is.na(GE$anger))` emotion results^[As the initial set was faces identified by Google there is the possibility of bias toward being able to identify emotions in faces it was able to find originally.].
 
- 
+```{r playerNonplayer, eval=FALSE,fig.cap="\\label{tab:playerNonPlayer}"}
+#Apply a machine learning algorithm to face recognition data, and software provided for fitting model, aiming to classify whether an identified face is a player or not player
+ME <- ME %>% rowwise %>% mutate(Player = ifelse(detect=="Player", "Player","NotPlayer")) %>%  mutate(Player01 = ifelse(Player=="Player",1,0))  
+
+gplayer = glm(Player01 ~ bg+shotangle+obscured+headangle+glasses+visorhat, data = GE, family=binomial(logit))
+
+gpm <- model.matrix(gplayer)
+
+gpmNet = glmnet(gpm, as.vector(GE$Player01))
+
+pot(gpmNet)
+
+#cv of model
+cvgpmNet = cv.glmnet(gpm, as.vector(GE$Player01),family = "binomial", type.measure = "class")
+
+plot(cvgpmNet)
+summary(gplayer)
+coef(cvgpmNet, s = "lambda.min")
+```
+
 
 ```{r NonNullFaces, fig.cap = "\\label{fig:NonNullFaces}", results = 'asis'}
 
@@ -359,22 +440,21 @@ J4 <-J4 %>% rowwise() %>%
 
 nfft<-ftable(J4$Gna, J4$Mna, J4$Sna, dnn = c("Google", "Microsoft", "Skybiometry"))
 
-library(stargazer)
-stargazer(format(nfft, quote=FALSE, justify="right"),title = "Emotion results were found by all three APIs for 364 common faces, none of the APIs produced results for 10 player faces. Google was able to produce 382 results that Skybiometry and Microoft did not.", header=FALSE, type="latex")
+stargazer(format(nfft, quote=FALSE, justify="right"),title = "Emotion results were found by all three APIs for 364 common faces, none of the APIs produced results for 10 player faces. Google was able to produce 382 results that Skybiometry and Microsoft did not.", header=FALSE, type="latex")
 ```
 
 
+In the following sections we will only consider the faces of players, as they would be the intended targets for our applications of this research. Microsoft produced emotion results for `r sum(!is.na(MEP$anger))` player's faces. Skybiometry, produced `r sum(!is.na(SBP$anger))` and Google provided `r sum(!is.na(GEP$anger))` emotion results.
 
-
+\newpage
 ### Emotion Proportion Distributions
-For the following distributions only the faces of players were considered.
 
-```{r GEPhists, fig.cap = "It can be seen that there are significant proportions of faces where the non neutral emotions occur close to zero. This is balanced by the large percentage, over 75%, where the neutral value of just under .75 occurred. The faces used showed higher levels of Joy than any other non neutral emotion as the percentage occuring at zero was less than the percentages of the other emotions.\\label{fig:GEPhists}"}
+```{r GEPhists, fig.cap = "It can be seen that there are significant proportions of faces where the non neutral emotions occur close to zero. This is balanced by the large percentage, over 75%, where the neutral value of just under .75 occurred. The faces used showed higher levels of happiness than any other non neutral emotion as the percentage occuring at zero was less than the percentages of the other emotions.\\label{fig:GEPhists}"}
 gganG <- ggplot(GEP, aes(x=anger)) + 
   geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
-ggjoG <- ggplot(GEP, aes(x=joy)) + 
+ggjoG <- ggplot(GEP, aes(x=happiness)) + 
   geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
@@ -382,7 +462,7 @@ ggneG <- ggplot(GEP, aes(x=neutral)) +
   geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
-ggsoG <- ggplot(GEP, aes(x=sorrow)) + 
+ggsoG <- ggplot(GEP, aes(x=sadness)) + 
   geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +
   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
@@ -417,12 +497,11 @@ ggfeS <- ggplot(SBP, aes(x=fear))+  geom_histogram(binwidth=0.055, aes(y=..count
 grid.arrange(gganS, gghaS, ggneS, ggsaS, ggsuS, ggdiS, ggfeS,nrow=3,
              top=textGrob("Skybiometry Distribution of Emotion Porportions",gp=gpar(fontsize=20,font=3)), 
              left = ("Percentage of Emotion values"))
-
 ```
 
 
 
-```{r MEPhists, fig.cap="Unlike the previous two softwares, there were many faces that returned high neutral values. This is matched by the high percentages of faces where the proportion levels were at, or close to, zero. While the happiness emotion was most varied, with values between 0 and 1, over 40% of faces returned surprise levels above zero.\\label{fig:MEPhists}"}
+```{r MEPhists, fig.cap="There were many faces that returned high neutral values. This is matched by the high percentages of faces where the proportion levels were at, or close to, zero. While the happiness emotion was most varied, with values between 0 and 1, over 40% of faces returned surprise levels above zero.\\label{fig:MEPhists}"}
 
 gganM <- ggplot(MEP, aes(x=anger)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
@@ -441,8 +520,7 @@ ggfeM <- ggplot(MEP, aes(x=fear)) +  geom_histogram(binwidth=0.055, aes(y=..coun
 ggcoM <- ggplot(MEP, aes(x=contempt)) +  geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) + coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
 
 grid.arrange(gganM, gghaM, ggneM, ggsaM, ggsuM, ggdiM, ggfeM, ggcoM,nrow=3, 
-             top=textGrob("Microsoft Distribution of Emotion Porportions", gp=gpar(fontsize=20,font=3)),
-             left =("Percentage of Emotion values"))
+             top=textGrob("Microsoft Distribution of Emotion Porportions", gp=gpar(fontsize=20,font=3)), left =("Percentage of Emotion values"))
 
 
 ```
@@ -452,21 +530,18 @@ grid.arrange(gganM, gghaM, ggneM, ggsaM, ggsuM, ggdiM, ggfeM, ggcoM,nrow=3,
 ###Predominant Emotions
 To contrast the emotion results for certain faces a 'predominant' emotion was designated to each face. Where the emotion with the maximum proportion value was deemed the 'predominant' emotion for a particular face.
 
-This resulted in one of seven emotions for Google, one of eight for Microsoft, and one of five for Google. This also required the assumption that joy is equivalent to happiness, and sorrow to sadness.
+This resulted in one of seven emotions for Google, one of eight for Microsoft, and one of five for Google. This also required the assumption that happiness is equivalent to happiness, and sadness to sadness.
 
 ```{r predominant, results = 'asis', fig.cap = "\\label{tab:predominant}"}
 #Table including Google
 #ftable(DE$GEmotion, DE$SEmotion, DE$MEmotion, dnn = c("Google", "Skybiometry", "Microsoft"))
 
-ft<-ftable( DE$MEmotion, DE$SEmotion, dnn = c("Microsoft","Skybiometry"))
+ft<-ftable(DE$GEmotion, DE$MEmotion, DE$SEmotion, dnn = c("Google","Microsoft","Skybiometry"))
 
 stargazer(format(ft, quote=FALSE, justify="right"),title = "This shows the agreement between the emotions recognised by Microsoft and Skybiometry", header=FALSE, type = "latex")
 ```
-
-There was only one occurence of all three APIs gaving the same emotional result. This occured when there was agreement for 11 faces that the dominant emotion was anger. 
-In Table \@ref(tab:predominant) where Skybiometry emotion recognitions are shown in the rows, and Microsoft's in the columns. 
-It is reasonable to only consider Microsoft and Skybiomertry it can be seen that they agreed 408 faces were predominantly showing anger, and 12 were showing surprise.
-
+Skybiometry emotion recognition's are shown in the rows, and Microsoft's in the columns. 
+There were many instances where Skybiometry allocated an emotion as the predominant expression while Google and Microsoft designated it as neutral, this was expected as only 3 faces were categorised as neutral by Skybiometry. These faces were categorised as neutral by both Google and Microsoft.
 
 As neutral was a prominent category for Microsoft and Google, we considered where neutral was the dominant emotion and grouped the remaining emotions into a non-neutral category.
 
@@ -483,7 +558,9 @@ nft<-ftable(DEne$GEneutral, DEne$MEneutral,DEne$SEneutral, dnn = c("Google","Mic
 stargazer(format(nft, quote=FALSE, justify="right"), header=FALSE, type = "latex", title ="This shows the agreement between non-neutral and neutral faces recognised by Goole, Microsoft and, Skybiometry. Only three faces were categorised as neutral. Of these, Google was much more likely to categorise as neutral.")
 ```
 
-The following Figure \@ref(fig:neutrality) displays a Scatter Plot Matrix that captures the pairwise variablitiy in the Neutral proportion levels across APIs.
+
+
+The following Figure \@ref(fig:neutrality) displays a Scatter Plot Matrix that captures the pairwise variability in the Neutral proportion levels across APIs.
 
 
 ```{r neutrality, fig.cap = "The Scatter Plot Matrix shows the variablitiy in the Neutral proportion levels. The -0.01 correlation value for Google and Skybiometry show that they do not behave either in a similar way, or inversely. They are uncorrelated.\n Some high values of neutrality for Google are matched to some high levels found by Skybiometry. However, in the lower ranges of both there is a lot of variability in proportion values.\\label{fig:neutrality}"}
@@ -496,7 +573,7 @@ We consider that there were attributes of the faces captured that may have influ
 To understand this we consider the associations between differing attribute values and the neutral results.
 
 
-```{r Regression, fig.height=9.5, fig.width=7.5, fig.cap = "The logistic regression returned statistically significant results when the face was captured in the presence of a graphic. \\label{Regression}"}
+```{r LogisticRegression, eval= FALSE, fig.width=7, fig.cap = "\\label{LogisticRegression}"}
 #Add neutral columns to data sets 
 
 GEP1 <- GEP1 %>% rowwise %>% mutate(Gneutral = ifelse(Emotion=="neutral", "neutral","non-neutral")) %>%  mutate(neutral01 = ifelse(Gneutral=="neutral",1,0))  
@@ -506,56 +583,129 @@ MEP1 <- MEP1 %>% rowwise %>% mutate(Mneutral = ifelse(Emotion=="neutral", "neutr
 SBP1 <- SBP1 %>% rowwise %>% mutate(Sneutral = ifelse(Emotion=="neutral", "neutral","non-neutral")) %>% mutate(neutral01 = ifelse(Sneutral=="neutral",1,0))  
 
 
-ModelTable <- function(model){
-  model %>%
-    summary %>%
-    coef %>%
-    as.data.frame %>%
-    cbind %>%
-    rownames_to_column %>%
-    cbind %>%
-    dplyr::rename(variable = rowname)
-}
+#create a model
+Mne = glm(neutral01 ~ bg+shotangle+obscured+headangle+glasses+visorhat+, data = MEP1, family=binomial(logit))
 
+Mnemm <- model.matrix(Mne)
 
-SignificancePlot <- function(model, data = ModelTable(model)) {
-  data %>%
-  mutate(significant = `Pr(>|t|)` < 0.05) %>%
-  mutate(`Pr(<|t|)` = 1 - `Pr(>|t|)`) %>%
-  ggplot(aes(x=variable, y=`Pr(<|t|)`)) +  
-  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
-  geom_col(aes(fill=significant))
-}
+Mnegn = glmnet(Mnemm, as.vector(MEP1$neutral01))
 
-EstimatesPlot <- function(model, data = ModelTable(model)) {
-  data %>%
-  mutate(significant = `Pr(>|t|)` < 0.05) %>%
-  ggplot(aes(x= variable, y=Estimate)) +  
-  theme(axis.text.x = element_text(angle = 30, hjust = 1), 
-        axis.text.y = element_text(angle = 30, hjust = 1)) +
-  geom_col(aes(fill=significant))
-}
+#cv of model
+cvMnegn = cv.glmnet(Mnemm, as.vector(MEP1$neutral01))
 
+plot(cvMnegn)
 
-ModelPlotResults<-function(model, data = ModelTable(model)){
-  ep<-EstimatesPlot(model, data)
-  sp<- SignificancePlot(model, data)
-  grid.arrange(ep, sp, nrow=1)
-}
-
+coef(cvMnegn, s = "lambda.min")
 
 #A backward stepwise regression approach led to the following nmodel with a low AIC:
-mod <- glm(neutral01 ~ headangle + shotangle, data = GEP1)
-
-
-ModelPlotResults(mod)
 
 ```
 
 
 
+## Selecting an API
+For these purposes an API that would provide informative and accurate results was a top priority.
+This required it to return emotion information for a reasonable amount of faces, and that this information was reliable.
+
+It has been shown through the report that Goggle returned emotional information for `r sum(!is.na(GEP$anger))` player's faces, the highest amount of emotion results for the faces provided to three APIs. However, in Table \@ref(fig:neutrality) it is seen that only 31 of these faces gave results that considered the faces to be premoninantly a non-neutral expression. This limited resulting information is not helpful in extracting a player's emotional state. Figure \@ref(fig:GEPhists) shows that anger, happiness, sadness and surprise often had a level of 0.10 for faces. This is equivalent to the original output of it being 'Very Unlikely' that the emotion appeared on the given face.
+Due to these results, Google will not be appropriate for further exploration.
+
+Microsoft provided `r sum(!is.na(MEP$anger))` emotion results for player's faces, these numeric results shown in Table \@ref(tab:MEexample) were in an optimal format for analyses. These results also had the most variability is possible emotions, this could be seen as a positive as it may allow an emotion to be directly identified in comparison to the assumptions needed to be applied to Google's results in Table \@ref(tab:GEexample).
+
+Microsoft provided many results where the amount attributed to an emotion was zero, this was accompanied by high values of neutral being counted in these faces, as shown in Figure \@ref(MEPhists). This is not unreasonable as there are many factors that may have influenced the neutral results we were given, such as the players having strong control over their facial expressions or the faces passed to the software being sub optimal for recognition.
+
+The results from Microsoft were still deemed to be preferrable to those of Microsoft due to the limits on it's API impeding on any future use of the API for our purposes.
+While more facial emotion results were gained, majority of the emotion proportions after tranformations were still below 0.5 for the predominant emotions.
+
+The conclusion of these comparisons points to Microsoft as a good API that provides a useful output. Its limits do not impose as heavily as Skybiometry's do, and it provided many of the same neutral results that Google did, showing that it may be image, rather than API, reasons for returning a neutral dominant emotion result.
+
 
 \newpage
-## Validation
-We considered a subset of images where the emotions on the faces were manually considered.
+## Possible Application
+From this point we will give an example of an application of this emotional data in a tennis setting.
+This information would help to understand a player's emotional variability on the court, and may help in coaches training players to control what is physically visible as to not advantage their opponent by giving them an indication to a players emotional state.
 
+
+
+## Player Variablity
+
+We consider the subsets corresponding to individual players. This allowed a visual inspection of a players emotional variability according to each software.
+
+```{r playerHists}
+
+MicrosoftHists <- function(player = NA, data = MEP){
+  
+  if (!is.na(player)){
+    data <- MEP %>% dplyr::filter(playerName == player) 
+  }
+  
+  ggMEPne<-ggplot(data, aes(x=neutral)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPan<-ggplot(data, aes(x=anger)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPdi<-ggplot(data, aes(x=disgust)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPfe<-ggplot(data, aes(x=fear)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPha<-ggplot(data, aes(x=happiness)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPsa<-ggplot(data, aes(x=sadness)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPsu<-ggplot(data, aes(x=surprise)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  ggMEPco<-ggplot(data, aes(x=contempt)) +    geom_histogram(binwidth=0.055, aes(y=..count../sum(..count..))) +   coord_cartesian(xlim = c(0,1), ylim = c(0,1)) + ylab("")
+  
+  grid.arrange(ggMEPne,
+               ggMEPan,
+               ggMEPdi,
+               ggMEPfe,
+               ggMEPha,
+               ggMEPsa,
+               ggMEPsu, 
+               ggMEPco,nrow=3,
+             top=textGrob(paste0("Microsoft Distribution of Emotion Porportions for ", player), gp=gpar(fontsize=10,font=3)), 
+             left = ("Percentage of Emotion values"))
+}
+
+MicrosoftHists()
+
+```
+
+
+
+```{r playerProfiles}
+
+playerProfileBars <- function(player = NA, data=MEP1){
+   
+  if (!is.na(player)){
+     data <- data %>% dplyr::filter(playerName == player) 
+  }
+  title <- "Emotional Variability"
+  if (!is.na(player)){
+     title <- paste0(player, " Emotional Variability")
+  }
+  
+  Ecolours<-c(anger = "#b2454C",
+              disgust ="#21d19f",
+              happiness = "#f7874f",
+              neutral = "#a0988a",
+              sadness = "#50a1d3",
+              surprise = "#883677",
+              fear = "#037171")
+
+ ggplot(data, aes(x=Emotion, fill=Emotion))+ geom_bar(position = "dodge") + scale_fill_manual("Emotions", values = Ecolours, drop=FALSE) + ggtitle(title)
+ 
+}
+
+
+ppbM <- playerProfileBars(data=MEP1)
+ppbS <- playerProfileBars(data=SBP1)
+
+grid.arrange(ppbM, ppbS, nrow=1)
+
+
+playerProfileBars("CSurezNavarro", data=MEP1) 
+playerProfileBars("AFriedsam", data=MEP1)
+playerProfileBars("ACornet", data=MEP1) 
+table(GEP1$playerName)
+```
