@@ -330,11 +330,18 @@ Tables
 Join emotions for each face
 J2: Table of FileNames and associated dominant emotion
 ```{r combined}
+S0 <- select(GFP, FileName, type)
 S1 <- select(SBP1, FileName = aname , SEmotion = Emotion)
 S2 <- select(MEP1, FileName, MEmotion = Emotion)
 S3 <- select(GEP1, FileName, GEmotion = Emotion)
-J1 <- full_join(S1, S2, by = "FileName")
+J <- full_join(S0, S1, by = "FileName")
+J1 <- full_join(J, S2, by = "FileName")
 J2 <- full_join(J1, S3, by = "FileName")
+
+J2 <- select(J2, FileName, Skybiometry = SEmotion,
+             Microsoft = MEmotion, Google = GEmotion)
+ 
+write.csv(J2, "DominantEmotions.csv", row.names = FALSE)
 
 PS1 <- J2 %>% filter(SEmotion==MEmotion|SEmotion==GEmotion|MEmotion==GEmotion)
 nrow(PS1)
@@ -345,6 +352,7 @@ J2L <- J2 %>%
 
 
 ggplot(J2L, aes(x=Emotion)) + geom_bar(aes(fill = Software), position = "dodge")
+
 
 
 ```
@@ -400,11 +408,11 @@ PJ$sum<-PJ$Freq.x+PJ$Freq.y
 
 Player Subsetting
 ```{r DisplayFaces}
-AKimgsG<-GEP %>% filter(player2=="ACornet")
+AKimgsG<-GEP %>% filter(player1=="NDjokovic")
 AKimgsG<-AKimgsG %>% filter(detect=="Player")
 AKlist <- as.list(AKimgsG$FileName)
 length(AKlist)
-
+AKlist[6]
 DisplayFaces(AKlist)
 
 library(imager)
@@ -428,10 +436,6 @@ neutrals <- GEPCL1 %>% filter(neutralConf==joyConf |
                     neutralConf==surpriseConf | 
                     neutralConf==angerConf) %>%
   filter(neutralConf != 10)
-
-
-
-
 
 ```
 
