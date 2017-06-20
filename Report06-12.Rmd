@@ -40,10 +40,10 @@ BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", 
 
 
 #csv files:
-ALLmetaIMGnamed<-read_csv("ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
-SceneAttributes<-read_csv("TableCSVs/SceneAttributes.csv")
-FaceAttributes<-read_csv("TableCSVs/FaceAttributes.csv")
-SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
+ALLmetaIMGnamed<-read_csv("data/ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+SceneAttributes<-read_csv("../TableCSVs/SceneAttributes.csv")
+FaceAttributes<-read_csv("../TableCSVs/FaceAttributes.csv")
+SolutionSpecs<-read_csv("../TableCSVs/SolutionSpecifications.csv")
 
 
 #plot images with overlaid boxes
