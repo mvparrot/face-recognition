@@ -31,6 +31,8 @@ library(UpSetR)
 library(descr)
 library(tables)
 library(xtable)
+library(ggthemes)
+library(EBimage)
 
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
 
@@ -310,20 +312,19 @@ SignificancePlot <- function(model, data = GlmModelEstimates(model)) {
   data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
   mutate(`Pr(<|z|)` = 1 - `Pr(>|z|)`) %>%
-  ggplot(aes(x=type, y=`Pr(<|z|)`)) +  
-  theme(axis.text.x = element_text(angle = 30, hjust = 1)) +
+  ggplot(aes(x=type, y=`Pr(<|z|)`)) +
   geom_col(aes(fill=significant)) + 
-  facet_wrap(~ variable)
+  facet_wrap(~ variable) +
+  coord_flip()
 }
 
 EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
   data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
-  ggplot(aes(x=type, y=Estimate)) +  
-  theme(axis.text.x = element_text(angle = 30, hjust = 1), 
-        axis.text.y = element_text(angle = 30, hjust = 1)) +
+  ggplot(aes(x=type, y=Estimate)) +
   geom_col(aes(fill=significant)) + 
-  facet_wrap(~ variable, scales = "free_y")
+  facet_wrap(~ variable) +
+  coord_flip()
 }
 
 
@@ -337,7 +338,7 @@ ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lig
 
 ```
 
-A stepwise method was used to determin the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Back Ground, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken.
+A stepwise method was used to determin the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken.
 It also included the lighting on the particular face, and whether the specific face was accessorised with Glasses and a Visor or Hat. 
 
 
