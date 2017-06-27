@@ -153,7 +153,7 @@ The sample included images that contained the faces of many people, this include
 There are many matches played during the Australian Open, and they are played on the range of courts available at Melbourne Olympic Park. Therefore the sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
 
 
-####Selecting the software
+####Software Selection
 The choice of the initial software considered for this research were informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.'
 
 The process of software selection to determine which we would compare was based on several criteria. Firstly, we based our choices on the results of the report as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
@@ -225,7 +225,7 @@ If there were issues, the CSV files were able to be edited, this was reserved fo
 All the annotations for this sample were completed by one author. This was chosen to provide consistency across the sample of faces annotated manually. However the initial choices of what would be reasonably detected were made by several of the authors.
 
 
-####Software Recognition
+####Software Interaction
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/animetrics.R], Microsoft^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/microsoftAPI.R] and Skybiometry^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/autoSkybiometry.R]. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
 One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
@@ -252,7 +252,7 @@ Firstly, we considered how many individual faces the software were able to detec
 However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(Face-Bounding-Box-Upset) was created by defining groups depending on the softwares that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance Face Bounding Boxes may overlap on the same face, each bar shows the number of individual faces that have Face Bounding Boxes resulting from each of the softwares highlighted below the bar.
 
 
-## Regression 
+### Modelling Face Detection Probabiity 
 
 This shows how influential certain attributes are in determining whether a face will be detected or not.
 
@@ -530,7 +530,7 @@ shows how many images with potential player's faces Google recognized. This disp
 Considering only the Shoulder Height Angle, the following Graph looks at how accessories affected Google's recognition. 
 
 
-### Discussion
+### Results Overview
 Graph 1, the Bar Chart of the Face Bounding Boxes promotes Google as the best possible software for a facial recognition application in tennis. According to Table 4 Google had 38.23% of the 9.66% potential face boxes not annotated manually.
 It was considered that this may have shown Google's API may have been finding more unwanted faces than the other software. However, visual inspection showed that these were actually faces. This is considered in Table 6, which showed that some of the faces were found in a crowd setting. Therefore some of these could be considered irrelevant, possibly being crowd faces. These were deemed unlikely to be detected and neglected during manual annotation. 
 Interestingly, Animetrics had the least amount of matches to Manually annotated faces. Looking into this further showed that Animetrics results contained potential Face Bounding Boxes that did not contain faces.
@@ -588,7 +588,6 @@ Method, automated the process to reduce data cleaning and help group characteris
 Pricing
 
 
-## Conclusions 
 Employ the Google Vision API, which would allow the use of still images, or video (TEST VIDEO) files, reducing the need for stills.
 This product - cost in relation
 Ease of access - API calling
