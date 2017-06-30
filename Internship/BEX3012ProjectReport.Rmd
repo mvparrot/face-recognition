@@ -421,7 +421,7 @@ knitr::kable(as.data.frame(GETexample), longtable=TRUE, booktabs = TRUE, digits=
 
 ### Predominant Emotion Categorisations
 
-To simplify the analysis, we assigned a predominant emotion for each API result. This allowed for clearer comparisons of the emotion results for individual faces across the three APIs.
+To simplify the analysis, we assigned a predominant emotion for each API result. This allowed for comparisons of a singular emotion result for individual faces across the three APIs.
 For Google, Skybiometry and Microsoft, the emotion proportion levels for each individual face were considered, the maximum proportion value of each APIs emotion set was deemed the dominant emotion for each face. Recalling that there is a difference in the amount of emotion categories considered by each software.
 
 For each individual face this resulted in three dominant emotion classifications, one per API.
@@ -432,9 +432,9 @@ The dominant emotion would be one of seven emotions for Google, one of eight for
 \newpage
 # Results
 
-Each API returned a different amount of total responses. Microsoft produced emotion results for `r sum(!is.na(ME$anger))` faces, 55.497% of the faces provided.
-This was more than Skybiometry, as it produced only `r sum(!is.na(SB$anger))` results for emotions on faces. This is 48.103% of the set of faces.
-Google provided the most, 94.162% of the faces, `r sum(!is.na(GE$anger))`, were given emotion results^[As the initial set was faces identified by Google there is the possibility of bias toward being able to identify emotions in faces it was able to find originally.].
+Each API returned a different amount of total responses. Microsoft produced emotion results for `r sum(!is.na(ME$anger))` faces, 55.50% of the faces provided.
+This was more than Skybiometry, as it produced only `r sum(!is.na(SB$anger))` results for emotions on faces. This is 48.10% of the set of faces.
+Google provided the most, 94.16% of the faces, `r sum(!is.na(GE$anger))`, were given emotion results^[As the initial set was faces identified by Google there is the possibility of bias toward being able to identify emotions in faces it was able to find originally.].
 
 
 ```{r NonNullFaces, fig.cap = "\\label{fig:NonNullFaces}", results = 'asis'}
@@ -466,11 +466,12 @@ gplconfint <- as.data.frame(confint(gplayer)) %>%
   cbind(rownames(confint(gplayer)), exp(gplayer$coefficients), .) %>%
   select(`exp(Estimates)` = `exp(gplayer$coefficients)`, `exp(2.5%)`, `exp(97.5%)`)
 
-knitr::kable(gplconfint[2:9,] ,longtable=TRUE, booktabs = TRUE, digits=3, caption="A logisitic regression was undertaken to show how certain image attributes contribute to the likelihood of the face being a player.")
+knitr::kable(gplconfint[2:9,] ,longtable=TRUE, booktabs = TRUE, digits=3, caption="A logisitic regression was undertaken to show how certain image attributes contribute to the likelihood of the face being a player. The base categories used include: background of Court, bird's eye shot angle, the individual face unobscured by objects, not wearing glasses and a head angle front on to the camera")
+levels(as.factor(ME$shotangle))
 ```
 
-The regression coefficients are the change in the likelihood of a face being a player if the category is true for a face. The most significant predictors of a response are outlined in the table above. It can be seen that when the image was taken at a player's "Shoulder Height" then it is, on average, 4.45 times more likely to be a "Player" than a fan or staff member on court.
-When the head angle is "Other", it is between 1.34 and 3.87 times more likely to be a Player than faces that have been captured front on, at the 5% level of confidence.
+The regression coefficients are the change in the likelihood of a face being a player if the category is true for a face. The most significant predictors of a face belonging to a player are outlined in the table above. It can be seen that when the image was taken at a player's "Shoulder Height" then it is, on average, 4.45 times more likely to be a "Player" than a fan or staff member on court.
+When the head angle is "Other", it is between 1.34 and 3.87 times more likely to be a Player than faces that have been captured "Front On", at the 5% level of confidence.
 
 
 In the following sections we will only consider the faces of players, as they would be the intended targets for our applications of this research. Microsoft produced emotion results for `r sum(!is.na(MEP$anger))` player's faces. Skybiometry, produced `r sum(!is.na(SBP$anger))` and Google provided `r sum(!is.na(GEP$anger))` emotion results for faces.
@@ -833,9 +834,10 @@ Microsoft and Skybiometry responded with many NA results, meaning they did not f
 It has been shown that Goggle returned emotional information for `r sum(!is.na(GEP$anger))` player's faces, the highest amount of emotion results for the faces provided to three APIs. This may have been due to the faces being used already having been detected by Google previously. 
 It was unexpected that Skybiometry would only be able to produce emotional results for just under half of the images presented to it.
 
-There were only 364 faces were found by all APIs, 113 by only Microsoft and Google as well as 53 found by Skybiometry and Google. However the amount of faces found by only Google, 380, was higher than anticipated.
+The amount of faces that all three APIs returned emotion results for was 27.60%; Microsoft and Google returned emotion results for 8.58% of faces, and 4.02% of faces had emotion results found by Skybiometry and Google. However the amount of faces found by only Google, 28.81%, was higher than anticipated.
 
-As there was already disagreement between the APIs in finding faces we were inclined to believe that the approaches to classifying faces, and therefore emotions, may be different. While more facial emotion results were found by Google, the majority of the emotion proportions after transformations were still below 0.5 for the predominant emotions. This amount of 'Very Unlikely' responses to emotions being present on a faces was surprising. We did not expect that Google would be reserved in aknowledging the prescence of emotion.
+
+As there was already disagreement between the APIs in finding faces we were inclined to believe that the approaches to classifying faces, and therefore emotions, were likely to be different. While more facial emotion results were found by Google, the majority of the emotion proportions after transformations were still below 0.5 for the predominant emotions. This amount of 'Very Unlikely' responses to emotions being present on a faces was surprising. We did not expect that Google would be reserved in aknowledging the prescence of emotion, rather we expected more non-neutral results from the Google algorithm given that the faces used were previously detected faces by Google.
 Microsoft provided `r sum(!is.na(MEP$anger))` emotion results for player's faces. These results had the most emotion categories, we considered this to be a benefit to us as it may allow an emotion to be directly identified beyond the four Google categories.
 After the calculation of a predominant emotion we were surprised to find `r sum(DEne$Google=="non-neutral")/sum(DEne$Google!="NA")` of the faces Google returned results for were non-neutral. This small amount of emotional information would not be helpful in extracting a player's emotional state and tracking changes throughout a match. Given that both Google and Microsoft were not inclined to allocate high proportion levels to the array of emotions it was worrisome that Skybiometry would return high confidence values for the emotion being present on the face.
 However, Microsoft provided many results where the amount attributed to an emotion was zero, this was accompanied by high values of neutral being counted in these faces, as shown in the emotion histograms of Google and Microsoft. This is not unreasonable as there are factors that may have influenced the neutral results, such as the faces passed to the software being sub optimal for recognition. 
@@ -845,7 +847,7 @@ We suspected that the amount of faces classified as neutral would mean that only
 This blatant disagreement led to confusion in a choice of API should further work using this method be pursued. 
 
 
-The research aim was to develop methods to collect accurate information about the facial expressions of elite tennis athletes during matchplay. We cannot establish, without further validation, that three currently available APIs are not capable of accurate detection of player's emotions when analyzing the broadcast video matches.
+The research aim was to develop methods to collect accurate information about the facial expressions of elite tennis athletes during matchplay. It was expected that emotions would not be difficult to distinguish as tennis is known to be an emotionally charged game. We cannot establish, without further validation, that three currently available APIs are not capable of accurate detection of player's emotions when analyzing the broadcast video matches.
 Yet, the alternative approach to answer the question of whether a player's mental state correlates with their on court performance is worth pursuing. This would allow the coaches and players evidence of the player's ability to focus and perform mentally in elite tennis matches. If there are correlations between the engagement or concentration levels and their performance during a match this would help players recognise how their mental state impacts them.
 
 
