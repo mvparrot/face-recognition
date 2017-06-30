@@ -51,37 +51,58 @@ SolutionSpecs<-read_csv("TableCSVs/SolutionSpecifications.csv")
 #plot images with overlaid boxes
 overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
-    img <- image_read(paste0("figures/", i))
-   
-    p <- ggplot(data.frame(x=c(0,800), y=c(0,450)), aes(x,y)) +
-      theme_void()+ coord_fixed()+
-      annotation_custom(rasterGrob(img)) +
-      coord_cartesian(xlim=c(0, 800), ylim=c(0,450))
     
+    #read in image
+    image <- readImage(paste0("figures/", i))
+    
+    #convert image to a df, add hex value
+    image_df <- data.frame(x=rep(1:nrow(image), ncol(image)),
+                           y=rep(1:ncol(image),
+                                 rep(nrow(image),
+                                     ncol(image))),
+                           r=as.vector(image[,,1]),
+                           g=as.vector(image[,,2]),
+                           b=as.vector(image[,,3]))
+    image_df$h <- rgb(image_df[,3:5])
+    
+    #Create the plot of the image
+    p <- ggplot() +
+      scale_fill_identity() + 
+      geom_tile(data=image_df, aes(x,-y, fill=h)) + 
+      theme_void()
+    
+    # Find associated Face Box information for specific image
     faceData <- ALLmetaIMGnamedFaces %>% filter(file == i)
     
     if(nrow(faceData) == 0){
-      print(p)
-      next
+      return(p)
     } else{
-      
       
       faceData <- faceData %>%
         mutate(x1 = minX, x2 = minX, x3 = maxX, x4 = maxX, x5 = minX,
                y1 = minY, y2 = maxY, y3 = maxY, y4 = minY, y5 = minY) %>%
         gather(corner, boxPos, x1:y5) %>%
         mutate(posCoord = substr(corner, 1, 1), posID = substr(corner, 2, 2)) %>%
-        dplyr::select(-corner) %>% spread(posCoord, boxPos)
-      
+        dplyr::select(-corner) %>% spread(posCoord, boxPos) %>% 
+        dplyr::select(file, type, minX, maxX, minY, maxY, FaceKey, FaceID, posID, x, y)
     }
-    if(matchBox){
-      p <- p + geom_path(aes(x=x, y=450-y, group = c(type, boxID), colour=boxID), faceData) + guides(colour="none")
-    }
-    else{
-      p <- p + geom_path(aes(x=x, y=450-y, group = c(FaceID), colour=type), faceData) + scale_color_manual(values = c(Skybiometry="#ffe093", Microsoft="#5cc3f6", Google="#5cba82", Animetrics="#FF959c", Manual="#db70ff"))
-    } 
-  print(p)
+    
   }
+  if(matchBox){
+    p1 <- p + geom_rect(data=faceData, 
+                        aes(xmin=minX, ymin=-maxY, xmax=maxX, ymax=-minY, 
+                            color=FaceKey, group=FaceID), fill=NA) +
+      guides(colour = "none")
+  }
+  else{
+    p1 <- p + geom_rect(data=faceData, 
+                        aes(xmin=minX, ymin=-maxY, xmax=maxX, ymax=-minY, 
+                            color=type, group=FaceID), fill=NA) +
+      guides(colour = guide_legend(""))  + theme(legend.position = "bottom") + 
+      coord_fixed(ratio=0.85)
+    }
+  
+  return(p1)
 }
 
 
@@ -122,7 +143,7 @@ VennLists<-data %>%
 ```
 
 
-##Introduction
+#Introduction
 
 Many tennis professionals believe that tennis is a game heavily affected by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the playing and coaching of tennis players by improving their "mental game". 
 By statistically analyzing the faces and expressions of players during a match there is a hope that insight may be gained into the effects of the mental state on the outcome of a match.
