@@ -32,7 +32,7 @@ library(descr)
 library(tables)
 library(xtable)
 library(ggthemes)
-library(EBimage)
+library(EBImage)
 
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
 
@@ -93,10 +93,9 @@ ggplotProportion <- function(dataset, factorVar){
   factorVar <- deparse(substitute(factorVar))
   dataset <- dataset %>% filter(matchesManual) %>% group_by_(factorVar, "type") %>% summarise(nTotal=n()) %>% group_by_(factorVar) %>% mutate(ManualCount = getManualCount(type, nTotal)) %>%
     mutate(proportion = nTotal/ManualCount) %>% rename_(xvar = factorVar) %>% filter(type!="Manual")
-  ggplot(dataset, aes(x=factor(xvar), y=proportion, group = type, fill=type)) + geom_bar(stat = "identity", position = "dodge") +
+   ggplot(dataset, aes(x=xvar, y=proportion, group = reorder(type, -proportion), fill=type)) + geom_bar(stat = "identity", position = "dodge") +
     ylab("Proportion of faces matched") + xlab(factorVar)
 }
-
 
 
 ALLmetaIMGPlayers<- ALLmetaIMGnamed %>% filter(detect=="Player")
