@@ -180,7 +180,7 @@ overlayGgplot(imagesList0, ALLmetaIMGnamedFaces, matchBox = FALSE)
 ```
 
 
-## Methodology
+# Methodology
 An annotation tool was constructed to create a base for comparative analysis, we refer to this as Manual Classifications.
 These manual Classifications involved describing the features of the Scenes. 
 
@@ -342,7 +342,7 @@ It also included the lighting on the particular face, and whether the specific f
 
 
 
-## Results
+# Results
 
 
 ```{r Face-Bounding-Box-Data, results='hide', fig.cap = "\\label{Face-Bounding-Box-Data} Face Bounding Boxes Per Software: The bar chart above shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more faces than the next best software, Microsoft."}
@@ -530,7 +530,7 @@ shows how many images with potential player's faces Google recognized. This disp
 Considering only the Shoulder Height Angle, the following Graph looks at how accessories affected Google's recognition. 
 
 
-### Results Overview
+## Results Overview
 Graph 1, the Bar Chart of the Face Bounding Boxes promotes Google as the best possible software for a facial recognition application in tennis. According to Table 4 Google had 38.23% of the 9.66% potential face boxes not annotated manually.
 It was considered that this may have shown Google's API may have been finding more unwanted faces than the other software. However, visual inspection showed that these were actually faces. This is considered in Table 6, which showed that some of the faces were found in a crowd setting. Therefore some of these could be considered irrelevant, possibly being crowd faces. These were deemed unlikely to be detected and neglected during manual annotation. 
 Interestingly, Animetrics had the least amount of matches to Manually annotated faces. Looking into this further showed that Animetrics results contained potential Face Bounding Boxes that did not contain faces.
@@ -595,7 +595,7 @@ Ease of access - API calling
 
 
 
-## Future Work
+# Future Work
 The Long Term goal of this research is to better understand how the emotion's felt by a player during a match affect player performance. Ultimately we would aim to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
 
@@ -621,4 +621,4 @@ We also feel that incorporating audio information from the microphones worn by p
 
 
 
-## References
+# References
