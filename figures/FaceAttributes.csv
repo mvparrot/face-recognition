@@ -1,0 +1,7 @@
+Attribute,Choices
+Detectable Person,"Player, Other Staff Member (on court), Fan, Not Applicable"
+Obscured Face,"Yes, No"
+Lighting ,"Direct Sunglight, Shaded, Partially Shaded"
+Head Angle,"Front On, Back of Head, Profile, Other"
+Glasses,"Yes, No"
+Visor or Hat,"Yes, No"
