@@ -71,7 +71,6 @@ GE <- GE %>% rowwise %>%
   mutate(playerName = ifelse(PlayerNumber == 1, player1,
                                             ifelse(PlayerNumber == 2, player2,
                                                    ifelse(is.na(PlayerNumber), NA, NA))))
-
 ```
 
 

@@ -116,7 +116,7 @@ classifiedIMG <- mergedFaceMatches %>% dplyr::mutate(size = (maxX - minX) * (max
 
 metaManualClassifiedFaces <- merge(dplyr::select(ManualClassifiedFaces, file, facecounter, 
                                                  detect, obscured, lighting, headangle, glasses, visorhat, ID),
-                                   dplyr::select(dplyr::ungroup(dplyr::filter(mergedFaceMatches, type=="Manual")), ID, boxID), by=c("file", "boxID"))
+                                   dplyr::select(dplyr::ungroup(dplyr::filter(mergedFaceMatches, type=="Manual")), ID, boxID), by=c("ID"))
 
 
 
@@ -146,7 +146,7 @@ write.csv(ALLmetaIMG,file = "ALLmetaIMG.csv", row.names = FALSE)
 
 library(readr)
 # creating named
-ALLmetaIMG<-read_csv("ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+ALLmetaIMG<-read_csv("data/ALLmetaIMG.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
 
 
 #Factor Names 
@@ -168,3 +168,12 @@ ALLmetaIMG$headangle[ALLmetaIMG$headangle == "Back of head"] <- "Other"
 ALLmetaIMG$headangle <- as.factor(ALLmetaIMG$headangle)
 
 write.csv(ALLmetaIMG, "ALLmetaIMGnamed.csv", row.names = FALSE)
+
+#check for NAs in variables
+
+ALLmetaIMGPlayers <- ALLmetaIMG %>% 
+  #filter(detect==0) %>%
+  dplyr::select(graphic,person,situation,bg, shotangle,visorhat,
+                detect, obscured, lighting, headangle, glasses, visorhat)
+
+summary(ALLmetaIMGPlayers)

@@ -29,7 +29,6 @@ library(magick)
 library(kfigr)
 library(UpSetR)
 library(descr)
-#library(tables)
 library(xtable)
 library(ggthemes)
 library(EBImage)
@@ -48,12 +47,21 @@ FaceAttributes<-read_csv("figures/FaceAttributes.csv")
 SolutionSpecs<-read_csv("figures/SolutionSpecifications.csv")
 
 
+ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
+  filter(!is.na(type)) %>% 
+  dplyr::select(-ID, -facecounter)%>%
+  mutate(fileID = as.numeric(factor(file))) %>%
+  mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
+  mutate(FaceID=paste(fileID, boxID, substring(type, 1,2), sep="-"))
+
 #plot images with overlaid boxes
 overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
     
     #read in image
-    image <- readImage(paste0("figures/", i))
+    #image <- readImage(paste0("figures/", i))
+    #used in analyses
+    image <- readImage(paste0("images/", i))
     
     #convert image to a df, add hex value
     image_df <- data.frame(x=rep(1:nrow(image), ncol(image)),
@@ -119,15 +127,7 @@ ggplotProportion <- function(dataset, factorVar){
 }
 
 
-ALLmetaIMGPlayers<- ALLmetaIMGnamed %>% filter(detect=="Player")
-
-# change this to facesVenn with binary information
-ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
-  filter(!is.na(type)) %>% 
-  dplyr::select(-ID, -facecounter)%>%
-  mutate(fileID = as.numeric(factor(file))) %>%
-  mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
-  mutate(FaceID=paste(fileID, boxID, substring(type, 1,2), sep="-"))
+ALLmetaIMGPlayers <- ALLmetaIMGnamed %>% filter(detect=="Player")
 
 
 # Create UpSetR graph
@@ -138,8 +138,6 @@ VennLists<-data %>%
   fromList() %>%
   upset(order.by="freq", nsets=100)
 }
-
-
 ```
 
 
@@ -155,7 +153,7 @@ While it is impossible to know the thoughts and feelings of a player during a ma
 
 Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended uses of such software's.
 Their capabilities are often limited to their intended security and surveillance uses. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
-This report aims to analyse the application of these software's to a broadcast to find a suitable software and API to use to analyse a pre-recorded tennis broadcast file. 
+This report aims to analyse the application of these software's to a broadcast to find a suitable software and API to use to analyse a previously recorded tennis broadcast file. 
 
 ##Project Aim
 The aims of the present study were to determine the feasibility of using currently available facial recognition algorithms for extracting facial information from players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. This limited selection was based on accessible APIs that we believed would produce appropriate and useful facial recognition. The performance of the evaluated software was compared against manual classification obtained notation tool developed by the authors. In addition to looking at the overall performance, we also evaluated image factors that influences the performance of each service.
@@ -250,7 +248,7 @@ two CSVs, ManualClassifiedFaces^[https://github.com/mvparrot/face-recognition/bl
 
 
 A single data set was created to combine all necessary information in the previously mentioned files for our analysis. The information in the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv], was carefully considered. It considers the identify of each face, and all relative face attributes, as well as the image file the face was found in, from this information each face was able to be uniquely identified. Also included was information on the software that found it, and the time it took the software to identify the face. It also has a record of how many faces had been identified in the image by counting each additional recognized face.
-To do so, we gathered the name of the file the face was found in and the software Type the Face Bounding Box was determined by. The automatically determined time values were also included. The minimum and maximum x and y values were drawn from different values in each software's CSV files. This required some processing to align the differing values to be comparable.
+To do so, we gathered the name of the file the face was found in and the software Type the potential Face Boxes was determined by. The automatically determined time values were also included. The minimum and maximum x and y values were drawn from different values in each software's CSV files. This required some processing to align the differing values to be comparable.
 
 To find whether the software were recognizing the same faces a function was created. As the location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software.
 This function uses the information of each face and compares the intersecting regions of the polygons created by the x,y coordinates of Manual Faces and other software's faces, to determine if the same face was recognized. We determined the ratio of intersecting area to total area must be greater than 0.1 to be considered the same face. This allowed us to compare the identification areas, as well as contrast the identified faces of each software. This contributed another variable, boxID, to the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv].  
@@ -258,26 +256,26 @@ This function uses the information of each face and compares the intersecting re
 ##Analysis
 
 Using the data set^[ALLmetaIMGnamed] of the combined API and manual results, we were able to compare the performance of the software.
-Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(fig:Face-Bounding-Box-Data).
+Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(fig:PotentialFaceData).
 
 
-However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(fig:Face-Bounding-Box-Upset) was created by defining groups depending on the softwares that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance Face Bounding Boxes may overlap on the same face, each bar shows the number of individual faces that have Face Bounding Boxes resulting from each of the softwares highlighted below the bar.
+However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(fig:PotentialFaceUpset) was created by defining groups depending on the API that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance potential Faces Boxes may overlap on the same face, each bar shows the number of individual faces that have potential Face Boxes resulting from each of the APIs highlighted below the bar.
 
 
 ### Modelling Face Detection Probabiity 
 
 This shows how influential certain attributes are in determining whether a face will be detected, a hit, or not, a miss.
 
-A stepwise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with Glasses and a Visor or Hat.
+A step wise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with Glasses and a Visor or Hat.
 
-Regression analysis showed that the situation variable had significant differences between interecept level of "Court Close-Up Not Player" and the categories of "Court in Play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Court in Play" and "Court Player Close Up" rather than a "Court Close-Up Not Player". 
+Regression analysis showed that the situation variable had significant differences between intercept level of "Court Close-Up Not Player" and the categories of "Court in Play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Court in Play" and "Court Player Close Up" rather than a "Court Close-Up Not Player". 
 
-The bar charts of the situations show that the situation is important in influencing the detection of a face. When the face is accessorised with them, all softwares have a significantly increased chance of finding the face in comparison to the base rate category of the "Court in Play". While the image being a Graphic had a large impact it was not significant, this is likely because of the small number of images with this attribute. It also shows that the shot angle is only significant for one or two softwares at each level.
+The bar charts of the situations show that the situation is important in influencing the detection of a face. When the face is accessorised with them, all APIs have a significantly increased chance of finding the face in comparison to the base rate category of the "Court in Play". While the image being a Graphic had a large impact it was not significant, this is likely because of the small number of images with this attribute. It also shows that the shot angle is only significant for one or two APIs at each level.
  
 
 
 
-```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or visor or a hat significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression} "}
+```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or visor or a hat significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
 # Prepare data
 library(purrr)
 library(tidyverse)
@@ -361,42 +359,17 @@ ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lig
 ```
 
 
-```{r Mosaic, fig.cap = "\\label{fig:Mosaic}"}
-library(ggmosaic)
-#dev tools version has scale_y_productlist but cannot use it yet
-
-ggplot(data=ALLmetaIMGnamedFaces) + 
-  geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
-  #geom_text(aes(label="test", x=1, y=0.6)) +
-  guides(fill = guide_legend(title="API Faces Match \nManual Faces"))
-```
-
-The odds of a face found by one of the APIs matching a face found manually is  r or times higher when the camera angled captured the face from Player Shoulder Height as opposed to a Birds Eye shot.
-
-
-```{r DoubleDecker, fig.cap = "\\label{fig:DoubleDecker}"}
-library(ggmosaic)
-#add hit miss column to the data frame used in plotting below
-
-ggplot(data=ALLmetaIMGnamedFaces) +
-   geom_bar(aes(x= shotangle, fill = bg), position = position_stack(reverse = TRUE)) +
- coord_flip() +
-  guides(fill = guide_legend(title="Background"))
-
-```
-
-
 \newpage
 
 # Results
 
-Each API returned areas that indicated the potential location of a face. These areas were defined by a Bounding Box, created using the four points returned by the APIs to make a box around each face. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in \@ref(fig:Face-Bounding-Box-Data).
+Each API returned areas that indicated the potential location of a face. These areas were defined by a Bounding Box, created using the four points returned by the APIs to make a box around each face. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in Figure \@ref(fig:PotentialFaceData).
 
 
-```{r Face-Bounding-Box-Data, fig.cap = "\\label{fig:Face-Bounding-Box-Data} Face Bounding Boxes Per Software: The bar chart shows the number of Bounding Boxes produced by each software, comparing the height of the bars indicates that Google's Facial Recognition software recognized almost 1000 more potential faces than the next best software, Microsoft."}
+```{r PotentialFaceData, fig.cap = "\\label{fig:PotentialFaceData}  Potential Face Boxes Per API: The bar chart shows the number of Potential Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more potential faces than the next best API, Microsoft."}
 ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) + 
   geom_bar(position="dodge") +
-  xlab("Facial Recognition Softwares") +
+  xlab("Facial Recognition APIs") +
   scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +
   ylab("Number of Potential Faces") + 
   guides(fill=FALSE) +
@@ -404,31 +377,15 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 ```
 
 
-To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually.
+To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. Using a sample that contains all the manually annotated faces and all the faces recognized by the four APIs.
 
-The sample used contains all the manually annotated faces and all the faces recognized by the four APIs.
+To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
 
+\newpage
 
-```{r Face-Bounding-Box-UpSet, fig.cap = "\\label{fig:Face-Bounding-Box-Upset} Face Bounding Boxes Per Software Combination. The Bar Chart shows the Face Bounding Boxes that were recognised by multiple software or found manually. The largest group, with 809 faces, is Face Bounding Boxes only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API."}
-createUpSet(ALLmetaIMGnamedFaces)
-```
+```{r Type-Matches-Manual, fig.cap = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.\\label{tab:Type-Matches-Manual}"}
 
-
-
-
-```{r I3, results=TRUE, fig.cap = "\\label{fig:I3} There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face."}
-imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
-overlayGgplot(imagesList3, ALLmetaIMGnamedFaces, matchBox = FALSE)
-```
-
-
-
-To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the Bounding Boxes that do not match manually annotated faces.
-
-
-```{r Type-Matches-Manual, fig.cap = "The potential Face Bounding Boxes that were found by the APIs are compared to those annotated manually. Where the FALSE row denotes API Face Bounding Boxes do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.\\label{tab:Type-Matches-Manual}"}
-
-NoManual<-ALLmetaIMGnamed %>% filter(ALLmetaIMGnamed$type!="Manual")
+NoManual<-ALLmetaIMGnamedFaces %>% filter(ALLmetaIMGnamedFaces$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type) 
 ct<-CrossTable(table(NoManual$matchesManual, NoManual$type), 
                prop.chisq = FALSE, 
@@ -436,105 +393,132 @@ ct<-CrossTable(table(NoManual$matchesManual, NoManual$type),
                expected = FALSE,
            prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = NULL)
-ct
+           dnn = c("Matches Manual","API Type"))
 
-
+pander(ct)
 ```
 
 
 
-All the Face Bounding Boxes that Google found which do not match manually annotated faces were correctly identifying faces.
+All the potential facees that Google found which do not match manually annotated faces were correctly identifying faces.
   
-We then considered the characteristics of the images that the API found Potential Face Bounding Boxes in. 
+\newpage
+
+```{r PotentialFaceUpSet, fig.cap = "\\label{fig:PotentialFaceUpset} potential facees Per API Combination. The Bar Chart shows the potential facees that were recognised by multiple API or found manually. The largest group, with 809 faces, is potential facees only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API."}
+createUpSet(ALLmetaIMGnamedFaces)
+```
 
 
-```{r Image-Characteristics-Table, fig.cap = "\\label{tab:Image-Characteristics-Table}"}
+This shows that there are many faces that were identified by some APIs and not others. These combinations may give some indication as to the circumstances when some APIs perform better than others.
+
+\newpage
+The image below is an example of how some faces were only found by certain APIs, and how some APIs produced unusual false discoveries.
+
+
+```{r UnusualImage, results=TRUE, fig.cap = "\\label{fig:UnusualImage} There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face."}
+imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
+overlayGgplot(imagesList3, ALLmetaIMGnamedFaces, matchBox = FALSE)
+```
+
+
+\newpage
+We then considered the characteristics of the images that the API found Potential Faces in. 
+
+
+```{r Image-Characteristics-Table, fig.cap ="\\label{tab:Image-Characteristics-Table}"}
 ImageCharacteristics <- ALLmetaIMGnamed %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
-ImageCharacteristics<-ImageCharacteristics[1:10,]
-knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="", format = "latex")
+ImageCharacteristics<-ImageCharacteristics[1:5,]
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Player Shoulder Height angle are shared by three of the five image combinations.", format = "latex")
+```
+
+
+We then considered that there would be an uneven amount of faces with certain image attributes. This is considered in the mosaics below in Figure \@ref(fig:Mosaic).
+
+
+```{r MosaicShotangle, fig.cap = "The colours in the mosaic show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.\\label{fig:Mosaic}"}
+library(ggmosaic)
+#dev tools version has scale_y_productlist but cannot use it yet
+#ALLmetaIMGnamedFaces$shotangle 
+ALLmetaIMGnamedFaces$shotangle <- factor(ALLmetaIMGnamedFaces$shotangle, levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
+
+ggplot(data=ALLmetaIMGnamedFaces) + 
+  geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
+  #geom_text(aes(label="test", x=1, y=0.6)) +
+  guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
+  labs(caption="") +
+  ylab("Proportion of faces") + xlab("Angle the face was captured from ")
 ```
 
 
 
-\@ref(Image-Characteristics-Table) displays the feature combinations that produced the most potential face Bounding Boxes recognition by all four software. The most common shot is a crowd shot.
-The second row in the table with 830 faces recognized is more interesting than the first result. This useful scene is an image of a Court Player Close-Up in front of a Logo Wall, taken at Player Shoulder Height.
+```{r ShotangleCompare, eval=FALSE, fig.cap:".\\label{fig:ShotangleCompare}"}
+CompShot <- ALLmetaIMGnamedFaces %>% 
+  filter(shotangle=="Player Shoulder Height", 
+         bg=="Logo wall", 
+         situation=="Court player close−up",
+         type=="Google" | type=="Manual",
+         player2=="AMurray", player2:"AMurray")
 
-These attributes typically represent an image similar to the following:
-
-
-```{r Typical-Best-Recognised, results=FALSE, fig.cap = "\\label{fig:Typical-Best-Recognised}"}
-imagesList1<-as.list("2016_CT6_R01_JMillman_AUS_vs_DSchwartzman_ARG_MS159_clip.0013.png")
-overlayGgplot(imagesList1, ALLmetaIMGnamed, matchBox = FALSE)
-```
-
-
-
-```{r Google-Errors-Characteristics-Table, fig.cap = "\\label{tab:Google-Errors-Characteristics-Table}"}
-library(dplyr)
-
-GoogleNoMatch <- ALLmetaIMGnamed %>%
-  filter(type=="Google") %>%
-  filter(matchesManual==FALSE) %>%
-  group_by(person, situation, bg, shotangle) %>% dplyr::summarise(count=n())
-
-#use this list in the overlay function to view the images where Google found faces not annotated manually
-#GoogleImages<-GoogleNoMatch$file
-#GoogleImages<-as.list(GoogleImages)
-
-GoogleNoMatch<-arrange(GoogleNoMatch, desc(count))
-knitr::kable(GoogleNoMatch[1:10,], caption="", longtable=TRUE, format = "latex")
-
-#overlayGgplot(GoogleImages, GoogleNoMatch, matchBox = TRUE)
-```
-
-
-Table \@ref(Google-Errors-Characteristics-Table)
- shows that the potential Face Bounding Boxes Google returned were found in images that had the same characteristics of those that were manually annotated for faces.
-<!-- This is shown by the same combinations of characteristics occuring in both Table 5 and Table 6.  keep as tables?-->
-Without looking at each individual image this Table confirms that the potential Face Bounding Boxes Google located will likely be reasonable, and actually contain faces.
-
-The best scenes for facial recognition have been found, given this information the following \@ref(Face-Characteristics-Table) considers the Characteristics of the individual faces found within those scenes. For this section we chose to consider only the faces that were manually annotated as players, with the intention of not basing results on recognition of undesirable faces.
-
-
-
-```{r Face-Characteristics-Table, fig.cap = "\\label{tab:Face-Characteristics-Table}"}
-FaceCharacteristics <- ALLmetaIMGPlayers %>%
-  filter(type=="Google") %>%
-  filter(matchesManual==TRUE) %>%
-  group_by(visorhat, glasses, headangle, lighting, obscured, detect) %>% dplyr::summarise(count=n())
-
-FaceCharacteristics<-arrange(FaceCharacteristics, desc(count))
-FaceCharacteristics<-as.tbl(FaceCharacteristics[1:10,])
-knitr::kable(FaceCharacteristics, caption="", longtable=TRUE, format = "latex")
-```
-
-
-Table \@ref(Face-Characteristics-Table)
-utilizes a set of faces that were Manually annotated and also found by Google. 
-Nine of the top ten facial characteristic combinations contained faces that were not wearing glasses.
-The head angle describing the face angle was 'Other'^[Definition for head-angle factor level 'Other' found in..]
-for nine of the top ten facial characteristic combinations.
-
-
-```{r Glasses, fig.cap = "\\label{tab:Glasses} This table shows the amount of faces recognised by google wearing glasses. The strong disparity between the amount of faces with glasses to faces without them means that the occurrence of these attributes across the software must be considered proportionally."}
-GlassesGoogle <- ALLmetaIMGnamedFaces %>% filter(type=="Google") %>%
-filter(matchesManual==TRUE)
-pander(table(GlassesGoogle$glasses))
+mylist<-as.list(CompShot$file)
+#6,7,8,
+View(CompShot)
+lapply(mylist[1:5], overlayGgplot)
+overlayGgplot(mylist)
+#decide on a comparison, one where images had faces both recognised manually, only one recognised by a software
 ```
 
 
 
 
-```{r Glasses-Figure, fig.cap = "\\label{fig:Glasses-Figure} The figure above shows that Google outperforms the other software, with or without glasses. When there are no glasses worn Google finds over 60% of the manually annotated faces."}
-ggplotProportion(ALLmetaIMGPlayers, glasses)+xlab("Glasses on Face")
+```{r MosaicSit, fig.cap = "This mosaic shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.\\label{fig:Mosaic}"}
+
+ALLmetaIMGnamedFaces$situation <- factor(ALLmetaIMGnamedFaces$situation, levels = c("Court close−up not player",
+          "Court in play",
+          "Off court close up of player",
+          "Crowd",
+          "Court player close−up"))
+
+ggplot(data=ALLmetaIMGnamedFaces) + 
+  geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
+  guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
+  labs(caption="") + coord_flip() +
+  ylab("Proportion of faces") + xlab("Situation the face was captured during")
+```
+
+
+```{r DDbgshot, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Player Shoulder Height is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court. \\label{fig:DDbgshot}"}
+
+ggplot(data=ALLmetaIMGnamedFaces) +
+   geom_bar(aes(x=shotangle, fill = bg), 
+            position = position_stack(reverse = TRUE), 
+            na.rm=TRUE) +
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Amount of faces") + xlab("Angle the face was captured from")
+
 ```
 
 
 
 
-```{r HeadAngles, fig.cap = "\\label{tab:HeadAngles}"}
+```{r DDbgsit, fig.cap = "This stacked bar chart allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background to an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.\\label{fig:DDbgsit}"}
+
+ggplot(data=ALLmetaIMGnamedFaces) +
+   geom_bar(aes(x=situation, fill = bg), 
+            position = position_stack(reverse = TRUE), 
+            na.rm=TRUE) +
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Amount of faces") + xlab("Situation the face was captured during")
+
+```
+
+
+
+```{r HeadAngles, fig.cap = "The amount of faces found by Google with the head-angle Other, is much larger than the amount of faces with the head-angle Profile or Front On. Therefore this should also be considered proportionately.\\label{tab:HeadAngles}"}
 HeadangleGoogle <- ALLmetaIMGPlayers %>%   filter(type=="Google") %>%
 filter(matchesManual==TRUE)
 
@@ -542,60 +526,32 @@ pander(table(HeadangleGoogle$headangle))
 ```
 
 
-In Table \@ref(HeadAngles), the amount of faces found by Google with the head-angle "Other", is much larger than the amount of faces with the head-angle "Profile" or "Front On". Therefore this should also be considered proportionately.
 
 
-```{r Headangle-Figure, fig.cap = "\\label{fig:Headangle-Figure} Google performs much better in comparison to the other software when the head-angle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the software in this circumstance."}
+```{r Headangle-Figure, fig.cap = "\\label{fig:Headangle-Figure} Google performs much better in comparison to the other API when the head-angle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the API in this circumstance."}
 ggplotProportion(ALLmetaIMGPlayers, headangle)+xlab("Head Angle of Face")
 ```
 
  
 
 
-Table 2 = Describe the images/boxes identified by the algorithms--what are they typically like? what is the area represented? 
-
-
-
-Table 3= Evaluate the performance: what is the overall accuracy of each algorithm (sample should be annotated faces + all boxed identified by algorithms) 
-  How often is type I error made (a face detected incorrectly)?   
-  
-
-```{r Accuracy}
-Accuracy<-with(ALLmetaIMGnamed, table(ALLmetaIMGnamed$matchesManual, ALLmetaIMGnamed$type))
-knitr::kable(Accuracy, caption="", longtable=TRUE, format = "latex")
-# make this a proportional table, would this be necessary if we have the UpSetR
-```
-
-  How often type II error (a face is incorrectly NOT detected)?   
-  3 of the four software's 
-  
-It should be noted that there were results where a single face was recognized twice within the same image. This was a very unusual result and is notable as a point of interest but given it only occurred for Animetrics, it is not worth basing decisions on this unusual result.
-
-
-Table 4 = Identify possible explanatory factors to performance; Does accuracy vary by lighting conditions? face size? obscuring factors? angle? etc.
-
-
-```{r Google-Characteristics-Table, fig.cap = "\\label{tab:Google-Characteristics-Table}"}
-GoogleCharacteristics <- ALLmetaIMGnamed %>% filter(type=="Google") %>% filter(person=="Person") %>% filter(situation=="Court player close-up") %>% filter(bg=="Logo wall") %>% filter(detect=="Player") %>% group_by(person, situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
-GoogleCharacteristics<-arrange(GoogleCharacteristics, desc(count))
-
-knitr::kable(GoogleCharacteristics, format = "latex", longtable=TRUE, booktabs = TRUE, caption="")
-```
-
-
-Table \@ref(Google-Characteristics-Table)
-shows how many images with potential player's faces Google recognized. This displays a vast gap between the amount of potential faces found given the different shot angles. Shoulder height is an optimum angle for a Face Bounding Box.
-
-Considering only the Shoulder Height Angle, the following Graph looks at how accessories affected Google's recognition. 
-
-
 ## Results Overview
-Graph 1, the Bar Chart of the Face Bounding Boxes promotes Google as the best possible software for a facial recognition application in tennis. According to Table 4 Google had 38.23% of the 9.66% potential face boxes not annotated manually.
-It was considered that this may have shown Google's API may have been finding more unwanted faces than the other software. However, visual inspection showed that these were actually faces. This is considered in Table 6, which showed that some of the faces were found in a crowd setting. Therefore some of these could be considered irrelevant, possibly being crowd faces. These were deemed unlikely to be detected and neglected during manual annotation. 
-Interestingly, Animetrics had the least amount of matches to Manually annotated faces. Looking into this further showed that Animetrics results contained potential Face Bounding Boxes that did not contain faces.
+Figure \@ref(fig:PotentialFaceData), the bar chart of the potential faces shows Google produces the most detections. This would be a strong incentive to use Google for facial recognition in sports application. 
+It was considered that Google's API may have been finding more unwanted faces than the other APIs.
+Table \@ref(tab:Type-Matches-Manual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
+This was unexpected as it was presumed that majority of the faces annotated manually would be found. 
+
+The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. This set of images are also seen in Figure \@ref(fig:PotentialFaceUpset), which shows the amount of faces that were found by each combination of APIs. The group of faces that were found by manually and by the Google API are represented across the various bars. Their ownership of the faces is denoted by the black bubbles below the bars.
+
+Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:Type-Matches-Manual) that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd memebers were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be detected and neglected during manual annotation. 
 
 
-The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential face Bounding Boxes were found with the combination of scene attributes.
+Table \@ref(tab:Type-Matches-Manual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were not faces.
+
+
+
+
+The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 This showed that crowd members faces were often recognized, this is both helpful and unhelpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research.
 
 
@@ -607,7 +563,7 @@ While Google's recognition's mostly matched the Manually annotated set of faces,
 
 Table 6 shows that 190 of the faces that were not found manually occurred in the scene of a Court player close-up, with a background of a logo wall, where the shot was taken at player shoulder height.
 
-This shows it was performing extremely well and not resulting in unexplained face Bounding Boxes as some of the other software were. This is a strong indicator that applying Google's software for further research would result in the recognition of desired faces.
+This shows it was performing extremely well and not resulting in unexplained potential faces as some of the other software were. This is a strong indicator that applying Google's software for further research would result in the recognition of desired faces.
 
 These results have contributed to the choice of Google given the optimum scene as described above. Implementing a filtering process, either using current or alternative footage^[See future research for further information on these options] would allow Google to provide Tennis Australia with the most applicable results.
 
@@ -630,7 +586,7 @@ Moving to looking at the characteristics that were considered manually shows tha
 
 
 
-The box-plot in graph encourages our comparisons to not consider the size of face bounding box as a measure of how the software performs on small faces. 
+The box-plot in graph encourages our comparisons to not consider the size of potential face boxes as a measure of how the software performs on small faces. 
 
 
 #### Challenges
