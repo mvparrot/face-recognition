@@ -452,7 +452,7 @@ ggplot(data=ALLmetaIMGnamedFaces) +
 
 
 
-```{r ShotangleCompare, eval=FALSE, fig.cap:".\\label{fig:ShotangleCompare}"}
+```{r ShotangleCompare, eval=FALSE, fig.cap=".\\label{fig:ShotangleCompare}"}
 CompShot <- ALLmetaIMGnamedFaces %>% 
   filter(shotangle=="Player Shoulder Height", 
          bg=="Logo wall", 
