@@ -59,9 +59,9 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
     
     #read in image
-    #image <- readImage(paste0("figures/", i))
+    image <- readImage(paste0("figures/", i))
     #used in analyses
-    image <- readImage(paste0("images/", i))
+    #image <- readImage(paste0("images/", i))
     
     #convert image to a df, add hex value
     image_df <- data.frame(x=rep(1:nrow(image), ncol(image)),
