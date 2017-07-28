@@ -247,7 +247,17 @@ All the annotations for this sample were completed by one author. This was chose
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/animetrics.R], Microsoft^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/microsoftAPI.R] and Skybiometry^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/autoSkybiometry.R]. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
 One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
-COMMENT: Add a paragraph on time taken to find faces for each software
+The amount of time taken for each software to process facial detetion on the individual images is presented in the histogram below:
+
+```{r timeDensity, fig.cap="This density plots diplays the common lengths of time each API took to detect faces in each image. It can be seen that the\\label{fig:timeDensity}"}
+times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual")
+ggplot(times, na.rm=T) + 
+  scale_color_manual(values = type.colours) +
+  geom_density(aes(x=time.user.self, colour=type)) +
+  xlab("Time Taken") +
+  theme(panel.background = element_rect(fill="grey"))
+```
+
 
 ##Data Processing
 The data needed for our analysis was spread across six files. For each software we had the information on the location of the Facial Bounding Boxes, as well as the time taken for the software to find the information. Some of the software also provided a more detailed level of information.
@@ -401,7 +411,7 @@ The largest group of images were those annotated by manual annotations and found
 To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
 
 
-```{r Type-Matches-Manual, fig.cap = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.\\label{tab:Type-Matches-Manual}"}
+```{r TypeMatchesManual, results='asis', fig.cap = "\\label{tab:TypeMatchesManual}"}
 
 NoManual<-ALLmetaIMGnamedFaces %>% filter(ALLmetaIMGnamedFaces$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type) 
@@ -413,13 +423,13 @@ ct<-CrossTable(table(NoManual$matchesManual, NoManual$type),
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
            dnn = c("Matches Manual","API Type"))
 
-pander(ct)
+pander(ct, caption = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.")
 ```
 
-Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:Type-Matches-Manual) that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be detected and neglected during manual annotation. 
+Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:TypeMatchesManual), that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be detected and neglected during manual annotation. 
 
 
-Table \@ref(tab:Type-Matches-Manual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were not faces.
+Table \@ref(tab:TypeMatchesManual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were not faces.
 
 
 
