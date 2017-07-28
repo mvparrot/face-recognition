@@ -1,7 +1,7 @@
 ---
 title: "Detecting Facial Expressions in Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalchik"
-date: "13 February 2017"
+date: "28 July 2017"
 output: bookdown::pdf_document2
 fig_caption: yes
 fontsize: 11pt
@@ -54,14 +54,23 @@ ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
   mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
   mutate(FaceID=paste(fileID, boxID, substring(type, 1,2), sep="-"))
 
+
+# colour scheme
+type.colours <- c(Animetrics = "#B3E2CD",
+                      Google = "#FDCDAC",
+                      Manual = "#CBD5E8",
+                      Microsoft = "#F4CAE4",
+                      Skybiometry = "#E6F5C9")
+
+   
 #plot images with overlaid boxes
 overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
   for(i in imgList){
     
     #read in image
-    image <- readImage(paste0("figures/", i))
+    #image <- readImage(paste0("figures/", i))
     #used in analyses
-    #image <- readImage(paste0("images/", i))
+    image <- readImage(paste0("images/", i))
     
     #convert image to a df, add hex value
     image_df <- data.frame(x=rep(1:nrow(image), ncol(image)),
@@ -103,17 +112,11 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
       guides(colour = "none")
   }
   else{
-    group.colors <- c(Animetrics = "#B3E2CD",
-                      Google = "#FDCDAC",
-                      Manual = "#CBD5E8",
-                      Microsoft = "#F4CAE4",
-                      Skybiometry = "#E6F5C9")
-
     p1 <- p + geom_rect(data=faceData, 
                         aes(xmin=minX, ymin=-maxY, xmax=maxX, ymax=-minY, 
                             color=type, group=FaceID), fill=NA) +
-      guides(colour = guide_legend(""))  + theme(legend.position = "bottom") + 
-      coord_fixed(ratio=0.85) + scale_colour_manual(values=group.colors)
+      guides(colour = guide_legend(""))  + theme(legend.position = "bottom") +
+      coord_fixed(ratio=0.85) + scale_color_manual(type.colours)
     }
   
   return(p1)
@@ -128,8 +131,7 @@ ggplotProportion <- function(dataset, factorVar){
   factorVar <- deparse(substitute(factorVar))
   dataset <- dataset %>% filter(matchesManual) %>% group_by_(factorVar, "type") %>% summarise(nTotal=n()) %>% group_by_(factorVar) %>% mutate(ManualCount = getManualCount(type, nTotal)) %>%
     mutate(proportion = nTotal/ManualCount) %>% rename_(xvar = factorVar) %>% filter(type!="Manual")
-   ggplot(dataset, aes(x=xvar, y=proportion, group = reorder(type, -proportion), fill=type)) + geom_bar(stat = "identity", position = "dodge") +
-    ylab("Proportion of faces matched") + xlab(factorVar)
+   ggplot(dataset, aes(x=xvar, y=proportion, group = reorder(type, -proportion), fill=type)) + geom_bar(stat = "identity", position = "dodge") +  ylab("Proportion of faces matched") + xlab(factorVar) + scale_colour_manual(values=type.colours)
 }
 
 
@@ -381,7 +383,7 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
   scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +
   ylab("Number of Potential Faces") + 
   guides(fill=FALSE) +
-  labs(caption="")
+  labs(caption="") + scale_fill_manual(values=type.colours)
 ```
 
 
