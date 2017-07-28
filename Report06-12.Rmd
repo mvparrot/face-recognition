@@ -103,11 +103,17 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
       guides(colour = "none")
   }
   else{
+    group.colors <- c(Animetrics = "#B3E2CD",
+                      Google = "#FDCDAC",
+                      Manual = "#CBD5E8",
+                      Microsoft = "#F4CAE4",
+                      Skybiometry = "#E6F5C9")
+
     p1 <- p + geom_rect(data=faceData, 
                         aes(xmin=minX, ymin=-maxY, xmax=maxX, ymax=-minY, 
                             color=type, group=FaceID), fill=NA) +
       guides(colour = guide_legend(""))  + theme(legend.position = "bottom") + 
-      coord_fixed(ratio=0.85)
+      coord_fixed(ratio=0.85) + scale_colour_manual(values=group.colors)
     }
   
   return(p1)
@@ -360,8 +366,9 @@ ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lig
 
 
 \newpage
-
 # Results
+
+## Amount of Potential Faces
 
 Each API returned areas that indicated the potential location of a face. These areas were defined by a Bounding Box, created using the four points returned by the APIs to make a box around each face. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in Figure \@ref(fig:PotentialFaceData).
 
@@ -378,6 +385,8 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 
 
 To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. Using a sample that contains all the manually annotated faces and all the faces recognized by the four APIs.
+
+## Potential Faces Matching Manual Annotations
 
 To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
 
@@ -412,6 +421,8 @@ createUpSet(ALLmetaIMGnamedFaces)
 This shows that there are many faces that were identified by some APIs and not others. These combinations may give some indication as to the circumstances when some APIs perform better than others.
 
 \newpage
+
+## False Discoveries
 The image below is an example of how some faces were only found by certain APIs, and how some APIs produced unusual false discoveries.
 
 
@@ -422,6 +433,9 @@ overlayGgplot(imagesList3, ALLmetaIMGnamedFaces, matchBox = FALSE)
 
 
 \newpage
+
+## Image Characteristics
+
 We then considered the characteristics of the images that the API found Potential Faces in. 
 
 
@@ -452,7 +466,7 @@ ggplot(data=ALLmetaIMGnamedFaces) +
 
 
 
-```{r ShotangleCompare, eval=FALSE, fig.cap:".\\label{fig:ShotangleCompare}"}
+```{r ShotangleCompare, eval=FALSE, fig.cap=".\\label{fig:ShotangleCompare}"}
 CompShot <- ALLmetaIMGnamedFaces %>% 
   filter(shotangle=="Player Shoulder Height", 
          bg=="Logo wall", 
@@ -460,11 +474,11 @@ CompShot <- ALLmetaIMGnamedFaces %>%
          type=="Google" | type=="Manual",
          player2=="AMurray", player2:"AMurray")
 
-mylist<-as.list(CompShot$file)
+#mylist<-as.list(CompShot$file)
 #6,7,8,
-View(CompShot)
-lapply(mylist[1:5], overlayGgplot)
-overlayGgplot(mylist)
+#View(CompShot)
+#lapply(mylist[1:5], overlayGgplot)
+#overlayGgplot(mylist)
 #decide on a comparison, one where images had faces both recognised manually, only one recognised by a software
 ```
 
@@ -548,7 +562,13 @@ Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!
 
 Table \@ref(tab:Type-Matches-Manual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were not faces.
 
+```{r animetricsWeird, fig.cap=" Animetrics provided results that were quite unusual \\label{fig:animetricsWeird}" }
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot()
+i2 <- "2016_CT6_R01_EKulichkova_RUS_vs_APetkovic_GER_WS128_clip.0080.png" %>% overlayGgplot()
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot()
+grid.arrange(i1, i2, i3, nrow=2)
 
+```
 
 
 The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
