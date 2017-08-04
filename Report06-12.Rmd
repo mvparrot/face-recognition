@@ -33,7 +33,7 @@ library(xtable)
 library(ggthemes)
 library(EBImage)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=FALSE, fig.env = TRUE)
  
 options("citation_format" = "pandoc")
 
@@ -56,15 +56,14 @@ ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
 
 
 # colour scheme
-type.colours <- c(Animetrics = "#B3E2CD",
-                      Google = "#FDCDAC",
-                      Manual = "#CBD5E8",
-                      Microsoft = "#F4CAE4",
-                      Skybiometry = "#E6F5C9")
-
+type.colours <- c(Animetrics =     "#1B9E77",
+                      Google =     "#D95F02",
+                      Manual =     "#E6AB02",
+                      Microsoft =  "#E7298A",
+                      Skybiometry ="#66A61E")
    
 #plot images with overlaid boxes
-overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
+overlayGgplot <- function(imgList, mergeData, matchBox=FALSE, colourScheme = type.colours, legend=TRUE){
   for(i in imgList){
     
     #read in image
@@ -111,12 +110,14 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE){
                             color=FaceKey, group=FaceID), fill=NA) +
       guides(colour = "none")
   }
-  else{
-    p1 <- p + geom_rect(data=faceData, 
+  else {
+    pa <- p + geom_rect(data=faceData, 
                         aes(xmin=minX, ymin=-maxY, xmax=maxX, ymax=-minY, 
-                            color=type, group=FaceID), fill=NA) +
-      guides(colour = guide_legend(""))  + theme(legend.position = "bottom") +
-      coord_fixed(ratio=0.85) + scale_color_manual(type.colours)
+                            color=type, group=FaceID), fill=NA)  +
+      coord_fixed(ratio=0.85) + scale_color_manual(values = colourScheme)
+    
+    if (legend) p1 <- pa + guides(colour = guide_legend("")) + theme(legend.position = "bottom")
+    else p1<- pa + theme(legend.position = "none")
     }
   
   return(p1)
@@ -383,7 +384,7 @@ ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lig
 
 ## Amount of Potential Faces
 
-Each API returned areas that indicated the potential location of a face. These areas were defined by a Bounding Box, created using the four points returned by the APIs to make a box around each face. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in Figure \@ref(fig:PotentialFaceData).
+Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs.. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in Figure \@ref(fig:PotentialFaceData).
 
 
 ```{r PotentialFaceData, fig.cap = "\\label{fig:PotentialFaceData}  Potential Face Boxes Per API: The bar chart shows the number of Potential Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more potential faces than the next best API, Microsoft."}
@@ -397,21 +398,33 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 ```
 
 
-To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. Using a sample that contains all the manually annotated faces and all the faces recognized by the four APIs.
+To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. This sample contains all the manually annotated faces and all the faces recognized by the four APIs.
 
-Figure \@ref(fig:PotentialFaceData), the bar chart of the potential faces shows Google produces the most detections. This would be a strong incentive to use Google for facial recognition in sports application. 
+Figure \@ref(fig:PotentialFaceData), the bar chart of the potential faces shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use of applying facial recognition during sports.
 It was considered that Google's API may have been finding more unwanted faces than the other APIs.
 Table \@ref(tab:Type-Matches-Manual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
 This was unexpected as it was presumed that majority of the faces annotated manually would be found. 
 
-The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. This set of images are also seen in Figure \@ref(fig:PotentialFaceUpset), which shows the amount of faces that were found by each combination of APIs. The group of faces that were found by manually and by the Google API are represented across the various bars. Their ownership of the faces is denoted by the black bubbles below the bars.
+The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. 
+
+Figure \@ref(fig:PotentialFaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
+The black bubbles below the bars show the API combination that detected all the faces counted in the bar above.
+
+
+  
+
+```{r PotentialFaceUpSet, fig.cap = "\\label{fig:PotentialFaceUpset} potential facees Per API Combination. The Bar Chart shows the potential facees that were recognised by multiple API or found manually. The largest group, with 809 faces, is potential facees only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
+createUpSet(ALLmetaIMGnamedFaces)
+```
+
+
 
 ## Potential Faces Matching Manual Annotations
 
-To consider how many Type I errors occurred, where a face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
+To consider how many Type II errors occurred, where a potential face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
 
 
-```{r TypeMatchesManual, results='asis', fig.cap = "\\label{tab:TypeMatchesManual}"}
+```{r TypeMatchesManual, results='asis', fig.cap = "\\ label{tab:TypeMatchesManual}"}
 
 NoManual<-ALLmetaIMGnamedFaces %>% filter(ALLmetaIMGnamedFaces$type!="Manual")
 NoManual<-NoManual %>% droplevels(NoManual$type) 
@@ -426,39 +439,23 @@ ct<-CrossTable(table(NoManual$matchesManual, NoManual$type),
 pander(ct, caption = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.")
 ```
 
-Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:TypeMatchesManual), that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be detected and neglected during manual annotation. 
+Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:TypeMatchesManual), that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be necessary when attempting to find faces of players during tennis matches, and neglected during manual annotation. 
 
 
-Table \@ref(tab:TypeMatchesManual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were not faces.
+Table \@ref(tab:TypeMatchesManual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were actually very unusual results.
 
-
-
-All the potential faces that Google found which do not match manually annotated faces were correctly identifying faces.
-  
-
-```{r PotentialFaceUpSet, fig.cap = "\\label{fig:PotentialFaceUpset} potential facees Per API Combination. The Bar Chart shows the potential facees that were recognised by multiple API or found manually. The largest group, with 809 faces, is potential facees only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API."}
-createUpSet(ALLmetaIMGnamedFaces)
-```
-
-
-This shows that there are many faces that were identified by some APIs and not others. These combinations may give some indication as to the circumstances when some APIs perform better than others.
 
 
 ## False Discoveries
-The image below is an example of how some faces were only found by certain APIs, and how some APIs produced unusual false discoveries.
+Below are some examples of when faces were only found by one of the APIs, and how the APIs produced unusual false discoveries.
 
+```{r UnusualImages, fig.cap = "Animetrics provided results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ballboy's torso.  \\label{fig:UnusualImages}" }
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE)
+i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE)
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE)
+i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE)
 
-```{r UnusualImage, results=TRUE, fig.cap = "\\label{fig:UnusualImage} There is an unusual classification where just right of the center, the smaller box actually captures a fist, not a face."}
-imagesList3<-as.list("2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png") 
-overlayGgplot(imagesList3, ALLmetaIMGnamedFaces, matchBox = FALSE)
-```
-
-
-```{r animetricsWeird, fig.cap=" Animetrics provided results that were quite unusual \\label{fig:animetricsWeird}" }
-i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot()
-i2 <- "2016_CT6_R01_EKulichkova_RUS_vs_APetkovic_GER_WS128_clip.0080.png" %>% overlayGgplot()
-i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot()
-grid.arrange(i1, i2, i3, nrow=2)
+gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 
 ```
 
