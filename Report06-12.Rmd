@@ -33,7 +33,7 @@ library(xtable)
 library(ggthemes)
 library(EBImage)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.)
  
 options("citation_format" = "pandoc")
 
@@ -614,20 +614,9 @@ ggplot(data=ALLmetaIMGnamedFaces) +
 Tennis players faces will be the main focus of this use of facial detection. 
 It is important that the selected API be able to return strong and consistent results for player's faces.
 
-```{r Player, fig.cap = c("This stacked bar chart allows consideration ", "of the interaction between two image attributes. \\label{fig:DDPbgshot}")}
+```{r Player, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
 
 #ALLmetaIMGPlayers
-  
-ggplot(data=ALLmetaIMGPlayers) +
-     geom_bar(aes(x=bg, fill = shotangle), 
-            position = position_stack(reverse = TRUE), 
-            na.rm=TRUE) +
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Amount of faces") + xlab("Angle the face was captured from")
-
-
   
 ggplot(data=ALLmetaIMGPlayers) +
      geom_bar(aes(x=bg, fill = shotangle), 
