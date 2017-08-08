@@ -33,7 +33,7 @@ library(xtable)
 library(ggthemes)
 library(EBImage)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=FALSE, fig.env = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE)
  
 options("citation_format" = "pandoc")
 
@@ -56,11 +56,11 @@ ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
 
 
 # colour scheme
-type.colours <- c(Animetrics =     "#1B9E77",
-                      Google =     "#D95F02",
-                      Manual =     "#E6AB02",
-                      Microsoft =  "#E7298A",
-                      Skybiometry ="#66A61E")
+type.colours <- c(Animetrics =     "#7BCCC4",
+                      Google =     "#FC9272",
+                      Manual =     "#C994C7",
+                      Microsoft =  "#FA9FB5",
+                      Skybiometry ="#ADDD8E")
    
 #plot images with overlaid boxes
 overlayGgplot <- function(imgList, mergeData, matchBox=FALSE, colourScheme = type.colours, legend=TRUE){
@@ -232,7 +232,7 @@ knitr::kable(FaceAttributes, format = "latex", longtable=TRUE, booktabs = TRUE, 
 
 
 ##Manual Annotation
-To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassificationProgram.R]. This helped to provide information for all attributes quickly and consistently.
+To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram^[https://github.com/mvparrot/face-recognition/master/ManualClassificationProgram.R]. This helped to provide information for all attributes quickly and consistently.
 
 
 If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This changed the display and presented a set of Attributes with radio buttons, this allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the corner points of a box drawn by the mouse, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassifiedFaces.csv]. 
@@ -248,16 +248,17 @@ All the annotations for this sample were completed by one author. This was chose
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/animetrics.R], Microsoft^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/microsoftAPI.R] and Skybiometry^[https://github.com/mvparrot/face-recognition/blob/master/SoftwareRequestScripts/autoSkybiometry.R]. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
 One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
-The amount of time taken for each software to process facial detetion on the individual images is presented in the histogram below:
+The amount of time taken for each software to process facial detection on the individual images is presented in the histogram below:
 
-```{r timeDensity, fig.cap="This density plots diplays the common lengths of time each API took to detect faces in each image. It can be seen that the\\label{fig:timeDensity}"}
-times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual")
+```{r timeDensity, fig.cap="This density plot diplays the lengths of time each API took to detect faces in each image. Most of the images take less than one second to process. There is an outlier for Skybiometry that took almost 5 seconds to process. \\label{fig:timeDensity}"}
+times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual") %>% arrange(-time.user.self)
 ggplot(times, na.rm=T) + 
   scale_color_manual(values = type.colours) +
   geom_density(aes(x=time.user.self, colour=type)) +
-  xlab("Time Taken") +
-  theme(panel.background = element_rect(fill="grey"))
+  xlab("Time Taken")
 ```
+
+It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to manipulate and save the information returned.
 
 
 ##Data Processing
@@ -388,6 +389,7 @@ Each API returned areas that indicated the potential location of a face. These a
 
 
 ```{r PotentialFaceData, fig.cap = "\\label{fig:PotentialFaceData}  Potential Face Boxes Per API: The bar chart shows the number of Potential Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more potential faces than the next best API, Microsoft."}
+
 ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) + 
   geom_bar(position="dodge") +
   xlab("Facial Recognition APIs") +
@@ -401,8 +403,7 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. This sample contains all the manually annotated faces and all the faces recognized by the four APIs.
 
 Figure \@ref(fig:PotentialFaceData), the bar chart of the potential faces shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use of applying facial recognition during sports.
-It was considered that Google's API may have been finding more unwanted faces than the other APIs.
-Table \@ref(tab:Type-Matches-Manual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
+Table \@ref(tab:TypeMatchesManual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
 This was unexpected as it was presumed that majority of the faces annotated manually would be found. 
 
 The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. 
@@ -421,7 +422,22 @@ createUpSet(ALLmetaIMGnamedFaces)
 
 ## Potential Faces Matching Manual Annotations
 
-To consider how many Type II errors occurred, where a potential face was detected incorrectly, we look at the potential faces that do not match manually annotated faces.
+We have two possible results for each potential face returned by the APIs.
+The first is presented in the form of our null hypothesis:
+
+$H_0:$ The potential face captured by the API is not an actual face.
+
+$H_A:$ The potential face captured by the API is an actual face.
+
+If the null hypothesis is true, the potential face location would not match the location of a manually annotated face. We would expect to see this for several reasons, when the face returned was deemed impractical or it would not be required that the chosen API would return the face in future use. Also when the potential face returned was a false discovery, in the instance where there was no face within the area deemed a potential face.
+
+This compares to the alternative hypothesis, where the potential face location matched the location of a manual face. They were then given an identical ID to denote they captured the same face if the overlapping area of the two boxes was 1/3, or greater, of the potential face location area.
+
+
+These definitions allowed us to define the four different scenarios of a hypothesis test. 
+
+To consider how many Type II errors occurred, where an actual face was detected by an API, and incorrectly it was not annotated manually, and how many Type I errors occurred where a potential face was found by an API, and it was actually a face, but was not detected manually.
+we look at the potential faces that do not match manually annotated faces.
 
 
 ```{r TypeMatchesManual, results='asis', fig.cap = "\\ label{tab:TypeMatchesManual}"}
@@ -439,6 +455,7 @@ ct<-CrossTable(table(NoManual$matchesManual, NoManual$type),
 pander(ct, caption = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.")
 ```
 
+
 Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:TypeMatchesManual), that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be necessary when attempting to find faces of players during tennis matches, and neglected during manual annotation. 
 
 
@@ -447,16 +464,15 @@ Table \@ref(tab:TypeMatchesManual) shows Animetrics had the least amount of pote
 
 
 ## False Discoveries
-Below are some examples of when faces were only found by one of the APIs, and how the APIs produced unusual false discoveries.
+Below are some examples of when faces were only found by one of the APIs, and how the APIs produced unusual false discoveries. These highlight the potential differences in the detection methods used by each of the APIs. This would need to be taken under consideration to prevent time wasted on sorting actual faces from false discoveries in future applications.
 
-```{r UnusualImages, fig.cap = "Animetrics provided results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ballboy's torso.  \\label{fig:UnusualImages}" }
+```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}" }
 i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE)
 i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE)
 i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE)
 i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE)
 
 gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
-
 ```
 
 
@@ -477,7 +493,8 @@ knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="Thi
 We then considered that there would be an uneven amount of faces with certain image attributes. This is considered in the mosaics below in Figure \@ref(fig:Mosaic).
 
 The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
-This showed that crowd members faces were often recognized, this is both helpful and unhelpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research.
+This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face impact on the APIs detetion capabilities.
+
 
 ```{r MosaicShotangle, fig.cap = "The colours in the mosaic show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.\\label{fig:Mosaic}"}
 library(ggmosaic)
@@ -556,70 +573,62 @@ ggplot(data=ALLmetaIMGnamedFaces) +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
   ylab("Amount of faces") + xlab("Situation the face was captured during")
+```
+
+
+
+## Player Faces
+
+Tennis players faces will be the main focus of this use of facial detection. 
+It is important that the selected API be able to return strong and consitent results for player's faces.
+
+```{r Player, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
+
+
+#ALLmetaIMGPlayers
+  
+ggplot(data=ALLmetaIMGPlayers) +
+     geom_bar(aes(x=bg, fill = shotangle), 
+            position = position_stack(reverse = TRUE), 
+            na.rm=TRUE) +
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Amount of faces") + xlab("Angle the face was captured from")
+```
+
+
+
+## Accessories
+
+The use of accessories, Glasses and Visors or Hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
+It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software. There are many more faces recognized, by both the Google recognition's and manual annotations, that do not have Glasses. This disproportionate sample of faces with Glasses means that we considered it proportionally rather than as a total.
+
+
+
+```{r Misc, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
+
+ALLmetaIMGnamedFaces %>%
+  filter(type=="Manual") -> ManFaces
+  
+
+
+#upset(order.by="freq", nsets=100)
+
 
 ```
 
 
 
-```{r HeadAngles, fig.cap = "The amount of faces found by Google with the head-angle Other, is much larger than the amount of faces with the head-angle Profile or Front On. Therefore this should also be considered proportionately.\\label{tab:HeadAngles}"}
-HeadangleGoogle <- ALLmetaIMGPlayers %>%   filter(type=="Google") %>%
-filter(matchesManual==TRUE)
 
-pander(table(HeadangleGoogle$headangle))
-```
+## Miscellaneous
 
 
-
-
-```{r Headangle-Figure, fig.cap = "\\label{fig:Headangle-Figure} Google performs much better in comparison to the other API when the head-angle is Profile. This is outperforming unusually well, however this could also be due to the poor performance of the API in this circumstance."}
-ggplotProportion(ALLmetaIMGPlayers, headangle)+xlab("Head Angle of Face")
-```
-
- 
-
-
-## Results Overview
-
-
-
-
-Image 1 shows the images preferable for future research. Where the faces will be recognized and allow both the identity and emotion of the players to be recognized.
-
-Google gave the optimum results in this image as it found the face of the player, but did not locate the face of the staff member behind him on the court.
-
-While Google's recognition's mostly matched the Manually annotated set of faces, there were some that did not. These were all actually faces and were missed during manual annotations.
-
-Table 6 shows that 190 of the faces that were not found manually occurred in the scene of a Court player close-up, with a background of a logo wall, where the shot was taken at player shoulder height.
-
-This shows it was performing extremely well and not resulting in unexplained potential faces as some of the other software were. This is a strong indicator that applying Google's software for further research would result in the recognition of desired faces.
-
-These results have contributed to the choice of Google given the optimum scene as described above. Implementing a filtering process, either using current or alternative footage^[See future research for further information on these options] would allow Google to provide Tennis Australia with the most applicable results.
-
-
-We moved to considering the characteristics of the faces. This helped to distinguish where Google performed well in comparison to the other software options.
-
-Table 7 showed the combinations of attributes that were found for each face[Given that information was not recorded where Google provided facial recognition for faces not Manually annotated these could not be considered.].
-The use of accessories, Glasses and Visors or Hats, was considered as the Australian Open takes place on both indoor and outdoor courts. To apply this research all courts that elite Tennis players compete on had to be included.
-It was assumed that outdoor courts would led to the use of these accessories and these accessories may contribute to the performance of a recognition software.
-It may be implied by the table that Glasses prohibits recognition as all but one of the combinations have 'No' for the Glasses variable. However, we are cautious of validating this as Table 8 tells that there are many more faces recognized, by both the Google recognition's and manual annotations, that do not have Glasses. This disproportionate sample of faces with Glasses means that we considered it proportionally rather than as a total.
-
-Graph 2 demonstrates that the presence of Glasses on faces annotated manually did affect recognition by Google's algorithm, while it outperformed the other software in both instances, faces were identified more often if the person did not wear glasses.
-
-
-
-
-Moving to looking at the characteristics that were considered manually shows that the use of glasses by players coincided with less faces being annotated. 
-
-
-
-
-
-The box-plot in graph encourages our comparisons to not consider the size of potential face boxes as a measure of how the software performs on small faces. 
 
 
 #### Challenges
 It is understandable that there would be many more faces to recognize in these shots than in shots where there is only a player, and therefore many more faces recognized. This provides many faces to sort through to find emotions of a player.
-
+ 
 We faced the challenge of accessing usable images of players, and specifically their faces.
 - Availability of software
 - Using the software
@@ -663,7 +672,22 @@ We also feel that incorporating audio information from the microphones worn by p
 
 # Acknowledgements
 
-COMMENT: Add your software and data file list here, list packages used here, e.g. The R package ggplot2 [@ggplot2] was used to make the plots. 
+## APIs
+Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
+
+Google: @Google
+
+Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
+
+Skybiometry: @Skybiometry
+
+## Data Files
+
+
+
+## Packages
+The R package ggplot2 [@ggplot2] was used to make the plots. 
+
 
 
 # References
