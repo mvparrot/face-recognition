@@ -266,7 +266,7 @@ times %>%
 times %>% 
   split(.$type) %>%  map_df(~ summary(.$time.sys.self, digits=max(2, getOption("digits")-2))) %>%
   rownames_to_column %>%  gather(var, value, -rowname) %>% 
-  spread(rowname, value) %>% select(c("API" = `var`,
+  spread(rowname, value) %>% select(c(
                             "Min" = `1`,
                         "1st Qrt" = `2`,
                         "Median"  = `3`,
@@ -290,7 +290,7 @@ two CSVs, ManualClassifiedFaces^[https://github.com/mvparrot/face-recognition/bl
 
 
 A single data set was created to combine all necessary information in the previously mentioned files for our analysis. The information in the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv], was carefully considered. It considers the identify of each face, and all relative face attributes, as well as the image file the face was found in, from this information each face was able to be uniquely identified. Also included was information on the software that found it, and the time it took the software to identify the face. It also has a record of how many faces had been identified in the image by counting each additional recognized face.
-To do so, we gathered the name of the file the face was found in and the software Type the potential Face Boxes was determined by. The automatically determined time values were also included. The minimum and maximum x and y values were drawn from different values in each software's CSV files. This required some processing to align the differing values to be comparable.
+To do so, we gathered the name of the file the face was found in and the API that found the potential face. The automatically determined time values were also included. The minimum and maximum x and y values were drawn from different values in each software's CSV files. This required some processing to align the differing values to be comparable.
 
 To find whether the software were recognizing the same faces a function was created. As the location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software.
 This function uses the information of each face and compares the intersecting regions of the polygons created by the x,y coordinates of Manual Faces and other software's faces, to determine if the same face was recognized. We determined the ratio of intersecting area to total area must be greater than 0.1 to be considered the same face. This allowed us to compare the identification areas, as well as contrast the identified faces of each software. This contributed another variable, boxID, to the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv].  
@@ -308,7 +308,7 @@ However, individual faces are not beneficial if they do not correspond to the fa
 
 This shows how influential certain attributes are in determining whether a face will be detected, a hit, or not, a miss.
 
-A step wise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with Glasses and a Visor or Hat.
+A step wise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with glasses and headwear, a visor or hat.
 
 Regression analysis showed that the situation variable had significant differences between intercept level of "Court Close-Up Not Player" and the categories of "Court in Play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Court in Play" and "Court Player Close Up" rather than a "Court Close-Up Not Player". 
 
@@ -317,7 +317,7 @@ The bar charts of the situations show that the situation is important in influen
 
 
 
-```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or visor or a hat significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
+```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
 # Prepare data
 library(purrr)
 library(tidyverse)
@@ -470,7 +470,7 @@ ct<-CrossTable(table(NoManual$matchesManual, NoManual$type),
                expected = FALSE,
            prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = c("Matches Manual","API Type"))
+           dnn = c("Matches Manual","API"))
 
 pander(ct, caption = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.")
 ```
@@ -600,12 +600,22 @@ ggplot(data=ALLmetaIMGnamedFaces) +
 ## Player Faces
 
 Tennis players faces will be the main focus of this use of facial detection. 
-It is important that the selected API be able to return strong and consitent results for player's faces.
+It is important that the selected API be able to return strong and consistent results for player's faces.
 
-```{r Player, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
-
+```{r Player, fig.cap = c("This stacked bar chart allows consideration ", "of the interaction between two image attributes. \\label{fig:DDPbgshot}")}
 
 #ALLmetaIMGPlayers
+  
+ggplot(data=ALLmetaIMGPlayers) +
+     geom_bar(aes(x=bg, fill = shotangle), 
+            position = position_stack(reverse = TRUE), 
+            na.rm=TRUE) +
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Amount of faces") + xlab("Angle the face was captured from")
+
+
   
 ggplot(data=ALLmetaIMGPlayers) +
      geom_bar(aes(x=bg, fill = shotangle), 
@@ -621,21 +631,25 @@ ggplot(data=ALLmetaIMGPlayers) +
 
 ## Accessories
 
-The use of accessories, Glasses and Visors or Hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
+The use of accessories, glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
 It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software. There are many more faces recognized, by both the Google recognition's and manual annotations, that do not have Glasses. This disproportionate sample of faces with Glasses means that we considered it proportionally rather than as a total.
 
 
 
-```{r Misc, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
+```{r accessories, fig.cap = "\\label{tab:accessories}"}
 
 ALLmetaIMGnamedFaces %>%
   filter(type=="Manual") -> ManFaces
-  
 
+ct<-CrossTable(table(ManFaces$glasses, ManFaces$visorhat), 
+               prop.chisq = FALSE, 
+               digits=2,
+               expected = FALSE,
+           prop.r = FALSE, prop.c = FALSE, prop.t = TRUE,
+           drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
+           dnn = c("Glasses","Headwear"))
 
-#upset(order.by="freq", nsets=100)
-
-
+pander(ct, caption = "This cross table compares the amount of faces that were captured wearing accessories.")
 ```
 
 
