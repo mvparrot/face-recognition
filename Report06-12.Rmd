@@ -250,12 +250,32 @@ One interesting anomaly was found when using the Skybiometry software as it limi
 
 The amount of time taken for each software to process facial detection on the individual images is presented in the histogram below:
 
-```{r timeDensity, fig.cap="This density plot diplays the lengths of time each API took to detect faces in each image. Most of the images take less than one second to process. There is an outlier for Skybiometry that took almost 5 seconds to process. \\label{fig:timeDensity}"}
-times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual") %>% arrange(-time.user.self)
-ggplot(times, na.rm=T) + 
-  scale_color_manual(values = type.colours) +
-  geom_density(aes(x=time.user.self, colour=type)) +
-  xlab("Time Taken")
+```{r timeTable, results='asis', fig.cap="\\label{tab:timeTable}"}
+
+times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual") %>% droplevels()
+
+times %>% 
+  split(.$type) %>%  map_df(~ summary(.$time.user.self, digits=max(2, getOption("digits")-2))) %>%
+  rownames_to_column %>%  gather(var, value, -rowname) %>% 
+  spread(rowname, value) %>% select(c("API" = `var`,
+                            "Min" = `1`,
+                        "1st Qrt" = `2`,
+                        "Median"  = `3`,
+                        "3rd Qrt" = `5`,
+                        "Max"     = `6`)) -> usertime
+times %>% 
+  split(.$type) %>%  map_df(~ summary(.$time.sys.self, digits=max(2, getOption("digits")-2))) %>%
+  rownames_to_column %>%  gather(var, value, -rowname) %>% 
+  spread(rowname, value) %>% select(c("API" = `var`,
+                            "Min" = `1`,
+                        "1st Qrt" = `2`,
+                        "Median"  = `3`,
+                        "3rd Qrt" = `5`,
+                        "Max"     = `6`)) -> systime
+
+cbind(usertime, systime) -> timetable
+
+knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table allows comparisons to be made between the  amount of time taken for each API took to detect faces in each image. Most of the images take less than one second to process. Google had the highest maximum time of 4.936", format = "latex")
 ```
 
 It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to manipulate and save the information returned.
