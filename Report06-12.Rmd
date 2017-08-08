@@ -250,10 +250,22 @@ One interesting anomaly was found when using the Skybiometry software as it limi
 
 The amount of time taken for each software to process facial detection on the individual images is presented in the histogram below:
 
-```{r timeTable, results='asis', fig.cap="\\label{tab:timeTable}"}
+```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
+times <- ALLmetaIMGnamed %>% 
+  filter(type!="Manual") %>%
+  select(file, type, time.user.self, time.sys.self) %>%
+  group_by(file, type) %>%
+  mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self)) 
+ggplot(times) + 
+  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) + 
+  #facet_wrap(~type) + 
+  ylim(c(0, 0.1)) + 
+  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) +
+  xlab("Number of faces detected") + ylab("System time (sec)") + 
+  scale_colour_manual("API", values=type.colours)
+```
 
-times <- ALLmetaIMGnamed %>% filter(!duplicated(file), type!="Manual") %>% droplevels()
-
+```{r eval=FALSE}
 times %>% 
   split(.$type) %>%  map_df(~ summary(.$time.user.self, digits=max(2, getOption("digits")-2))) %>%
   rownames_to_column %>%  gather(var, value, -rowname) %>% 
