@@ -33,7 +33,7 @@ library(xtable)
 library(ggthemes)
 library(EBImage)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.cap=TRUE)
  
 options("citation_format" = "pandoc")
 
@@ -232,7 +232,7 @@ knitr::kable(FaceAttributes, format = "latex", longtable=TRUE, booktabs = TRUE, 
 
 
 ##Manual Annotation
-To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram^[https://github.com/mvparrot/face-recognition/master/ManualClassificationProgram.R]. This helped to provide information for all attributes quickly and consistently.
+To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes quickly and consistently.
 
 
 If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This changed the display and presented a set of Attributes with radio buttons, this allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the corner points of a box drawn by the mouse, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassifiedFaces.csv]. 
@@ -251,19 +251,19 @@ One interesting anomaly was found when using the Skybiometry software as it limi
 The amount of time taken for each software to process facial detection on the individual images is presented in the histogram below:
 
 ```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
-times <- ALLmetaIMGnamed %>% 
-  filter(type!="Manual") %>%
-  select(file, type, time.user.self, time.sys.self) %>%
-  group_by(file, type) %>%
-  mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self)) 
-ggplot(times) + 
-  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) + 
-  #facet_wrap(~type) + 
-  ylim(c(0, 0.1)) + 
-  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) +
-  xlab("Number of faces detected") + ylab("System time (sec)") + 
-  scale_colour_manual("API", values=type.colours)
-```
+times <- ALLmetaIMGnamed %>%  
+  filter(type!="Manual") %>% 
+  select(file, type, time.user.self, time.sys.self) %>% 
+  group_by(file, type) %>% 
+  mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
+ggplot(times) +  
+  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +  
+  #facet_wrap(~type) +  
+  ylim(c(0, 0.1)) +  
+  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
+  xlab("Number of faces detected") + ylab("System time (sec)") +  
+  scale_colour_manual("API", values=type.colours) 
+``` 
 
 ```{r eval=FALSE}
 times %>% 
@@ -298,7 +298,7 @@ The data needed for our analysis was spread across six files. For each software 
 
 
 The collation of the results from the Manual Recognition Program created
-two CSVs, ManualClassifiedFaces^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassifiedFaces.csv] and ManualClassifiedScenes^[https://github.com/mvparrot/face-recognition/blob/master/ManualClassifiedScenes.csv].
+two CSVs.
 
 
 A single data set was created to combine all necessary information in the previously mentioned files for our analysis. The information in the data set^[https://github.com/mvparrot/face-recognition/blob/master/ALLmetIMG.csv], was carefully considered. It considers the identify of each face, and all relative face attributes, as well as the image file the face was found in, from this information each face was able to be uniquely identified. Also included was information on the software that found it, and the time it took the software to identify the face. It also has a record of how many faces had been identified in the image by counting each additional recognized face.
@@ -412,6 +412,17 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
 ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
 ```
 
+
+
+
+```{r GoogleRegression, fig.width=7.5, fig.cap = "Google Regression\\label{fig:GoogleRegression}"}
+ALLmetaIMGnamedFaces %>% filter(type=="Manual" | type=="Google") %>%
+  mutate(isplayer = ifelse(detect=="Player", 1, 0)) -> players
+
+glm(isplayer ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat, data=players) %>% summary()
+
+# currently same model as earlier, give two?
+```
 
 # Results
 
@@ -609,26 +620,6 @@ ggplot(data=ALLmetaIMGnamedFaces) +
 
 
 
-## Player Faces
-
-Tennis players faces will be the main focus of this use of facial detection. 
-It is important that the selected API be able to return strong and consistent results for player's faces.
-
-```{r Player, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. \\label{fig:DDPbgshot}"}
-
-#ALLmetaIMGPlayers
-  
-ggplot(data=ALLmetaIMGPlayers) +
-     geom_bar(aes(x=bg, fill = shotangle), 
-            position = position_stack(reverse = TRUE), 
-            na.rm=TRUE) +
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Amount of faces") + xlab("Angle the face was captured from")
-```
-
-
 
 ## Accessories
 
@@ -717,6 +708,13 @@ Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services
 Skybiometry: @Skybiometry
 
 ## Data Files
+
+All data files used are available on the github page.
+
+ManualClassifiedFaces.csv resulted from the use of the Manual Classification Program, it has information about each face identified manually.
+ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
+
+
 
 
 
