@@ -42,15 +42,15 @@ BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", 
 
 
 #csv files:
-ALLmetaIMGnamed<-read_csv("data/ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry"))))
+ALLmetaIMGnamed<-read_csv("data/ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry")))) %>% 
+  filter(!duplicates)
 SceneAttributes<-read_csv("figures/SceneAttributes.csv")
 FaceAttributes<-read_csv("figures/FaceAttributes.csv")
 SolutionSpecs<-read_csv("figures/SolutionSpecifications.csv")
 
 
-ALLmetaIMGnamedFaces<-ALLmetaIMGnamed%>%
+ALLmetaIMGnamedFaces <- ALLmetaIMGnamed%>%
   filter(!is.na(type)) %>% 
-  dplyr::select(-ID, -facecounter)%>%
   mutate(fileID = as.numeric(factor(file))) %>%
   mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
   mutate(FaceID=paste(fileID, boxID, substring(type, 1,2), sep="-"))
@@ -257,13 +257,21 @@ times <- ALLmetaIMGnamed %>%
   select(file, type, time.user.self, time.sys.self) %>% 
   group_by(file, type) %>% 
   mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
-ggplot(times) +  
-  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +  
-  #facet_wrap(~type) +  
-  ylim(c(0, 0.1)) +  
+
+t1 <- ggplot(times) +  
   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
   xlab("Number of faces detected") + ylab("System time (sec)") +  
-  scale_colour_manual("API", values=type.colours) 
+  scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
+
+t2 <- ggplot(times) +  
+  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +  
+  facet_wrap(~type) +  
+  ylim(c(0, 0.1)) +  
+  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
+  xlab("Number of faces detected") +  
+  scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
+
+grid.arrange(t1,t2,nrow=1)
 ``` 
 
 ```{r eval=FALSE}
@@ -288,7 +296,8 @@ times %>%
 
 cbind(usertime, systime) -> timetable
 
-knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table allows comparisons to be made between the  amount of time taken for each API took to detect faces in each image. Most of the images take less than one second to process. Google had the highest maximum time of 4.936", format = "latex")
+knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table allows comparisons to be made between the  amount of time taken for each API took to detect faces in each image. Most of the images take less than one second to process. Google had the highest maximum time of 4.936", format = "latex") #%>%
+ # add_header_above(c(" " = 1, "Group 1" = 5, "Group 2" = 5))
 ```
 
 It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to manipulate and save the information returned.
@@ -330,14 +339,13 @@ The bar charts of the situations show that the situation is important in influen
 
 
 
-```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
+```{r RegressionFunctions}
 # Prepare data
 library(purrr)
 library(tidyverse)
 library(gridExtra)
 library(dplyr)
 library(ggplot2)
-
 
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
@@ -410,35 +418,85 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
   grid.arrange(ep)#, sp)
 }
 
-ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat)
 ```
 
+```{r CheckModels}
+
+mods<-GlmModelCreation(model = hit ~ 0 + 
+              shotangle + 
+              bg + 
+              bg*shotangle + 
+              situation + 
+              obscured +
+              headangle +
+              lighting + 
+              glasses + 
+              visorhat, 
+              data=ALLmetaIMGnamedFaces) 
+
+#mods$Animetrics %>% drop1(., test="Chisq")
+#mods$Google %>% drop1(., test="Chisq")
+#interaction significant
+#mods$Microsoft %>% drop1(., test="Chisq")
+#mods$Skybiometry %>% drop1(., test="Chisq")
+
+# mods$Animetrics %>% 
+#   summary %>%
+#   .$coefficients %>%
+#   as.data.frame() %>% select(Estimate, `Pr(>|z|)`) -> a
+
+```
+
+The model selection technique was undertaking a Chi-Square test comparing the model deviance with all variables to the model deviance when each particular variable was excluded. If there was a low Pr(>Chi) value associated with a variable, that would show the variable was significant in predicting whether the faces annotated manually would be detected by the API. 
+
+```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
 
 
+ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + situation + lighting + glasses + visorhat)
 
-```{r GoogleRegression, fig.width=7.5, fig.cap = "Google Regression\\label{fig:GoogleRegression}"}
+```
+
+```{r GoogleRegression, fig.cap = "Google Regression\\label{fig:GoogleRegression}"}
 ALLmetaIMGnamedFaces %>% filter(type=="Manual" | type=="Google") %>%
   mutate(isplayer = ifelse(detect=="Player", 1, 0)) -> players
 
-glm(isplayer ~ shotangle + bg + bg*shotangle + graphic + situation + lighting + glasses + visorhat, data=players) %>% summary()
+mod1 <- glm(isplayer ~ 0 + 
+              shotangle + 
+              bg + 
+              bg*shotangle + 
+              situation + 
+              obscured +
+              headangle +
+              lighting + 
+              glasses + 
+              visorhat, data=players, family=binomial(link="logit")) 
+
+drop1(mod1, test="Chisq") 
 
 # currently same model as earlier, give two?
+
+colnames(players)
 ```
+When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level.
+
+
+
+
 
 # Results
 
-## Amount of Potential Faces
+## Amount of Faces
 
-Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs.. The Google Vision API detected a large amount of potential faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen below in Figure \@ref(fig:PotentialFaceData).
+Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs. The Google Vision API detected a large amount of faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen  in Figure \@ref(fig:FaceData).
 
 
-```{r PotentialFaceData, fig.cap = "\\label{fig:PotentialFaceData}  Potential Face Boxes Per API: The bar chart shows the number of Potential Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more potential faces than the next best API, Microsoft."}
+```{r FaceData, fig.cap = "\\label{fig:FaceData}   Face Boxes Per API: The bar chart shows the number of  Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more faces than the next best API, Microsoft."}
 
 ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) + 
   geom_bar(position="dodge") +
   xlab("Facial Recognition APIs") +
   scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +
-  ylab("Number of Potential Faces") + 
+  ylab("Number of Faces") + 
   guides(fill=FALSE) +
   labs(caption="") + scale_fill_manual(values=type.colours)
 ```
@@ -446,57 +504,74 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 
 To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. This sample contains all the manually annotated faces and all the faces recognized by the four APIs.
 
-Figure \@ref(fig:PotentialFaceData), the bar chart of the potential faces shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use of applying facial recognition during sports.
+Figure \@ref(fig:FaceData), the bar chart of thefaces shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use of applying facial recognition during sports.
 Table \@ref(tab:TypeMatchesManual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
 This was unexpected as it was presumed that majority of the faces annotated manually would be found. 
 
 The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. 
 
-Figure \@ref(fig:PotentialFaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
-The black bubbles below the bars show the API combination that detected all the faces counted in the bar above.
+Figure \@ref(fig:FaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
+The black bubbles  the bars show the API combination that detected all the faces counted in the bar above.
 
 
   
-
-```{r PotentialFaceUpSet, fig.cap = "\\label{fig:PotentialFaceUpset} potential facees Per API Combination. The Bar Chart shows the potential facees that were recognised by multiple API or found manually. The largest group, with 809 faces, is potential facees only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
+```{r FaceUpSet, fig.cap = "\\label{fig:FaceUpset} Faces Per API Combination. The Bar Chart shows the faces that were recognised by multiple API or found manually. The largest group, with 809 faces, is faces only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
 createUpSet(ALLmetaIMGnamedFaces)
 ```
 
 
 
-## Potential Faces Matching Manual Annotations
+## Comparing Faces Found 
 
-We have two possible results for each potential face returned by the APIs.
-The first is presented in the form of our null hypothesis:
-
-$H_0:$ The potential face captured by the API is not an actual face.
-
-$H_A:$ The potential face captured by the API is an actual face.
-
-If the null hypothesis is true, the potential face location would not match the location of a manually annotated face. We would expect to see this for several reasons, when the face returned was deemed impractical or it would not be required that the chosen API would return the face in future use. Also when the potential face returned was a false discovery, in the instance where there was no face within the area deemed a potential face.
-
-This compares to the alternative hypothesis, where the potential face location matched the location of a manual face. They were then given an identical ID to denote they captured the same face if the overlapping area of the two boxes was 1/3, or greater, of the potential face location area.
+The faces found by each API are compared to those found manually.
+The upper left box of all tables shows that there was no tagging system for areas in the image not designated to be a face by either manual annotations or API detections.
 
 
-These definitions allowed us to define the four different scenarios of a hypothesis test. 
+```{r table}
+FacesAPI <- ALLmetaIMGnamedFaces %>% 
+  filter(!duplicates) %>%
+  select(FaceKey, type) %>%
+  table() %>%
+  as.data.frame() %>%
+  spread(key=type, value=Freq) %>%
+  mutate(Animetrics = ifelse(Animetrics==0, "No Face", "Face"),
+         Google = ifelse(Google==0, "No Face", "Face"),
+         Microsoft = ifelse(Microsoft==0, "No Face", "Face"),
+         Manual = ifelse(Manual==0, "No Face", "Face"),
+         Skybiometry = ifelse(Skybiometry==0, "No Face", "Face")) 
 
-To consider how many Type II errors occurred, where an actual face was detected by an API, and incorrectly it was not annotated manually, and how many Type I errors occurred where a potential face was found by an API, and it was actually a face, but was not detected manually.
-we look at the potential faces that do not match manually annotated faces.
+AM <- table(FacesAPI$Manual, FacesAPI$Animetrics, dnn = c("Manual", "Animetrics"))
+GM <- table(FacesAPI$Manual, FacesAPI$Google, dnn = c("Manual", "Google"))
+MM <- table(FacesAPI$Manual, FacesAPI$Microsoft, dnn = c("Manual", "Microsoft"))
+SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometry"))
+```
 
 
-```{r TypeMatchesManual, results='asis', fig.cap = "\\ label{tab:TypeMatchesManual}"}
 
-NoManual<-ALLmetaIMGnamedFaces %>% filter(ALLmetaIMGnamedFaces$type!="Manual")
-NoManual<-NoManual %>% droplevels(NoManual$type) 
-ct<-CrossTable(table(NoManual$matchesManual, NoManual$type), 
-               prop.chisq = FALSE, 
-               digits=4,
-               expected = FALSE,
-           prop.r = TRUE, prop.c = TRUE, prop.t = TRUE,
-           drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = c("Matches Manual","API"))
+```{r tableAMt, results='asis', eval=FALSE}
 
-pander(ct, caption = "This table shows the amount potential faces that were found by the APIs and whether they compare to those annotated manually. Where the FALSE row denotes API Face potential facees do not coincide with manually annotated faces. The tables shows that Google found 46.96% of the Faces identified manually.")
+AM <- table(FacesAPI$Manual, FacesAPI$Animetrics, dnn = c("Manual", "Animetrics"))
+
+AMt <- tableGrob(as.matrix(AM), rows = rownames(AM), cols = colnames(AM), theme = ttheme_minimal())
+
+titleAM <- textGrob("   Animetrics", gp = gpar(fontsize = 15))
+padding <- unit(0.5,"line")
+AMt <- gtable_add_rows(AMt, heights = grobHeight(titleAM) + padding, pos = 0)
+
+grid.arrange(AMt)
+tab <- gtable_add_grob(AMt,titleAM, 1, 1)
+
+```
+
+```{r tableGMt, reaults='asis', fig.width=1}
+```
+
+```{r tableMMt, reaults='asis'}
+knitr::kable(MMt, booktabs = TRUE, longtable=F, format="latex")
+```
+
+```{r tableSMt, reaults='asis'}
+knitr::kable(SMt, booktabs = TRUE, longtable=F, format="latex")
 ```
 
 
