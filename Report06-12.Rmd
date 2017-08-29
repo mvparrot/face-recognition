@@ -615,29 +615,30 @@ The images were all considered manually. The scene information was recorded and 
 This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face impact on the APIs detetion capabilities.
 
 
-```{r MosaicShotangle, fig.cap = "The colours in the mosaic show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.\\label{fig:Mosaic}"}
+```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
 library(ggmosaic)
 #dev tools version has scale_y_productlist but cannot use it yet
 #ALLmetaIMGnamedFaces$shotangle 
 ALLmetaIMGnamedFaces$shotangle <- factor(ALLmetaIMGnamedFaces$shotangle, levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
 
-ggplot(data=ALLmetaIMGnamedFaces) + 
+MosaicShotangle<- ggplot(data=ALLmetaIMGnamedFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
   labs(caption="") +
-  ylab("Proportion of faces") + xlab("Angle the face was captured from ")
+  ylab("Proportion of faces") + xlab("Angle the face was captured from ") + theme(legend.position = "none")
 ```
 
+The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.
 
 
 ```{r ShotangleCompare, eval=FALSE, fig.cap=".\\label{fig:ShotangleCompare}"}
-CompShot <- ALLmetaIMGnamedFaces %>% 
-  filter(shotangle=="Player Shoulder Height", 
-         bg=="Logo wall", 
-         situation=="Court player close−up",
-         type=="Google" | type=="Manual",
-         player2=="AMurray", player2:"AMurray")
+# CompShot <- ALLmetaIMGnamedFaces %>% 
+#   filter(shotangle=="Player Shoulder Height", 
+#          bg=="Logo wall", 
+#          situation=="Court player close−up",
+#          type=="Google" | type=="Manual",
+#          player2=="AMurray", player2:"AMurray")
 
 #mylist<-as.list(CompShot$file)
 #6,7,8,
@@ -650,7 +651,7 @@ CompShot <- ALLmetaIMGnamedFaces %>%
 
 
 
-```{r MosaicSit, fig.cap = "This mosaic shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.\\label{fig:Mosaic}"}
+```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
 
 ALLmetaIMGnamedFaces$situation <- factor(ALLmetaIMGnamedFaces$situation, levels = c("Court close−up not player",
           "Court in play",
@@ -658,45 +659,54 @@ ALLmetaIMGnamedFaces$situation <- factor(ALLmetaIMGnamedFaces$situation, levels 
           "Crowd",
           "Court player close−up"))
 
-ggplot(data=ALLmetaIMGnamedFaces) + 
+MosaicSit<- ggplot(data=ALLmetaIMGnamedFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
   labs(caption="") + coord_flip() +
-  ylab("Proportion of faces") + xlab("Situation the face was captured during")
+  ylab("Proportion of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")
 ```
 
+The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.
 
-```{r DDbgshot, fig.cap = "This stacked bar chart allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Player Shoulder Height is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court. \\label{fig:DDbgshot}"}
 
-ggplot(data=ALLmetaIMGnamedFaces) +
+```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}"}
+
+sbbgshot <- ggplot(data=ALLmetaIMGnamedFaces) +
    geom_bar(aes(x=shotangle, fill = bg), 
             position = position_stack(reverse = TRUE), 
             na.rm=TRUE) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Angle the face was captured from")
+  ylab("Amount of faces") + xlab("Angle the face was captured from") + theme(legend.position = "none")
 
 ```
 
 
+This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Player Shoulder Height is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
 
-```{r DDbgsit, fig.cap = "This stacked bar chart allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background to an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.\\label{fig:DDbgsit}"}
+```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}"}
 
-ggplot(data=ALLmetaIMGnamedFaces) +
+sbbgsit <- ggplot(data=ALLmetaIMGnamedFaces) +
    geom_bar(aes(x=situation, fill = bg), 
             position = position_stack(reverse = TRUE), 
             na.rm=TRUE) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Situation the face was captured during")
+  ylab("Amount of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")
 ```
 
 
+This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
+```{r ICFigs, out.width = 0.8, fig.cap = "\\label{fig:ICFigs}"}
+
+grid.arrange(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
+             nrow=2, ncol=2)
+```
 ## Accessories
 
 The use of accessories, glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
