@@ -32,6 +32,8 @@ library(xtable)
 library(gtable)
 library(ggthemes)
 library(EBImage)
+library(gridExtra)
+library(ggmosaic)
 
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.cap=TRUE)
  
@@ -183,13 +185,12 @@ There are many matches played during the Australian Open, and they are played on
 
 
 ##Software Selection
-The choice of the initial software considered for this research was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.' 
+The choice of the initial software considered for this research was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.' [@Survey]
 
-The process of software selection to determine which we would compare was based on several criteria. Firstly, we based our choices on the results of the report as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
+The process of software selection to determine which we would compare was based on several criteria. The results of the report, as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
 
-From the software analysed we considered availability for use within the time frame of the report. This led us to choose Animetrics FaceR. The report outlines that for Animetrics, 'one requirement is that image/face proportion
-should be at least 1:8 and that at least 64 pixels between eyes are required'. We realize this could present challenges given our data set.
-It will also allow for an extension from detecting to recognizing people in the data set.
+From the software analysed we considered availability for use within the time frame of the report. This led us to choose Animetrics FaceR. The report outlines that for Animetrics, 'one requirement is that image/face proportion should be at least 1:8 and that at least 64 pixels between eyes are required'. We realize this could present challenges given the pixel sizes of faces in the image set. 
+It will also allow for an extension from detecting to recognizing people in the data set. 
 
 After considering several other off-the-shelf products, we did not choose any other software's from those analysed as they were not as readily available as other products on the market.
 
@@ -544,32 +545,33 @@ MM <- table(FacesAPI$Manual, FacesAPI$Microsoft, dnn = c("Manual", "Microsoft"))
 SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometry"))
 ```
 
+\begin{table}[]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+434 & 1861 \\ \hline
+527 & 787 \\ \hline
+\end{tabular}%
+}
+\caption{My caption}
+\label{my-label}
+\end{table}
 
-
-```{r tableAMt, results='asis', eval=FALSE}
-
-AM <- table(FacesAPI$Manual, FacesAPI$Animetrics, dnn = c("Manual", "Animetrics"))
-
-AMt <- tableGrob(as.matrix(AM), rows = rownames(AM), cols = colnames(AM), theme = ttheme_minimal())
-
-titleAM <- textGrob("   Animetrics", gp = gpar(fontsize = 15))
-padding <- unit(0.5,"line")
-AMt <- gtable_add_rows(AMt, heights = grobHeight(titleAM) + padding, pos = 0)
-
-grid.arrange(AMt)
-tab <- gtable_add_grob(AMt,titleAM, 1, 1)
-
+```{r tableAMt, reaults='asis', fig.width=1}
+knitr::kable(AM, booktabs = TRUE, longtable=F, format="latex")
 ```
 
 ```{r tableGMt, reaults='asis', fig.width=1}
+knitr::kable(GM, booktabs = TRUE, longtable=F, format="latex")
 ```
 
 ```{r tableMMt, reaults='asis'}
-knitr::kable(MMt, booktabs = TRUE, longtable=F, format="latex")
+knitr::kable(MM, booktabs = TRUE, longtable=F, format="latex")
 ```
 
 ```{r tableSMt, reaults='asis'}
-knitr::kable(SMt, booktabs = TRUE, longtable=F, format="latex")
+knitr::kable(SM, booktabs = TRUE, longtable=F, format="latex")
 ```
 
 
