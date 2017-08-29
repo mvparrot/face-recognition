@@ -25,7 +25,6 @@ library(readr)
 library(knitr)
 library(grid)
 library(tidyverse)
-library(magick)
 library(kfigr)
 library(UpSetR)
 library(descr)
@@ -184,11 +183,11 @@ There are many matches played during the Australian Open, and they are played on
 
 
 ##Software Selection
-The choice of the initial software considered for this research were informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.'
+The choice of the initial software considered for this research was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.' 
 
 The process of software selection to determine which we would compare was based on several criteria. Firstly, we based our choices on the results of the report as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
 
-From the software's analysed we considered availability for use within the time frame of the report. This led us to choose Animetrics FaceR. The report outlines that for Animetrics, 'one requirement is that image/face proportion
+From the software analysed we considered availability for use within the time frame of the report. This led us to choose Animetrics FaceR. The report outlines that for Animetrics, 'one requirement is that image/face proportion
 should be at least 1:8 and that at least 64 pixels between eyes are required'. We realize this could present challenges given our data set.
 It will also allow for an extension from detecting to recognizing people in the data set.
 
@@ -475,7 +474,6 @@ drop1(mod1, test="Chisq")
 
 # currently same model as earlier, give two?
 
-colnames(players)
 ```
 When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level.
 
