@@ -852,26 +852,46 @@ We also feel that incorporating audio information from the microphones worn by p
 ## APIs
 Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
 
-Google: @Google
+Google: @Google Refers to the Google Cloud Vision API
 
 Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
 
-Skybiometry: @Skybiometry
+Skybiometry: @Skybiometry References the spin off detection and recognition software of Neurotechnology. 
 
 ## Data Files
 
 All data files used are available on the github page.
 
-ManualClassifiedFaces.csv resulted from the use of the Manual Classification Program, it has information about each face identified manually.
+ManualClassifiedFaces.csv resulted from the use of the Manual Annotation Application, it contains information about each face identified manually.
 ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
 
+Each script that was automated for POST requests created a classified faces csv.
 
 
 
 
 ## Packages
-The R package ggplot2 [@ggplot2] was used to make the plots. 
+The R packages were used to create the following:
 
+* bookdown [@bookdown] and knitr [@knitr] created the pdf output
+* ggplot2 [@ggplot2] was used to make the plots 
+* pander [@pander] printed tables
+* knitcitations [@knitcitations] and RefManager [@RefManager] allowed for references to be integrated
 
+bookdown
+knitr
+RefManageR
+readr
+grid
+tidyverse
+kfigr
+UpSetR
+descr
+xtable
+gtable
+ggthemes
+EBImage
+gridExtra
+ggmosaic
 
 # References
