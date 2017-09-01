@@ -17,8 +17,6 @@ link-citations: true
 library(bookdown)
 library(pander)
 library(ggplot2)
-library(imager)
-library(devtools)
 library(knitcitations)
 library(RefManageR)
 library(readr)
@@ -43,14 +41,14 @@ BibOptions(check.entries = FALSE, style = "markdown", bib.style = "alphabetic", 
 
 
 #csv files:
-ALLmetaIMGnamed<-read_csv("data/ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry")))) %>% 
+amin<-read_csv("data/ALLmetaIMGnamed.csv", col_types = cols(type = col_factor(levels = c("Manual", "Animetrics", "Google", "Microsoft", "Skybiometry")))) %>% 
   filter(!duplicates)
 SceneAttributes<-read_csv("figures/SceneAttributes.csv")
 FaceAttributes<-read_csv("figures/FaceAttributes.csv")
 SolutionSpecs<-read_csv("figures/SolutionSpecifications.csv")
 
 
-ALLmetaIMGnamedFaces <- ALLmetaIMGnamed%>%
+aminFaces <- amin %>%
   filter(!is.na(type)) %>% 
   mutate(fileID = as.numeric(factor(file))) %>%
   mutate(FaceKey=paste(fileID, boxID, sep="-")) %>%
@@ -90,7 +88,7 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE, colourScheme = typ
       theme_void()
     
     # Find associated Face Box information for specific image
-    faceData <- ALLmetaIMGnamedFaces %>% filter(file == i)
+    faceData <- aminFaces %>% filter(file == i)
     
     if(nrow(faceData) == 0){
       return(p)
@@ -138,7 +136,7 @@ ggplotProportion <- function(dataset, factorVar){
 }
 
 
-ALLmetaIMGPlayers <- ALLmetaIMGnamed %>% filter(detect=="Player")
+ALLmetaIMGPlayers <- amin %>% filter(detect=="Player")
 
 
 # Create UpSetR graph
@@ -205,13 +203,18 @@ We were able to try the online demos to see whether these software were viable, 
 
 ```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
-overlayGgplot(imagesList0, ALLmetaIMGnamedFaces, matchBox = FALSE)
+overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 ```
 
 
 # Methodology
-An annotation tool was constructed to create a base for comparative analysis, we refer to this as Manual Classifications.
-These manual Classifications involved describing the features of the Scenes. 
+
+A 'face' is considered to be any area designated manually or by an API as a location that encloses a human face. These may or may not be actual faces.
+
+## Manual Annotations 
+
+An annotation tool was constructed to allow image annotations that would capture the location of areas selected manually. We refer to the faces in these areas as Manual Face Classifications.
+This tool also allowed selections of attributes of each face, and attributes describing the features of the Scenes. 
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
@@ -252,11 +255,12 @@ One interesting anomaly was found when using the Skybiometry software as it limi
 The amount of time taken for each software to process facial detection on the individual images is presented in the histogram :
 
 ```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
-times <- ALLmetaIMGnamed %>%  
+
+times <- amin %>%  
   filter(type!="Manual") %>% 
   select(file, type, time.user.self, time.sys.self) %>% 
   group_by(file, type) %>% 
-  mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
+  mutate(n=dplyr::n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
 
 t1 <- ggplot(times) +  
   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
@@ -319,7 +323,7 @@ This function uses the information of each face and compares the intersecting re
 
 ##Analysis
 
-Using the data set^[ALLmetaIMGnamed] of the combined API and manual results, we were able to compare the performance of the software.
+Using the data set of the combined API and manual results, we were able to compare the performance of the software.
 Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(fig:FaceData).
 
 
@@ -356,7 +360,7 @@ hitmiss <- function(x){
 }
 
 
-GlmModelCreation <- function(model, data = ALLmetaIMGnamedFaces) {
+GlmModelCreation <- function(model, data = aminFaces) {
   glmFits <- data %>% 
   split(.$FaceKey) %>% 
   map_df(~ hitmiss(.)) %>% 
@@ -491,7 +495,7 @@ Each API returned areas that indicated the potential location of a face. These a
 
 ```{r FaceData, fig.cap = "\\label{fig:FaceData}   Face Boxes Per API: The bar chart shows the number of  Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more faces than the next best API, Microsoft."}
 
-ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) + 
+ggplot(amin, aes(x = type, fill=type)) + 
   geom_bar(position="dodge") +
   xlab("Facial Recognition APIs") +
   scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +
@@ -503,31 +507,17 @@ ggplot(ALLmetaIMGnamed, aes(x = type, fill=type)) +
 
 To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. This sample contains all the manually annotated faces and all the faces recognized by the four APIs.
 
-Figure \@ref(fig:FaceData), the bar chart of thefaces shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use of applying facial recognition during sports.
-Table \@ref(tab:TypeMatchesManual) details the amounts of faces that were found by each API that matched or did not match a face found manually. There are slightly more faces found by APIs that do match the faces found manually, 56.34%, than faces that do not match, 43.66%.
-This was unexpected as it was presumed that majority of the faces annotated manually would be found. 
-
-The largest group of images were those annotated by manual annotations and found by the Google API, these faces consisted of 26.46% of the total sample. 
-
-Figure \@ref(fig:FaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
-The black bubbles  the bars show the API combination that detected all the faces counted in the bar above.
-
-
-  
-```{r FaceUpSet, fig.cap = "\\label{fig:FaceUpset} Faces Per API Combination. The Bar Chart shows the faces that were recognised by multiple API or found manually. The largest group, with 809 faces, is faces only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
-createUpSet(ALLmetaIMGnamedFaces)
-```
-
+Figure \@ref(fig:FaceData), the bar chart of faces per API shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use where faces of the player must be captured over time during sports matches.
 
 
 ## Comparing Faces Found 
 
-The faces found by each API are compared to those found manually.
-The upper left box of all tables shows that there was no tagging system for areas in the image not designated to be a face by either manual annotations or API detections.
+The individual faces, the specified area of the image, found by each API are compared to those found manually and by the other APIs.
+
 
 
 ```{r table}
-FacesAPI <- ALLmetaIMGnamedFaces %>% 
+FacesAPI <- aminFaces %>% 
   filter(!duplicates) %>%
   select(FaceKey, type) %>%
   table() %>%
@@ -618,22 +608,23 @@ This showed that crowd members faces were often recognized, this is helpful as i
 ```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
 library(ggmosaic)
 #dev tools version has scale_y_productlist but cannot use it yet
-#ALLmetaIMGnamedFaces$shotangle 
-ALLmetaIMGnamedFaces$shotangle <- factor(ALLmetaIMGnamedFaces$shotangle, levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
+#aminFaces$shotangle 
+aminFaces$shotangle <- factor(aminFaces$shotangle, levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
 
-MosaicShotangle<- ggplot(data=ALLmetaIMGnamedFaces) + 
+MosaicShotangle<- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
-  labs(caption="") +
-  ylab("Proportion of faces") + xlab("Angle the face was captured from ") + theme(legend.position = "none")
+  labs(caption="") + coord_flip() +
+  ylab("Proportion of faces") + xlab("Angle the face was captured from ") + theme(legend.position = "none") +
+  ggtitle("Plot a. Proportion of faces captured at each angle")
 ```
 
 The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.
 
 
 ```{r ShotangleCompare, eval=FALSE, fig.cap=".\\label{fig:ShotangleCompare}"}
-# CompShot <- ALLmetaIMGnamedFaces %>% 
+# CompShot <- aminFaces %>% 
 #   filter(shotangle=="Player Shoulder Height", 
 #          bg=="Logo wall", 
 #          situation=="Court player close−up",
@@ -653,17 +644,18 @@ The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of
 
 ```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
 
-ALLmetaIMGnamedFaces$situation <- factor(ALLmetaIMGnamedFaces$situation, levels = c("Court close−up not player",
+aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close−up not player",
           "Court in play",
           "Off court close up of player",
           "Crowd",
           "Court player close−up"))
 
-MosaicSit<- ggplot(data=ALLmetaIMGnamedFaces) + 
+MosaicSit<- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
   labs(caption="") + coord_flip() +
-  ylab("Proportion of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")
+  ylab("Proportion of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")  +
+  ggtitle("Plot b. Proportion of faces captured in each situation")
 ```
 
 The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.
@@ -671,14 +663,15 @@ The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured durin
 
 ```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}"}
 
-sbbgshot <- ggplot(data=ALLmetaIMGnamedFaces) +
+sbbgshot <- ggplot(data=aminFaces) +
    geom_bar(aes(x=shotangle, fill = bg), 
             position = position_stack(reverse = TRUE), 
             na.rm=TRUE) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Angle the face was captured from") + theme(legend.position = "none")
+  ylab("Amount of faces") + xlab("Angle the face was captured from") + theme(legend.position = "none") +
+  ggtitle("Plot c. Proportion of faces captured at each angle \nwith various backgrounds")
 
 ```
 
@@ -688,25 +681,28 @@ This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of
 
 ```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}"}
 
-sbbgsit <- ggplot(data=ALLmetaIMGnamedFaces) +
+sbbgsit <- ggplot(data=aminFaces) +
    geom_bar(aes(x=situation, fill = bg), 
             position = position_stack(reverse = TRUE), 
             na.rm=TRUE) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")
+  ylab("Amount of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none") +
+  ggtitle("Plot d. Proportion of faces captured in each situation \nwith various backgrounds")
 ```
 
 
 This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
-```{r ICFigs, out.width = 0.8, fig.cap = "\\label{fig:ICFigs}"}
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "These plots indicate the proportion or amount of faces with certain attributes, or attribute combinations.\\label{fig:ICFigs}"}
 
 grid.arrange(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
              nrow=2, ncol=2)
 ```
+
+
 ## Accessories
 
 The use of accessories, glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
@@ -716,7 +712,7 @@ It was assumed that outdoor courts would lead to the use of these accessories an
 
 ```{r accessories, fig.cap = "\\label{tab:accessories}"}
 
-ALLmetaIMGnamedFaces %>%
+aminFaces %>%
   filter(type=="Manual") -> ManFaces
 
 ct<-CrossTable(table(ManFaces$glasses, ManFaces$visorhat), 
