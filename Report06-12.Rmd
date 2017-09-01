@@ -551,55 +551,108 @@ MM <- table(FacesAPI$Manual, FacesAPI$Microsoft, dnn = c("Manual", "Microsoft"))
 SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometry"))
 ```
 
-\begin{table}[]
+
+\begin{table}[h]
+\parbox{.5\linewidth}{
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{|l|l|}
-\hline
-434 & 1861 \\ \hline
-527 & 787 \\ \hline
-\end{tabular}%
+\begin{tabular}{ccc}
+\hline  
+Manual & Face & No Face\\ [0.5ex] 
+%heading
+\hline 
+Face & 434 & 1861 \\
+NoFace &527 & 787 \\ \hline
+\end{tabular}
+\caption{Animetrics}
 }
-\caption{My caption}
-\label{my-label}
+\hfill
+\parbox{.5\linewidth}{
+\centering
+\begin{tabular}{ccc}
+\hline  
+Manual & Face & No Face\\ [0.5ex] 
+%heading
+\hline
+Face & 1319 & 976 \\
+NoFace &638 & 676 \\ \hline
+\end{tabular}
+\caption{Google}
+}
 \end{table}
 
-```{r tableAMt, reaults='asis', fig.width=1}
-knitr::kable(AM, booktabs = TRUE, longtable=F, format="latex")
+
+
+
+\begin{table}[h]
+\parbox{.5\linewidth}{
+\centering
+\begin{tabular}{ccc}
+\hline
+Manual & Face & No Face\\ [0.5ex] 
+%heading
+\hline
+Face & 565 & 1730 \\
+NoFace &505 & 809 \\ \hline
+\end{tabular}
+\caption{Microsoft}
+}
+\hfill
+\parbox{.5\linewidth}{
+\centering
+\begin{tabular}{ccc}
+\hline  
+Manual & Face & No Face\\ [0.5ex] 
+%heading
+\hline 
+Face & 493 & 1802 \\
+NoFace &512 & 802 \\ \hline
+\end{tabular}
+\caption{Skybiometry}
+}
+\end{table}
+
+Each table above considers the individual faces found in the set.
+The upper left quadrany of tables shows the faces found manually and by each API. The ideal set would have majority of faces found belong to this category. 
+Table 4, the comparison of Skybiometry and Manually annotated faces gives the lowest amount in this regard. Table 5, Google, found the largest amount of faces that matched those manually annotated.
+
+
+Visual inspection showed that the `r amin %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table 5, that were found by Google but not found manually were actually faces, however they were not all of players. Some of these crowd members were beyond what would be expected of an emotion recognition application for detecting faces of tennis players during a match. These were deemed unlikely to be necessary when attempting to find faces of players during tennis matches, and neglected during manual annotation. 
+
+Comparatively, visual inspection of the `r amin %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were actually very unusual results.
+
+
+
+  
+```{r FaceUpSet, fig.cap = "\\label{fig:FaceUpset} Faces Per API Combination. The Bar Chart shows the faces that were recognised by multiple API or found manually. The largest group, with 809 faces, is faces only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
+createUpSet(aminFaces)
 ```
 
-```{r tableGMt, reaults='asis', fig.width=1}
-knitr::kable(GM, booktabs = TRUE, longtable=F, format="latex")
-```
-
-```{r tableMMt, reaults='asis'}
-knitr::kable(MM, booktabs = TRUE, longtable=F, format="latex")
-```
-
-```{r tableSMt, reaults='asis'}
-knitr::kable(SM, booktabs = TRUE, longtable=F, format="latex")
-```
 
 
-Visual inspection showed that the `r ALLmetaIMGnamed %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table \@ref(tab:TypeMatchesManual), that were found by Google but not found manually were actually faces, however they were not all of players, and some of these crowd members were beyond what would be expected of an emotion recognition application for tennis players. These were deemed unlikely to be necessary when attempting to find faces of players during tennis matches, and neglected during manual annotation. 
+Figure \@ref(fig:FaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
+The black bubbles  the bars show the API combination that detected all the faces counted in the bar above.
 
-
-Table \@ref(tab:TypeMatchesManual) shows Animetrics had the least amount of potential faces that matched Manually annotated faces. Also, visual inspection of the `r ALLmetaIMGnamed %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were actually very unusual results.
 
 
 
 ## False Discoveries
- are some examples of when faces were only found by one of the APIs, and how the APIs produced unusual false discoveries. These highlight the potential differences in the detection methods used by each of the APIs. This would need to be taken under consideration to prevent time wasted on sorting actual faces from false discoveries in future applications.
+Examples are included of faces only found by one of the APIs, as other than Google, the APIs produced several unusual false discoveries. These highlight the potential differences in the detection methods used by each of the APIs. This would need to be taken under consideration to prevent time wasted on sorting actual faces from false discoveries in future applications.
+
 
 ```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}" }
-i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE)
-i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE)
-i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE)
-i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE)
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure a.")
+i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure b.")
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure c.")
+i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure d.")
 
 gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 ```
 
+
+Figure \@ref(fig:UnusualImages) depicts four images that contained unusual results of faces. Figure a highlights a very large area, most interesting about this is the face of the ball boy captured within this area.
+Figure b also shows unusual faces, the KIA logo was returned by Animetrics many times as a face. This discredits the ability of the API to distinguish actual faces from tricks of lights and colours in the complex setting of colourful tennis matches.
+
+Examples of tricks of colours are shown in Figure c, where logos on the shirts were eturned as faces.
 
 
 ## Image Characteristics
@@ -608,14 +661,14 @@ We then considered the characteristics of the images that the API found Potentia
 
 
 ```{r Image-Characteristics-Table, fig.cap ="\\label{tab:Image-Characteristics-Table}"}
-ImageCharacteristics <- ALLmetaIMGnamed %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
+ImageCharacteristics <- amin %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:5,]
 knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Player Shoulder Height angle are shared by three of the five image combinations.", format = "latex")
 ```
 
 
-We then considered that there would be an uneven amount of faces with certain image attributes. This is considered in the mosaics  in Figure \@ref(fig:Mosaic).
+We then considered that there would be an uneven amount of faces with certain image attributes. This is considered in the mosaics in Figure \@ref(fig:MosaicShotangle) and Figure \@ref(fig:MosaicSit).
 
 The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face impact on the APIs detetion capabilities.
