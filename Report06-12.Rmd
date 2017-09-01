@@ -421,12 +421,12 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
   #sp<- SignificancePlot(model, data) 
   grid.arrange(ep)#, sp)
 }
-
 ```
 
-```{r CheckModels}
 
-mods<-GlmModelCreation(model = hit ~ 0 + 
+
+```{r ModelEstimates, fig.cap ="\\label{tab:Image-Characteristics-Table}"}
+GlmModelEstimates(model = hit ~ 0 + 
               shotangle + 
               bg + 
               bg*shotangle + 
@@ -435,33 +435,49 @@ mods<-GlmModelCreation(model = hit ~ 0 +
               headangle +
               lighting + 
               glasses + 
-              visorhat, 
-              data=ALLmetaIMGnamedFaces) 
+              visorhat) -> ModelEstimates
+#Create estimates columns
+ModelEstimates %>% mutate(Estimate = round(Estimate,2)) %>%
+select(variable, type, Estimate) %>%
+  spread(key=type, value=Estimate) %>%
+  select(variable, A.e=Animetrics, G.e=Google, M.e=Microsoft, S.e=Skybiometry)-> ModelEstimatesTypes 
 
-#mods$Animetrics %>% drop1(., test="Chisq")
-#mods$Google %>% drop1(., test="Chisq")
-#interaction significant
-#mods$Microsoft %>% drop1(., test="Chisq")
-#mods$Skybiometry %>% drop1(., test="Chisq")
+#Create significance columns
+ModelEstimates %>% mutate(sig = ifelse(`Pr(>|z|)` <= 0, "***", 
+                            ifelse(`Pr(>|z|)` <= 0.001, "** ",
+                            ifelse(`Pr(>|z|)` <= 0.010, "*  ",
+                            ifelse(`Pr(>|z|)` <= 0.050, ".  ", 
+                                                        "   ")))))  %>%
+select(variable, type, sig) %>% 
+  spread(key=type, value=sig) %>% 
+  select(variable, A.s=Animetrics, G.s=Google, M.s=Microsoft, S.s=Skybiometry) -> ModelEstimatesSign 
 
-# mods$Animetrics %>% 
-#   summary %>%
-#   .$coefficients %>%
-#   as.data.frame() %>% select(Estimate, `Pr(>|z|)`) -> a
+
+ModelEstimatesTable <- as.data.frame(cbind(ModelEstimatesTypes, ModelEstimatesSign[,2:5])) %>% 
+  unite(Animetrics, A.e, A.s, sep="") %>% 
+  unite(Google, G.e, G.s, sep="") %>% 
+  unite(Microsoft, M.e, M.s, sep="") %>% 
+  unite(Skybiometry, S.e, S.s, sep="")
+
+  
+knitr::kable(ModelEstimatesTable, align=c("l", "r", "r", "r", "r"),
+             booktabs = TRUE, longtable=TRUE, caption="", format = "latex")
+```
+
+
+The variables were kept if they were significant.
+
+
+```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}", eval=FALSE}
+
+#unnecessary as table is included
+#ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + situation + lighting + glasses + visorhat)
 
 ```
 
-The model selection technique was undertaking a Chi-Square test comparing the model deviance with all variables to the model deviance when each particular variable was excluded. If there was a low Pr(>Chi) value associated with a variable, that would show the variable was significant in predicting whether the faces annotated manually would be detected by the API. 
-
-```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}"}
-
-
-ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + situation + lighting + glasses + visorhat)
-
-```
 
 ```{r GoogleRegression, fig.cap = "Google Regression\\label{fig:GoogleRegression}"}
-ALLmetaIMGnamedFaces %>% filter(type=="Manual" | type=="Google") %>%
+aminFaces %>% filter(type=="Manual" | type=="Google") %>%
   mutate(isplayer = ifelse(detect=="Player", 1, 0)) -> players
 
 mod1 <- glm(isplayer ~ 0 + 
