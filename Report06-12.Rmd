@@ -673,18 +673,20 @@ This showed that crowd members faces were often recognized, this is helpful as i
 
 
 ```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
-library(ggmosaic)
-#dev tools version has scale_y_productlist but cannot use it yet
-#aminFaces$shotangle 
-aminFaces$shotangle <- factor(aminFaces$shotangle, levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
+aminFaces$shotangle <- factor(aminFaces$shotangle, 
+                              levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
 
-MosaicShotangle<- ggplot(data=aminFaces) + 
+MosaicShotangle <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
-  labs(caption="") + coord_flip() +
+  labs(caption="") + 
+  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
+                            "Upward Angle"="Upward \nAngle",
+                            "Player Shoulder Height" =
+                            "Player \nShoulder \nHeight")) + coord_flip() +
   ylab("Proportion of faces") + xlab("Angle the face was captured from ") + theme(legend.position = "none") +
-  ggtitle("Plot a. Proportion of faces captured at each angle")
+  ggtitle("Plot a. Proportion of faces captured \nat each angle") 
 ```
 
 The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.
@@ -719,9 +721,15 @@ aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close−up 
 MosaicSit<- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
-  labs(caption="") + coord_flip() +
+  labs(caption="") + 
+  scale_x_productlist(labels=c("Court close−up not player"="Court \nclose−up \nnot player",
+          "Court in play"="Court \nin play",
+          "Off court close up of player"="Off court \nclose up \nof player",
+          "Crowd"="Crowd",
+          "Court player close−up"="Court \nplayer \nclose−up")) +
+  coord_flip() +
   ylab("Proportion of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")  +
-  ggtitle("Plot b. Proportion of faces captured in each situation")
+  ggtitle("Plot b. Proportion of faces captured \nin each situation")
 ```
 
 The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.
@@ -732,12 +740,16 @@ The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured durin
 sbbgshot <- ggplot(data=aminFaces) +
    geom_bar(aes(x=shotangle, fill = bg), 
             position = position_stack(reverse = TRUE), 
-            na.rm=TRUE) +
+            na.rm=TRUE) + 
+  scale_x_discrete(labels=c("Birds Eye"="Birds \nEye",
+                            "Upward Angle"="Upward \nAngle",
+                            "Player Shoulder Height" =
+                            "Player \nShoulder \nHeight"))+
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
   ylab("Amount of faces") + xlab("Angle the face was captured from") + theme(legend.position = "none") +
-  ggtitle("Plot c. Proportion of faces captured at each angle \nwith various backgrounds")
+  ggtitle("Plot c. Proportion of faces captured\nat with each background given the angle")
 
 ```
 
@@ -751,21 +763,37 @@ sbbgsit <- ggplot(data=aminFaces) +
    geom_bar(aes(x=situation, fill = bg), 
             position = position_stack(reverse = TRUE), 
             na.rm=TRUE) +
+  scale_x_discrete(labels=c("Court close−up not player"="Court \nclose−up \nnot player",
+          "Court in play"="Court \nin play",
+          "Off court close up of player"="Off court \nclose up \nof player",
+          "Crowd"="Crowd",
+          "Court player close−up"="Court \nplayer \nclose−up")) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
   ylab("Amount of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none") +
-  ggtitle("Plot d. Proportion of faces captured in each situation \nwith various backgrounds")
+  ggtitle("Plot d. Proportion of faces captured\n with each background given the situation")
 ```
 
 
 This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "These plots indicate the proportion or amount of faces with certain attributes, or attribute combinations.\\label{fig:ICFigs}"}
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation, .\\label{fig:ICFigs}"}
 
-grid.arrange(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
+
+plots <- arrangeGrob(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
              nrow=2, ncol=2)
+
+
+g <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
+legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
+lheight <- sum(legend$height)
+    
+    
+grid.arrange(plots, legend,
+        ncol = 1,
+        heights = unit.c(unit(1, "npc") - lheight, lheight))
 ```
 
 
@@ -795,28 +823,21 @@ pander(ct, caption = "This cross table compares the amount of faces that were ca
 
 
 
-## Miscellaneous
+```{r glasses, fig.cap = "This cross table compares the amounts and percentages of faces captured and whether the person was wearing glasses. The first row is the faces that were tagged as not wearing glasses, the second row is faces that were. For the API to not have been affected by the prescence of glasses, the proportion should be similar to that found manually. Animetrics had the highest proportio difference, 93.31% of the faces it found did not have glasses. Google is the closest proportion, 88.62% of the faces it found were wearing glasses.\\label{tab:glasses}"}
 
+aminFaces %>%
+  #filter(type=="Manual" | type=="Google") %>%
+  droplevels(.) %>%
+  CrossTable(data=., table(.$glasses, .$type), 
+               prop.chisq = FALSE, 
+               digits=2,
+               expected = FALSE,
+           prop.r = FALSE, prop.c = TRUE, prop.t = FALSE,
+           drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
+           dnn = c("Glasses","Headwear")) -> mgct
 
-
-
-#### Challenges
-It is understandable that there would be many more faces to recognize in these shots than in shots where there is only a player, and therefore many more faces recognized. This provides many faces to sort through to find emotions of a player.
- 
-We faced the challenge of accessing usable images of players, and specifically their faces.
-- Availability of software
-- Using the software
-- Time constraints
-
-
-Method, automated the process to reduce data cleaning and help group characteristics
-
-Pricing
-
-
-Employ the Google Vision API, which would allow the use of still images, or video (TEST VIDEO) files, reducing the need for stills.
-This product - cost in relation
-Ease of access - API calling
+pander(mgct, caption = "")
+```
 
 
 
