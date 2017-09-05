@@ -22,7 +22,6 @@ library(RefManageR)
 library(readr)
 library(knitr)
 library(grid)
-library(tidyverse)
 library(kfigr)
 library(UpSetR)
 library(descr)
@@ -32,8 +31,10 @@ library(ggthemes)
 library(EBImage)
 library(gridExtra)
 library(ggmosaic)
+library(tidyverse)
+library(purrr)
 
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.cap=TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=FALSE, fig.env = TRUE, fig.cap=TRUE, fig.height=3)
  
 options("citation_format" = "pandoc")
 
@@ -128,6 +129,7 @@ overlayGgplot <- function(imgList, mergeData, matchBox=FALSE, colourScheme = typ
 getManualCount <- function(type, count) {
   return(count[type == "Manual"])
 }
+
 ggplotProportion <- function(dataset, factorVar){
   factorVar <- deparse(substitute(factorVar))
   dataset <- dataset %>% filter(matchesManual) %>% group_by_(factorVar, "type") %>% summarise(nTotal=n()) %>% group_by_(factorVar) %>% mutate(ManualCount = getManualCount(type, nTotal)) %>%
@@ -231,7 +233,7 @@ The same face size standard applied to crowd members, but focus was placed on th
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
-knitr::kable(FaceAttributes, format = "latex", longtable=TRUE, booktabs = TRUE, caption = "This table lists the possible face descriptions that were appropriate for each individual face. The most appropriate descrition for each face was built by selecting one option from each list describing a particular attribute of the face that was selected. Most of these categories selections were made obvious in the image, Obscured and Head Angle were more difficult to choose for some faces.")
+knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "This table lists the possible face descriptions that were appropriate for each individual face. The most appropriate descrition for each face was built by selecting one option from each list describing a particular attribute of the face that was selected. Most of these categories selections were made obvious in the image, Obscured and Head Angle were more difficult to choose for some faces.")
 ```
 
 
@@ -254,13 +256,15 @@ One interesting anomaly was found when using the Skybiometry software as it limi
 
 The amount of time taken for each software to process facial detection on the individual images is presented in the histogram :
 
-```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
-
-times <- amin %>%  
+```{r timeData}
+times <- amin %>% 
   filter(type!="Manual") %>% 
   select(file, type, time.user.self, time.sys.self) %>% 
   group_by(file, type) %>% 
-  mutate(n=dplyr::n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
+  mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
+```
+
+```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
 
 t1 <- ggplot(times) +  
   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
@@ -343,14 +347,8 @@ The bar charts of the situations show that the situation is important in influen
 
 
 
-```{r RegressionFunctions}
+```{r RegressionFunctions, cache=FALSE}
 # Prepare data
-library(purrr)
-library(tidyverse)
-library(gridExtra)
-library(dplyr)
-library(ggplot2)
-
 hitmiss <- function(x){
   allType <- c("Animetrics", "Google", "Microsoft", "Skybiometry")
   hit <- allType %in% x$type  
@@ -380,13 +378,6 @@ ConvertModel2Table <- function(model){
     dplyr::rename(variable = rowname)
 }
 
-GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
-  glmSummary <- data %>% 
-    map(~ ConvertModel2Table(.)) 
-  
-  glmPlot <- do.call(rbind, Map(cbind, glmSummary, type = names(glmSummary))) 
-  return(glmPlot)
-}
 
 GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
   glmSummary <- data %>% 
@@ -491,11 +482,13 @@ mod1 <- glm(isplayer ~ 0 +
               glasses + 
               visorhat, data=players, family=binomial(link="logit")) 
 
-drop1(mod1, test="Chisq") 
-
+#drop1(mod1, test="Chisq")
+#summary(mod1)
 # currently same model as earlier, give two?
 
 ```
+
+
 When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level.
 
 
@@ -552,6 +545,7 @@ SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometr
 ```
 
 
+
 \begin{table}[h]
 \parbox{.5\linewidth}{
 \centering
@@ -579,6 +573,7 @@ NoFace &638 & 676 \\ \hline
 \caption{Google}
 }
 \end{table}
+
 
 
 
@@ -611,8 +606,11 @@ NoFace &512 & 802 \\ \hline
 }
 \end{table}
 
+
+
+
 Each table above considers the individual faces found in the set.
-The upper left quadrany of tables shows the faces found manually and by each API. The ideal set would have majority of faces found belong to this category. 
+The upper left quadrant of tables shows the faces found manually and by each API. The ideal set would have majority of faces found belong to this category. 
 Table 4, the comparison of Skybiometry and Manually annotated faces gives the lowest amount in this regard. Table 5, Google, found the largest amount of faces that matched those manually annotated.
 
 
@@ -640,10 +638,10 @@ Examples are included of faces only found by one of the APIs, as other than Goog
 
 
 ```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}" }
-i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure a.")
-i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure b.")
-i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure c.")
-i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Figure d.")
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image a.")
+i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image b.")
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image c.")
+i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image d.")
 
 gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 ```
@@ -712,7 +710,6 @@ The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of
 
 
 ```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
-
 aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close−up not player",
           "Court in play",
           "Off court close up of player",
