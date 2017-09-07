@@ -151,23 +151,28 @@ VennLists<-data %>%
 }
 ```
 
+#Abstract
+
+This report aims to analyse the application of facial detection APIs to broadcasted video of Australian Open tennis matches to find a suitable API for face detection of players throughout a match.
+Four APIs are contrasted based on the amount of faces returned, and whether these faces matched those found manually. Considerations of whether using a broadcast video of a sport is approporiate is based on the characteristics of the images in the sample. The characteristics of the scenes captured and the features associated with individual faces casts light on what would be most appropriate for accurate and high volume facial detection to occur. Situations where certain APIs are less capable are highlighted, should applications require reliable results in these situations the shortcomings in time taken and performance under less than optimal conditions would present certain APIs as inapplicable. 
+
 
 #Introduction
 
 Many tennis professionals believe that tennis is a game heavily affected by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the playing and coaching of tennis players by improving their "mental game". 
 By statistically analyzing the faces and expressions of players during a match there is a hope that insight may be gained into the effects of the mental state on the outcome of a match.
-Facial expressions during competition provide the most direct insight into a player's thoughts. The aim of this project is to begin to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
+Facial expressions during competition may provide an insight into a player's thoughts. The aim of this project is to begin to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
 
 
 In this report, we investigate the performance of several popular facial recognition software's through their Application Programming Interfaces (APIs), and evaluate their performance when applied to the broadcast videos of elite tennis matches. Using the broadcast videos gives an objective insight to emotions as the player progresses through a match.
-While it is impossible to know the thoughts and feelings of a player during a match, professionals may be able to infer this information through results produced by a recognition software. As opposed to the approach of previous studies that have used Player's recollections after a game to determine their emotions.
+While it is impossible to know the thoughts and feelings of a player during a match, professionals may be able to infer this information through results produced by a recognition software. This approach opposes the previous studies that have used player's recollections after a game to determine their emotions.
 
-Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended uses of such software's.
-Their capabilities are often limited to their intended security and surveillance uses. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
-This report aims to analyse the application of these software's to a broadcast to find a suitable software and API to use to analyse a previously recorded tennis broadcast file. 
+Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended use.
+Their capabilities are often limited to their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
 
-##Project Aim
-The aims of the present study were to determine the feasibility of using currently available facial recognition algorithms for extracting facial information from players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. This limited selection was based on accessible APIs that we believed would produce appropriate and useful facial recognition. The performance of the evaluated software was compared against manual classification obtained notation tool developed by the authors. In addition to looking at the overall performance, we also evaluated image factors that influences the performance of each service.
+
+The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. This limited selection was based on accessible APIs believed to produce appropriate and useful facial recognition. The performance of the evaluated software was compared against manual classifications obtained by an annotation tool developed by the authors. In addition to looking at the overall performance, image factors that influences the performance of each service were also investigated.
+
 
 ##Sample and sampling approach
 The goal of the sample was to be representative of the video files that will be used for future facial recognition analysis.
@@ -416,8 +421,9 @@ ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
 
 
 
-```{r ModelEstimates, fig.cap ="\\label{tab:Image-Characteristics-Table}"}
-GlmModelEstimates(model = hit ~ 0 + 
+```{r ModelEstimates, fig.cap ="\\label{tab:ModelEstimates}"}
+
+TypeModel <- hit ~ 0 + 
               shotangle + 
               bg + 
               bg*shotangle + 
@@ -426,7 +432,11 @@ GlmModelEstimates(model = hit ~ 0 +
               headangle +
               lighting + 
               glasses + 
-              visorhat) -> ModelEstimates
+              visorhat
+
+TypeGlms <- GlmModelCreation(model=TypeModel)
+ModelEstimates <- GlmModelEstimates(data=TypeGlms)
+
 #Create estimates columns
 ModelEstimates %>% mutate(Estimate = round(Estimate,2)) %>%
 select(variable, type, Estimate) %>%
@@ -444,19 +454,53 @@ select(variable, type, sig) %>%
   select(variable, A.s=Animetrics, G.s=Google, M.s=Microsoft, S.s=Skybiometry) -> ModelEstimatesSign 
 
 
-ModelEstimatesTable <- as.data.frame(cbind(ModelEstimatesTypes, ModelEstimatesSign[,2:5])) %>% 
-  unite(Animetrics, A.e, A.s, sep="") %>% 
-  unite(Google, G.e, G.s, sep="") %>% 
-  unite(Microsoft, M.e, M.s, sep="") %>% 
-  unite(Skybiometry, S.e, S.s, sep="")
+ModelEstimatesTable <- as.data.frame(cbind(ModelEstimatesTypes, ModelEstimatesSign[,2:5])) %>%
+mutate(A = ifelse(A.s=="   ", "-", A.e),
+       G = ifelse(G.s=="   ", "-", G.e),
+       M = ifelse(M.s=="   ", "-", M.e),
+       S = ifelse(S.s=="   ", "-", S.e))%>% 
+  # unite(Animetrics, A, A.s, sep="") %>% 
+  # unite(Google, G, G.s, sep="") %>% 
+  # unite(Microsoft, M, M.s, sep="") %>% 
+  # unite(Skybiometry, S, S.s, sep="") %>%
+  # select(variable, Animetrics, Google, Microsoft, Skybiometry)
+  mutate(` ` = A.s,
+         `  ` = G.s,
+         `   ` = M.s,
+         `    ` = S.s) %>%
+   select(variable, A, ` `,
+          G, `  `, 
+          M, `   `,
+          S, `    `)
+  
 
   
-knitr::kable(ModelEstimatesTable, align=c("l", "r", "r", "r", "r"),
-             booktabs = TRUE, longtable=TRUE, caption="", format = "latex")
+knitr::kable(ModelEstimatesTable, align=c("l", 
+                                          "r", "l",
+                                          "r", "l",
+                                          "r", "l",
+                                          "r", "l"),
+             booktabs = TRUE, longtable=TRUE, caption="The table of regression coefficients denotes the significant variables, and levels, for the four API types. The dashes represent coefficient that were not significant. The symbols to the right of the regression coefficients denote the significance level associated with each coefficient. The background variable, and levels of the interaction between shot angle and background were only significant for Google.", format = "latex")
+```
+
+```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}"}
+
+predSet <-
+aminFaces %>% select(file,glasses, headangle, lighting, obscured, shotangle, situation, visorhat, bg) %>%
+  filter(headangle=="Profile" &
+         situation=="Court in play" &
+         lighting=="Shaded" &
+         shotangle=="Upward Angle" &
+         bg=="Crowd" &
+         obscured=="Yes" &
+         visorhat=="Yes")
+
+overlayGgplot(predSet$file)
 ```
 
 
-The variables were kept if they were significant.
+The variables were kept if they were significant for any level of the variable for any type. Given the significant coefficients above it can be seen that the largest decrease in probability of a face being found by the APIs was the face profile being captured.
+
 
 
 ```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}", eval=FALSE}
@@ -465,6 +509,7 @@ The variables were kept if they were significant.
 #ModelPlotResults(hit ~ shotangle + bg + bg*shotangle + situation + lighting + glasses + visorhat)
 
 ```
+
 
 
 ```{r GoogleRegression, fig.cap = "Google Regression\\label{fig:GoogleRegression}"}
@@ -611,7 +656,7 @@ NoFace &512 & 802 \\ \hline
 
 Each table above considers the individual faces found in the set.
 The upper left quadrant of tables shows the faces found manually and by each API. The ideal set would have majority of faces found belong to this category. 
-Table 4, the comparison of Skybiometry and Manually annotated faces gives the lowest amount in this regard. Table 5, Google, found the largest amount of faces that matched those manually annotated.
+Table 4, the comparison of Animetrics and Manually annotated faces, gives the lowest amount in this regard. Table 5, Google, found the largest amount of faces that matched those manually annotated.
 
 
 Visual inspection showed that the `r amin %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces noted in Table 5, that were found by Google but not found manually were actually faces, however they were not all of players. Some of these crowd members were beyond what would be expected of an emotion recognition application for detecting faces of tennis players during a match. These were deemed unlikely to be necessary when attempting to find faces of players during tennis matches, and neglected during manual annotation. 
@@ -628,8 +673,7 @@ createUpSet(aminFaces)
 
 
 Figure \@ref(fig:FaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
-The black bubbles  the bars show the API combination that detected all the faces counted in the bar above.
-
+The black bubbles  the bars show the API combination that detected all the faces counted in the bar above. Faces common to all four API and manual annotations were the fourth largest group, it was obvious that relevant faces were captured more commonly by Google and manually. The fifth group was the most suprising, this captured a lot of faces that were false discoveries.
 
 
 
@@ -650,7 +694,7 @@ gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 Figure \@ref(fig:UnusualImages) depicts four images that contained unusual results of faces. Figure a highlights a very large area, most interesting about this is the face of the ball boy captured within this area.
 Figure b also shows unusual faces, the KIA logo was returned by Animetrics many times as a face. This discredits the ability of the API to distinguish actual faces from tricks of lights and colours in the complex setting of colourful tennis matches.
 
-Examples of tricks of colours are shown in Figure c, where logos on the shirts were eturned as faces.
+Examples of tricks of colours are shown in Figure c, where logos on the shirts were returned as faces. These discoveries discredit the use of Animetrics for facial detection applications during sports matches.
 
 
 ## Image Characteristics
@@ -666,10 +710,8 @@ knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="Thi
 ```
 
 
-We then considered that there would be an uneven amount of faces with certain image attributes. This is considered in the mosaics in Figure \@ref(fig:MosaicShotangle) and Figure \@ref(fig:MosaicSit).
-
-The images were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
-This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face impact on the APIs detetion capabilities.
+We then considered that there would be an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
+This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
 
 ```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
@@ -689,25 +731,8 @@ MosaicShotangle <- ggplot(data=aminFaces) +
   ggtitle("Plot a. Proportion of faces captured \nat each angle") 
 ```
 
+
 The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.
-
-
-```{r ShotangleCompare, eval=FALSE, fig.cap=".\\label{fig:ShotangleCompare}"}
-# CompShot <- aminFaces %>% 
-#   filter(shotangle=="Player Shoulder Height", 
-#          bg=="Logo wall", 
-#          situation=="Court player close−up",
-#          type=="Google" | type=="Manual",
-#          player2=="AMurray", player2:"AMurray")
-
-#mylist<-as.list(CompShot$file)
-#6,7,8,
-#View(CompShot)
-#lapply(mylist[1:5], overlayGgplot)
-#overlayGgplot(mylist)
-#decide on a comparison, one where images had faces both recognised manually, only one recognised by a software
-```
-
 
 
 
@@ -799,12 +824,12 @@ grid.arrange(plots, legend,
 
 ## Accessories
 
-The use of accessories, glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
-It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software. There are many more faces recognized, by both the Google recognition's and manual annotations, that do not have Glasses. This disproportionate sample of faces with Glasses means that we considered it proportionally rather than as a total.
+The use of accessories like glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
+It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software.
 
 
 
-```{r accessories, fig.cap = "\\label{tab:accessories}"}
+```{r accessories, fig.cap = "There are many more faces manually tagged as wearing glasses, and shows there was a more even split between those wearing headwear and those that were not.\\label{tab:accessories}"}
 
 aminFaces %>%
   filter(type=="Manual") -> ManFaces
@@ -823,7 +848,7 @@ pander(ct, caption = "This cross table compares the amount of faces that were ca
 
 
 
-```{r glasses, fig.cap = "This cross table compares the amounts and percentages of faces captured and whether the person was wearing glasses. The first row is the faces that were tagged as not wearing glasses, the second row is faces that were. For the API to not have been affected by the prescence of glasses, the proportion should be similar to that found manually. Animetrics had the highest proportio difference, 93.31% of the faces it found did not have glasses. Google is the closest proportion, 88.62% of the faces it found were wearing glasses.\\label{tab:glasses}"}
+```{r glasses, fig.cap = "\\label{tab:glasses}"}
 
 aminFaces %>%
   #filter(type=="Manual" | type=="Google") %>%
@@ -836,7 +861,7 @@ aminFaces %>%
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
            dnn = c("Glasses","Headwear")) -> mgct
 
-pander(mgct, caption = "")
+pander(mgct, caption = "This cross table compares the amounts and percentages of faces captured and whether the person was wearing glasses. The first row is the faces that were tagged as not wearing glasses, the second row is faces that were. For the API to not have been affected by the prescence of glasses, the proportion should be similar to that found manually. Animetrics had the highest proportio difference, 93.31% of the faces it found did not have glasses. Google is the closest proportion, 88.62% of the faces it found were wearing glasses.")
 ```
 
 
@@ -867,6 +892,8 @@ We also feel that incorporating audio information from the microphones worn by p
 
 # Acknowledgements
 
+The APIs, the scripts used to access them and the resulting data set are contained in the supplementary materials.
+
 ## APIs
 Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
 
@@ -891,25 +918,23 @@ Each script that was automated for POST requests created a classified faces csv.
 ## Packages
 The R packages were used to create the following:
 
-* bookdown [@bookdown] and knitr [@knitr] created the pdf output
-* ggplot2 [@ggplot2] was used to make the plots 
-* pander [@pander] printed tables
-* knitcitations [@knitcitations] and RefManager [@RefManager] allowed for references to be integrated
+* bookdown [@bookdown] 
+* descr [@descr]
+* EBImage [@EBImage]
+* ggthemes [@ggthemes]
+* ggmosaic [@ggmosaic]
+* grid [@grid]
+* gridExtra [@gridExtra]
+* gtable [@gtable]
+* kfigr [@kfigr]
+* knitcitations [@knitcitations]
+* knitr [@knitr] 
+* pander [@pander]
+* readr [@readr]
+* RefManager [@RefManager]
+* tidyverse [@tidyverse]
+* UpSetR [@UpSetR]
+* xtable [@xtable]
 
-bookdown
-knitr
-RefManageR
-readr
-grid
-tidyverse
-kfigr
-UpSetR
-descr
-xtable
-gtable
-ggthemes
-EBImage
-gridExtra
-ggmosaic
 
 # References
