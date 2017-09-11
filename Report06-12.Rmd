@@ -33,8 +33,8 @@ library(gridExtra)
 library(ggmosaic)
 library(tidyverse)
 library(purrr)
-
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=FALSE, fig.env = TRUE, fig.cap=TRUE, fig.height=3)
+
  
 options("citation_format" = "pandoc")
 
@@ -205,10 +205,10 @@ We then chose to consider companies who are expanding their API ranges. This res
 
 The final software we chose to analyse was Google Vision API. Due to Google's expansion in many web based solutions we searched for a facial recognition software. 
 
-We were able to try the online demos to see whether these software were viable, we used the following Image displayed  in Figure \@ref(fig:Trial-Image):
+We were able to try the online demos to see whether these software were viable, we used the following Image displayed in Figure \@ref(fig:Trial-Image):
 
 
-```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE}
+```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE, dev="png", dpi=300}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
 overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 ```
@@ -269,7 +269,7 @@ times <- amin %>%
   mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
 ```
 
-```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}"}
+```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}", dev="png", dpi=300}
 
 t1 <- ggplot(times) +  
   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
@@ -483,7 +483,7 @@ knitr::kable(ModelEstimatesTable, align=c("l",
              booktabs = TRUE, longtable=TRUE, caption="The table of regression coefficients denotes the significant variables, and levels, for the four API types. The dashes represent coefficient that were not significant. The symbols to the right of the regression coefficients denote the significance level associated with each coefficient. The background variable, and levels of the interaction between shot angle and background were only significant for Google.", format = "latex")
 ```
 
-```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}"}
+```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="png", dpi=300}
 
 predSet <-
 aminFaces %>% select(file,glasses, headangle, lighting, obscured, shotangle, situation, visorhat, bg) %>%
@@ -681,7 +681,7 @@ The black bubbles  the bars show the API combination that detected all the faces
 Examples are included of faces only found by one of the APIs, as other than Google, the APIs produced several unusual false discoveries. These highlight the potential differences in the detection methods used by each of the APIs. This would need to be taken under consideration to prevent time wasted on sorting actual faces from false discoveries in future applications.
 
 
-```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}" }
+```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}", dev="png", dpi=300}
 i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image a.")
 i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image b.")
 i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image c.")
