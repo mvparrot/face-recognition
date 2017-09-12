@@ -33,7 +33,7 @@ library(gridExtra)
 library(ggmosaic)
 library(tidyverse)
 library(purrr)
-knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=FALSE, fig.env = TRUE, fig.cap=TRUE, fig.height=3)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.cap=TRUE, fig.height=3)
 
  
 options("citation_format" = "pandoc")
@@ -836,11 +836,11 @@ aminFaces %>%
 
 ct<-CrossTable(table(ManFaces$glasses, ManFaces$visorhat), 
                prop.chisq = FALSE, 
-               digits=2,
+               digits=max(2, getOption("digits")-2),
                expected = FALSE,
            prop.r = FALSE, prop.c = FALSE, prop.t = TRUE,
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = c("Glasses","Headwear"))
+           dnn = c("Glasses","Type"))
 
 pander(ct, caption = "This cross table compares the amount of faces that were captured wearing accessories.")
 ```
@@ -848,20 +848,33 @@ pander(ct, caption = "This cross table compares the amount of faces that were ca
 
 
 
-```{r glasses, fig.cap = "\\label{tab:glasses}"}
+```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
 
 aminFaces %>%
-  #filter(type=="Manual" | type=="Google") %>%
-  droplevels(.) %>%
-  CrossTable(data=., table(.$glasses, .$type), 
-               prop.chisq = FALSE, 
-               digits=2,
-               expected = FALSE,
-           prop.r = FALSE, prop.c = TRUE, prop.t = FALSE,
-           drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = c("Glasses","Headwear")) -> mgct
+  filter(type=="Manual") %>% 
+  select(glasses) %>%
+  table -> ManGlasses
 
-pander(mgct, caption = "This cross table compares the amounts and percentages of faces captured and whether the person was wearing glasses. The first row is the faces that were tagged as not wearing glasses, the second row is faces that were. For the API to not have been affected by the prescence of glasses, the proportion should be similar to that found manually. Animetrics had the highest proportio difference, 93.31% of the faces it found did not have glasses. Google is the closest proportion, 88.62% of the faces it found were wearing glasses.")
+aminFaces %>% filter(matchesManual) -> afm
+  
+table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
+
+
+
+glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+c("No", 
+  round(glassesTab[1,2]/glassesTab[1,1],2),
+  round(glassesTab[1,3]/glassesTab[1,1],2),
+  round(glassesTab[1,4]/glassesTab[1,1],2),
+  round(glassesTab[1,5]/glassesTab[1,1],2)),
+c("Yes", 
+  round(glassesTab[2,2]/glassesTab[2,1],2),
+  round(glassesTab[2,3]/glassesTab[2,1],2),
+  round(glassesTab[2,4]/glassesTab[2,1],2),
+  round(glassesTab[2,5]/glassesTab[2,1],2)))
+
+
+pander(glassesdf, caption = "This cross table contrasts the proportion of faces captured and whether the person was wearing glasses. The first row is the faces that were manually tagged as not wearing glasses, the second row is faces that were. For an API to not have been affected by the prescence of glasses, the proportions for both categorys should be similar. Animetrics had the highest proportion difference,  of the faces it found did not have glasses. Google is the closest proportion,  of the faces it found were wearing glasses.")
 ```
 
 
