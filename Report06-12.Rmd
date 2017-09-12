@@ -153,9 +153,8 @@ VennLists<-data %>%
 
 #Abstract
 
-This report aims to analyse the application of facial detection APIs to broadcasted video of Australian Open tennis matches to find a suitable API for face detection of players throughout a match.
-Four APIs are contrasted based on the amount of faces returned, and whether these faces matched those found manually. Considerations of whether using a broadcast video of a sport is approporiate is based on the characteristics of the images in the sample. The characteristics of the scenes captured and the features associated with individual faces casts light on what would be most appropriate for accurate and high volume facial detection to occur. Situations where certain APIs are less capable are highlighted, should applications require reliable results in these situations the shortcomings in time taken and performance under less than optimal conditions would present certain APIs as inapplicable. 
-
+This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is determine the best API to use for face detection of players throughout a match.
+For training purposes faces were manually tagged in 6406 images, and the APIs were evaluated on their success rate at detecting these faces. The manual tagging also created data recording the scene characteristics and features of individual faces such as whether a visor or cap or sunglasses were being worn. This enables the performance to be assessed based on conditions. 
 
 #Introduction
 
@@ -272,7 +271,7 @@ times <- amin %>%
 ```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}", dev="png", dpi=300}
 
 t1 <- ggplot(times) +  
-  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
+  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm") + 
   xlab("Number of faces detected") + ylab("System time (sec)") +  
   scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
 
@@ -280,7 +279,7 @@ t2 <- ggplot(times) +
   geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +  
   facet_wrap(~type) +  
   ylim(c(0, 0.1)) +  
-  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
+  #geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
   xlab("Number of faces detected") +  
   scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
 
@@ -706,7 +705,7 @@ We then considered the characteristics of the images that the API found Potentia
 ImageCharacteristics <- amin %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:5,]
-knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Player Shoulder Height angle are shared by three of the five image combinations.", format = "latex")
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, format.args=list(width=8), caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Player Shoulder Height angle are shared by three of the five image combinations.", format = "latex")
 ```
 
 
@@ -717,18 +716,21 @@ This showed that crowd members faces were often recognized, this is helpful as i
 ```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
+aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
 
 MosaicShotangle <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
+  scale_fill_brewer(palette="Dark2") +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
   labs(caption="") + 
   scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
                             "Upward Angle"="Upward \nAngle",
                             "Player Shoulder Height" =
                             "Player \nShoulder \nHeight")) + coord_flip() +
-  ylab("Proportion of faces") + xlab("Angle the face was captured from ") + theme(legend.position = "none") +
-  ggtitle("Plot a. Proportion of faces captured \nat each angle") 
+  ylab("Proportion of faces") + xlab("Angle of face capture") + 
+  theme(legend.position = "none") + 
+  ggtitle("(a)") 
 ```
 
 
@@ -737,24 +739,26 @@ The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of
 
 
 ```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
-aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close−up not player",
+aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close-up not player",
           "Court in play",
           "Off court close up of player",
           "Crowd",
-          "Court player close−up"))
-
-MosaicSit<- ggplot(data=aminFaces) + 
+          "Court player close-up"))
+aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
+  
+MosaicSit <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
+  scale_fill_brewer(palette="Dark2") +
   guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
   labs(caption="") + 
-  scale_x_productlist(labels=c("Court close−up not player"="Court \nclose−up \nnot player",
-          "Court in play"="Court \nin play",
+  scale_x_productlist(labels=c("Court close-up not player"="Court \nclose−up \nnot player",
+          "Court in play"="Court in play",
           "Off court close up of player"="Off court \nclose up \nof player",
           "Crowd"="Crowd",
-          "Court player close−up"="Court \nplayer \nclose−up")) +
+          "Court player close-up"="Court \nplayer \nclose−up")) +
   coord_flip() +
-  ylab("Proportion of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none")  +
-  ggtitle("Plot b. Proportion of faces captured \nin each situation")
+  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
+  ggtitle("(b)")
 ```
 
 The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.
@@ -763,18 +767,18 @@ The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured durin
 ```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}"}
 
 sbbgshot <- ggplot(data=aminFaces) +
-   geom_bar(aes(x=shotangle, fill = bg), 
-            position = position_stack(reverse = TRUE), 
-            na.rm=TRUE) + 
-  scale_x_discrete(labels=c("Birds Eye"="Birds \nEye",
+   geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
+            #position = position_fill(reverse = TRUE), 
+            #na.rm=TRUE) + 
+  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
                             "Upward Angle"="Upward \nAngle",
                             "Player Shoulder Height" =
                             "Player \nShoulder \nHeight"))+
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Angle the face was captured from") + theme(legend.position = "none") +
-  ggtitle("Plot c. Proportion of faces captured\nat with each background given the angle")
+  ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
+  ggtitle("(c)")
 
 ```
 
@@ -785,36 +789,33 @@ This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of
 ```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}"}
 
 sbbgsit <- ggplot(data=aminFaces) +
-   geom_bar(aes(x=situation, fill = bg), 
-            position = position_stack(reverse = TRUE), 
-            na.rm=TRUE) +
-  scale_x_discrete(labels=c("Court close−up not player"="Court \nclose−up \nnot player",
-          "Court in play"="Court \nin play",
+   geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
+            #position = position_fill(reverse = TRUE), 
+            #na.rm=TRUE) +
+   scale_x_productlist(labels=c("Court close-up not player"="Court \nclose−up \nnot player",
+          "Court in play"="Court in play",
           "Off court close up of player"="Off court \nclose up \nof player",
           "Crowd"="Crowd",
-          "Court player close−up"="Court \nplayer \nclose−up")) +
+          "Court player close-up"="Court \nplayer \nclose−up")) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
-  ylab("Amount of faces") + xlab("Situation the face was captured during") + theme(legend.position = "none") +
-  ggtitle("Plot d. Proportion of faces captured\n with each background given the situation")
+  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
+  ggtitle("(d)")
 ```
 
 
 This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation, .\\label{fig:ICFigs}"}
-
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation.\\label{fig:ICFigs}"}
 
 plots <- arrangeGrob(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
              nrow=2, ncol=2)
 
-
 g <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
 legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
 lheight <- sum(legend$height)
-    
     
 grid.arrange(plots, legend,
         ncol = 1,
@@ -905,49 +906,23 @@ We also feel that incorporating audio information from the microphones worn by p
 
 # Acknowledgements
 
-The APIs, the scripts used to access them and the resulting data set are contained in the supplementary materials.
+The authors wish to thank Tennis Australia for access to the data. The analysis was conducted using R, and the following packages: bookdown[@bookdown], descr[@descr], EBImage [@EBImage], ggthemes [@ggthemes], ggmosaic [@ggmosaic], grid [@grid], gridExtra [@gridExtra], gtable [@gtable], kfigr [@kfigr], knitcitations [@knitcitations], knitr [@knitr] , pander [@pander], readr [@readr], RefManager [@RefManager], tidyverse [@tidyverse], UpSetR [@UpSetR], xtable [@xtable].
 
-## APIs
-Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
+# Supplementary material
 
-Google: @Google Refers to the Google Cloud Vision API
+The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition](https://github.com/mvparrot/face-recognition). The APIs evaluated were:
 
-Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
+- Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
 
-Skybiometry: @Skybiometry References the spin off detection and recognition software of Neurotechnology. 
+- Google: @Google Refers to the Google Cloud Vision API
 
-## Data Files
+- Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
 
-All data files used are available on the github page.
+- Skybiometry: @Skybiometry References the spin off detection and recognition software of Neurotechnology. 
 
-ManualClassifiedFaces.csv resulted from the use of the Manual Annotation Application, it contains information about each face identified manually.
-ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
+Data files provided are:
 
-Each script that was automated for POST requests created a classified faces csv.
-
-
-
-
-## Packages
-The R packages were used to create the following:
-
-* bookdown [@bookdown] 
-* descr [@descr]
-* EBImage [@EBImage]
-* ggthemes [@ggthemes]
-* ggmosaic [@ggmosaic]
-* grid [@grid]
-* gridExtra [@gridExtra]
-* gtable [@gtable]
-* kfigr [@kfigr]
-* knitcitations [@knitcitations]
-* knitr [@knitr] 
-* pander [@pander]
-* readr [@readr]
-* RefManager [@RefManager]
-* tidyverse [@tidyverse]
-* UpSetR [@UpSetR]
-* xtable [@xtable]
-
+- ManualClassifiedFaces.csv resulted from the use of the Manual Annotation Application, it contains information about each face identified manually.
+- ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
 
 # References
