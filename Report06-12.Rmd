@@ -785,7 +785,7 @@ sbbgshot <- ggplot(data=aminFaces) +
 ```
 
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Player Shoulder Height is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
 
 ```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}"}
@@ -812,16 +812,24 @@ This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of
 
 ```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation.\\label{fig:ICFigs}"}
 
-plots <- arrangeGrob(MosaicShotangle, MosaicSit, sbbgshot, sbbgsit,
-             nrow=2, ncol=2)
 
-g <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
-legend <- g[[which(sapply(g, function(x) x$name) == "guide-box")]]
-lheight <- sum(legend$height)
-    
-grid.arrange(plots, legend,
-        ncol = 1,
-        heights = unit.c(unit(1, "npc") - lheight, lheight))
+g1 <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
+legend1 <- g1[[which(sapply(g1, function(x) x$name) == "guide-box")]]
+lheight1 <- sum(legend1$height)
+
+plots1 <- arrangeGrob(sbbgshot, sbbgsit, ncol=2)
+plots1 <- arrangeGrob(plots1, legend1, nrow=2, heights = unit.c(unit(1, "npc") - lheight1, lheight1))
+ 
+
+g2 <- ggplotGrob(MosaicShotangle + theme(legend.position="bottom"))$grobs
+legend2 <- g2[[which(sapply(g2, function(x) x$name) == "guide-box")]]
+lheight2 <- sum(legend2$height)
+
+plots2 <- arrangeGrob(MosaicShotangle, MosaicSit, ncol=2)
+plots2 <- arrangeGrob(plots2, legend2, nrow=2, heights = unit.c(unit(1, "npc") - lheight2, lheight2))
+
+grid.arrange(plots1, plots2, nrow=2)
+
 ```
 
 
@@ -853,12 +861,10 @@ pander(ct, caption = "This cross table compares the amount of faces that were ca
 
 ```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
 
-aminFaces %>%
-  filter(type=="Manual") %>% 
-  select(glasses) %>%
-  table -> ManGlasses
+ManFaces %>% count(glasses) %>%
+  tally() -> ManGlasses
 
-aminFaces %>% filter(matchesManual) -> afm
+aminFaces %>% filter(matchesManual==TRUE) -> afm
   
 table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
 
