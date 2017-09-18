@@ -3,6 +3,8 @@ title: "Detecting Facial Expressions in Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalchik"
 date: "28 July 2017"
 output: bookdown::pdf_document2
+number_sections: false
+toc: false
 fig_caption: yes
 fontsize: 11pt
 documentclass: article
@@ -217,7 +219,7 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 A 'face' is considered to be any area designated manually or by an API as a location that encloses a human face. These may or may not be actual faces.
 
-## Manual Annotations 
+## Manual annotations 
 
 An annotation tool was constructed to allow image annotations that would capture the location of areas selected manually. We refer to the faces in these areas as Manual Face Classifications.
 This tool also allowed selections of attributes of each face, and attributes describing the features of the Scenes. 
@@ -254,7 +256,7 @@ If there were issues, the CSV files were able to be edited, this was reserved fo
 All the annotations for this sample were completed by one author. This was chosen to provide consistency across the sample of faces annotated manually. However the initial choices of what would be reasonably detected were made by several of the authors.
 
 
-##Software Interaction
+##Software interaction
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics, Microsoft and Skybiometry. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
 One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
@@ -315,7 +317,8 @@ knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table all
 It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to manipulate and save the information returned.
 
 
-##Data Processing
+##Data processing
+
 The data needed for our analysis was spread across six files. For each software we had the information on the location of the Facial Bounding Boxes, as well as the time taken for the software to find the information. Some of the software also provided a more detailed level of information.
 
 
@@ -338,15 +341,15 @@ Firstly, we considered how many individual faces the software were able to detec
 However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(fig:FaceUpset) was created by defining groups depending on the API that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance faces boxes may overlap on the same face, each bar shows the number of individual faces that have boxes resulting from each of the APIs highlighted below the bar.
 
 
-### Modeling Face Detection Probabiity 
+### Modeling face detection probabiity 
 
 This shows how influential certain attributes are in determining whether a face will be detected, a hit, or not, a miss.
 
 A step wise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with glasses and headwear, a visor or hat.
 
-Regression analysis showed that the situation variable had significant differences between intercept level of "Court Close-Up Not Player" and the categories of "Court in Play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Court in Play" and "Court Player Close Up" rather than a "Court Close-Up Not Player". 
+Regression analysis showed that the situation variable had significant differences between intercept level of "Not player" and the categories of "Match play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Match play" and "Court Player Close Up" rather than a "Not player". 
 
-The bar charts of the situations show that the situation is important in influencing the detection of a face. When the face is accessorised with them, all APIs have a significantly increased chance of finding the face in comparison to the base rate category of the "Court in Play". While the image being a Graphic had a large impact it was not significant, this is likely because of the small number of images with this attribute. It also shows that the shot angle is only significant for one or two APIs at each level.
+The bar charts of the situations show that the situation is important in influencing the detection of a face. When the face is accessorised with them, all APIs have a significantly increased chance of finding the face in comparison to the base rate category of the "Match play". While the image being a Graphic had a large impact it was not significant, this is likely because of the small number of images with this attribute. It also shows that the shot angle is only significant for one or two APIs at each level.
  
 
 
@@ -541,7 +544,7 @@ When forcing no intercept, all variables are significant at the 0 level, and obs
 
 # Results
 
-## Amount of Faces
+## Amount of faces
 
 Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs. The Google Vision API detected a large amount of faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen  in Figure \@ref(fig:FaceData).
 
@@ -563,7 +566,7 @@ To evaluate the performance in terms of the overall accuracy of each algorithm w
 Figure \@ref(fig:FaceData), the bar chart of faces per API shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use where faces of the player must be captured over time during sports matches.
 
 
-## Comparing Faces Found 
+## Comparing faces found 
 
 The individual faces, the specified area of the image, found by each API are compared to those found manually and by the other APIs.
 
@@ -676,7 +679,7 @@ The black bubbles  the bars show the API combination that detected all the faces
 
 
 
-## False Discoveries
+## False discoveries
 Examples are included of faces only found by one of the APIs, as other than Google, the APIs produced several unusual false discoveries. These highlight the potential differences in the detection methods used by each of the APIs. This would need to be taken under consideration to prevent time wasted on sorting actual faces from false discoveries in future applications.
 
 
@@ -696,7 +699,7 @@ Figure b also shows unusual faces, the KIA logo was returned by Animetrics many 
 Examples of tricks of colours are shown in Figure c, where logos on the shirts were returned as faces. These discoveries discredit the use of Animetrics for facial detection applications during sports matches.
 
 
-## Image Characteristics
+## Image characteristics
 
 We then considered the characteristics of the images that the API found Potential Faces in. 
 
