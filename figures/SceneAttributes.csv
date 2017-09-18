@@ -2,5 +2,5 @@ Attribute,Choices
 Graphic,"Live Image, 2D Graphic"
 Background,"Crowd, Court, Logo Wall, Not Applicable"
 Person,"Yes, No"
-Shot Angle,"Level With Players, Birds Eye, Upward Angle"
-Siuation,"Court in Play, Court Player Close-Up, Court Close-Up Not Player, Crowd, Off Court Close Up of Player, Transition"
+Shot Angle,"Level, Birds Eye, Upward"
+Siuation,"Match play, Close up, Not player, Crowd, Off court, Transition"
