@@ -217,7 +217,7 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 # Methodology
 
-A 'face' is considered to be any area designated manually or by an API as a location that encloses a human face. These may or may not be actual faces.
+A 'face' is considered to be any area designated manually or by an API as an area that encloses a human face. These may or may not be actual faces.
 
 ## Manual annotations 
 
@@ -490,9 +490,9 @@ knitr::kable(ModelEstimatesTable, align=c("l",
 predSet <-
 aminFaces %>% select(file,glasses, headangle, lighting, obscured, shotangle, situation, visorhat, bg) %>%
   filter(headangle=="Profile" &
-         situation=="Court in play" &
+         situation=="Match play" &
          lighting=="Shaded" &
-         shotangle=="Upward Angle" &
+         shotangle=="Upward" &
          bg=="Crowd" &
          obscured=="Yes" &
          visorhat=="Yes")
@@ -684,10 +684,10 @@ Examples are included of faces only found by one of the APIs, as other than Goog
 
 
 ```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual. The top left image presents a potential faces that actually defines an area containing a player's back and a ball boy's torso. The top right shows two potential faces that are actually the KIA logo on the net. The bottom left image was very interesting as the player's face was found, but the shirts of both the player and ball boy were deemed potential faces. The bottom right image had a lot more faces that usually recognised. Animetrics found a fist to the right on the centre that it considered a potential face. \\label{fig:UnusualImages}", dev="jpeg", dpi=300}
-i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image a.")
-i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image b.")
-i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image c.")
-i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("  Image d.")
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(a)")
+i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(b)")
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(c)")
+i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(d)")
 
 gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 ```
@@ -718,53 +718,52 @@ This showed that crowd members faces were often recognized, this is helpful as i
 
 ```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
-                              levels = c("Birds Eye","Upward Angle","Player Shoulder Height"))
+                              levels = c("Birds Eye","Upward","Level"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
 
 MosaicShotangle <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
+  guides(fill = guide_legend(title="API matches manual"))  +
   labs(caption="") + 
   scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward Angle"="Upward \nAngle",
-                            "Player Shoulder Height" =
-                            "Player \nShoulder \nHeight")) + coord_flip() +
+                            "Upward"="Upward \nAngle",
+                            "Level" =
+                            "Level")) + coord_flip() +
   ylab("Proportion of faces") + xlab("Angle of face capture") + 
   theme(legend.position = "none") + 
   ggtitle("(a)") 
 ```
 
-
-The colours in the mosaic in Figure \@ref(fig:ICFigs) Plot a. show the amount of faces that matched those found manually given the angle the faces were captured from. There is a greater amount of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were less faces that matched those found manually. The most common faces in our set were those captured at Player Shoulder Height and found manually and by an APIs.
+The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proprtion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
 
 
 
 ```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
-aminFaces$situation <- factor(aminFaces$situation, levels = c("Court close-up not player",
-          "Court in play",
-          "Off court close up of player",
+aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
+          "Match play",
+          "Off court",
           "Crowd",
-          "Court player close-up"))
+          "Close-up"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
   
 MosaicSit <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API faces match \nmanual faces"))  +
+  guides(fill = guide_legend(title="API match manual"))  +
   labs(caption="") + 
-  scale_x_productlist(labels=c("Court close-up not player"="Court \nclose−up \nnot player",
-          "Court in play"="Court in play",
-          "Off court close up of player"="Off court \nclose up \nof player",
+  scale_x_productlist(labels=c("Not player"="Not player",
+          "Match play"="Match play",
+          "Off court"="Off court",
           "Crowd"="Crowd",
-          "Court player close-up"="Court \nplayer \nclose−up")) +
+          "Close-up"="Close-up")) +
   coord_flip() +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
   ggtitle("(b)")
 ```
 
-The mosaic in \@ref(fig:ICFigs), Plot b shows the number of Faces captured during each possible situation. It contrasts how many of the images captured in situations either did or did not match the faces annotated manually using the colour pink for potential faces that did not match, and blue for those that did. It can be seen that the largest portion of the faces were captured in a close up situation while the players were on court.
+The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This porportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
 
 
 ```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}"}
@@ -774,9 +773,9 @@ sbbgshot <- ggplot(data=aminFaces) +
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) + 
   scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward Angle"="Upward \nAngle",
-                            "Player Shoulder Height" =
-                            "Player \nShoulder \nHeight"))+
+                            "Upward"="Upward",
+                            "Level" =
+                            "Level"))+
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
@@ -795,11 +794,11 @@ sbbgsit <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) +
-   scale_x_productlist(labels=c("Court close-up not player"="Court \nclose−up \nnot player",
-          "Court in play"="Court in play",
-          "Off court close up of player"="Off court \nclose up \nof player",
+   scale_x_productlist(labels=c("Not player"="Not player",
+          "Match play"="Match play",
+          "Off court"="Off court",
           "Crowd"="Crowd",
-          "Court player close-up"="Court \nplayer \nclose−up")) +
+          "Close-up"="Close-up")) +
   coord_flip() +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
