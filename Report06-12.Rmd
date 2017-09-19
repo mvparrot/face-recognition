@@ -3,9 +3,9 @@ title: "Detecting Facial Expressions in Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalchik"
 date: "28 July 2017"
 output: bookdown::pdf_document2
-number_sections: false
 toc: false
 fig_caption: yes
+number_sections: false
 fontsize: 11pt
 documentclass: article
 bibliography: references.bib
@@ -153,7 +153,7 @@ VennLists<-data %>%
 }
 ```
 
-#Abstract
+#Abstract {-}
 
 This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is determine the best API to use for face detection of players throughout a match.
 For training purposes faces were manually tagged in 6406 images, and the APIs were evaluated on their success rate at detecting these faces. The manual tagging also created data recording the scene characteristics and features of individual faces such as whether a visor or cap or sunglasses were being worn. This enables the performance to be assessed based on conditions. 
@@ -190,7 +190,8 @@ The sample included images that contained the faces of many people, this include
 There are many matches played during the Australian Open, and they are played on the range of courts available at Melbourne Olympic Park. Therefore the sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
 
 
-##Software Selection
+##Software selection
+
 The choice of the initial software considered for this research was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.' [@Survey]
 
 The process of software selection to determine which we would compare was based on several criteria. The results of the report, as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
@@ -243,7 +244,7 @@ knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE,
 ```
 
 
-##Manual Annotation
+
 To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes quickly and consistently.
 
 
@@ -708,7 +709,7 @@ We then considered the characteristics of the images that the API found Potentia
 ImageCharacteristics <- amin %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:5,]
-knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, format.args=list(width=8), caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Player Shoulder Height angle are shared by three of the five image combinations.", format = "latex")
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, format.args=list(width=8), caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Level angle are shared by three of the five image combinations.", format = "latex")
 ```
 
 
@@ -912,11 +913,12 @@ We also feel that incorporating audio information from the microphones worn by p
 
 
 
-# Acknowledgements
+# Acknowledgements {-}
 
 The authors wish to thank Tennis Australia for access to the data. The analysis was conducted using R, and the following packages: bookdown[@bookdown], descr[@descr], EBImage [@EBImage], ggthemes [@ggthemes], ggmosaic [@ggmosaic], grid [@grid], gridExtra [@gridExtra], gtable [@gtable], kfigr [@kfigr], knitcitations [@knitcitations], knitr [@knitr] , pander [@pander], readr [@readr], RefManager [@RefManager], tidyverse [@tidyverse], UpSetR [@UpSetR], xtable [@xtable].
 
-# Supplementary material
+
+# Supplementary material{-}
 
 The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition](https://github.com/mvparrot/face-recognition). The APIs evaluated were:
 
