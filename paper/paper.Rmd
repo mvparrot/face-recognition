@@ -999,7 +999,7 @@ The authors wish to thank Tennis Australia for access to the data. The analysis 
 
 # Supplementary material{-}
 
-The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition](https://github.com/mvparrot/face-recognition). The APIs evaluated were:
+The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition/paper](https://github.com/mvparrot/face-recognition/paper). The APIs evaluated were:
 
 - Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
 
