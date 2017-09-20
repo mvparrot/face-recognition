@@ -1,5 +1,5 @@
 ---
-title: "Detecting Facial Expressions in Professional Tennis Matches"
+title: "Detecting Facial Expressions in Video Stills from Professional Tennis Matches"
 author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalchik"
 date: "28 July 2017"
 output: bookdown::pdf_document2
@@ -225,12 +225,25 @@ A 'face' is considered to be any area designated manually or by an API as an are
 An annotation tool was constructed to allow image annotations that would capture the location of areas selected manually. We refer to the faces in these areas as Manual Face Classifications.
 This tool also allowed selections of attributes of each face, and attributes describing the features of the Scenes. 
 
-
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "This table lists the possible image descriptions that are associated with the attributes of each image. The most appropriate descrition from each list was selected. There are more options for more complex attributes, there were five expected situations the image may depict.")
+knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Image descriptions that are associated with the attributes of each image.")
 ```
 
-
+<!--
+\begin{table}[htp]
+\label{tab:Scene-Attributes-Table}
+\caption{Image descriptions that are associated with the attributes of each image. }
+\centering
+\begin{tabular}{lp{12cm}} \hline
+Attribute & Choices \\\hline
+Graphic & Live Image, 2D Graphic \\
+Background & Crowd, Court, Logo Wall, Not Applicable \\
+Person & Yes, No \\
+Shot Angle & Level, Birds Eye, Upward \\
+Situation & Match play, Close up, Not player, Crowd, Off court, Transition\\\hline
+\end{tabular}
+\end{table}
+-->
 
 The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. 
 
@@ -240,7 +253,7 @@ The same face size standard applied to crowd members, but focus was placed on th
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
-knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "This table lists the possible face descriptions that were appropriate for each individual face. The most appropriate descrition for each face was built by selecting one option from each list describing a particular attribute of the face that was selected. Most of these categories selections were made obvious in the image, Obscured and Head Angle were more difficult to choose for some faces.")
+knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Possible face descriptions for each individual face. Most of the selections were obvious for each image, with the exception of obscured and head angle.")
 ```
 
 
@@ -478,12 +491,12 @@ mutate(A = ifelse(A.s=="   ", "-", A.e),
   
 
   
-knitr::kable(ModelEstimatesTable, align=c("l", 
+knitr::kable(ModelEstimatesTable, format = "latex", align=c("l", 
                                           "r", "l",
                                           "r", "l",
                                           "r", "l",
                                           "r", "l"),
-             booktabs = TRUE, longtable=TRUE, caption="The table of regression coefficients denotes the significant variables, and levels, for the four API types. The dashes represent coefficient that were not significant. The symbols to the right of the regression coefficients denote the significance level associated with each coefficient. The background variable, and levels of the interaction between shot angle and background were only significant for Google.", format = "latex")
+             booktabs = TRUE, longtable=FALSE, caption="The table of regression coefficients denotes the significant variables, and levels, for the four API types. The dashes represent coefficient that were not significant. The symbols to the right of the regression coefficients denote the significance level associated with each coefficient. The background variable, and levels of the interaction between shot angle and background were only significant for Google.")
 ```
 
 ```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
@@ -700,24 +713,16 @@ Figure b also shows unusual faces, the KIA logo was returned by Animetrics many 
 Examples of tricks of colours are shown in Figure c, where logos on the shirts were returned as faces. These discoveries discredit the use of Animetrics for facial detection applications during sports matches.
 
 
-## Image characteristics
-
-We then considered the characteristics of the images that the API found Potential Faces in. 
-
-
 ```{r Image-Characteristics-Table, fig.cap ="\\label{tab:Image-Characteristics-Table}"}
 ImageCharacteristics <- amin %>% filter(type=="Manual") %>% group_by(situation, bg, shotangle, detect) %>% dplyr::summarise(count=n())
 ImageCharacteristics<-arrange(ImageCharacteristics, desc(count))
 ImageCharacteristics<-ImageCharacteristics[1:5,]
-knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=TRUE, format.args=list(width=8), caption="This table outlines the combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Level angle are shared by three of the five image combinations.", format = "latex")
+knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=FALSE, format.args=list(width=8), caption="Combinations of image attibutes that are most common in the image set. The combination of the Logo Wall background and the Level angle are shared by three of the five image combinations.", format = "latex")
 ```
 
 
-We then considered that there would be an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
-This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
-
-```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}"}
+```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}", eval=FALSE}
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
@@ -737,11 +742,9 @@ MosaicShotangle <- ggplot(data=aminFaces) +
   ggtitle("(a)") 
 ```
 
-The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proprtion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
 
 
-
-```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}"}
+```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}", eval=FALSE}
 aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
           "Match play",
           "Off court",
@@ -764,10 +767,8 @@ MosaicSit <- ggplot(data=aminFaces) +
   ggtitle("(b)")
 ```
 
-The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This porportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
 
-
-```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}"}
+```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}", eval=FALSE}
 
 sbbgshot <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
@@ -786,10 +787,8 @@ sbbgshot <- ggplot(data=aminFaces) +
 ```
 
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
-
-```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}"}
+```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}", eval=FALSE}
 
 sbbgsit <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
@@ -808,11 +807,75 @@ sbbgsit <- ggplot(data=aminFaces) +
 ```
 
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
-
 
 ```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation.\\label{fig:ICFigs}"}
 
+aminFaces$shotangle <- factor(aminFaces$shotangle, 
+                              levels = c("Birds Eye","Upward","Level"))
+aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
+
+MosaicShotangle <- ggplot(data=aminFaces) + 
+  geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
+  #geom_text(aes(label="test", x=1, y=0.6)) +
+  scale_fill_brewer(palette="Dark2") +
+  guides(fill = guide_legend(title="API matches manual"))  +
+  labs(caption="") + 
+  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
+                            "Upward"="Upward \nAngle",
+                            "Level" =
+                            "Level")) + coord_flip() +
+  ylab("Proportion of faces") + xlab("Angle of face capture") + 
+  theme(legend.position = "none") + 
+  ggtitle("(a)") 
+aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
+          "Match play",
+          "Off court",
+          "Crowd",
+          "Close-up"))
+aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
+  
+MosaicSit <- ggplot(data=aminFaces) + 
+  geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
+  scale_fill_brewer(palette="Dark2") +
+  guides(fill = guide_legend(title="API match manual"))  +
+  labs(caption="") + 
+  scale_x_productlist(labels=c("Not player"="Not player",
+          "Match play"="Match play",
+          "Off court"="Off court",
+          "Crowd"="Crowd",
+          "Close-up"="Close-up")) +
+  coord_flip() +
+  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
+  ggtitle("(b)")
+
+sbbgshot <- ggplot(data=aminFaces) +
+   geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
+            #position = position_fill(reverse = TRUE), 
+            #na.rm=TRUE) + 
+  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
+                            "Upward"="Upward",
+                            "Level" =
+                            "Level"))+
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
+  ggtitle("(c)")
+
+sbbgsit <- ggplot(data=aminFaces) +
+   geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
+            #position = position_fill(reverse = TRUE), 
+            #na.rm=TRUE) +
+   scale_x_productlist(labels=c("Not player"="Not player",
+          "Match play"="Match play",
+          "Off court"="Off court",
+          "Crowd"="Crowd",
+          "Close-up"="Close-up")) +
+  coord_flip() +
+  guides(fill = guide_legend(title="Background")) +
+  labs(caption="") +
+  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
+  ggtitle("(d)")
 
 g1 <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
 legend1 <- g1[[which(sapply(g1, function(x) x$name) == "guide-box")]]
@@ -833,6 +896,24 @@ grid.arrange(plots1, plots2, nrow=2)
 
 ```
 
+## Image characteristics
+
+We then considered the characteristics of the images that the API found Potential Faces in. 
+
+We then considered that there would be an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
+
+This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
+
+The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proprtion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
+
+The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This porportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
+
+
+This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+
+This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
+
+
 
 ## Accessories
 
@@ -852,9 +933,9 @@ ct<-CrossTable(table(ManFaces$glasses, ManFaces$visorhat),
                expected = FALSE,
            prop.r = FALSE, prop.c = FALSE, prop.t = TRUE,
            drop.levels = TRUE, format = ("SPSS"), cell.layout = FALSE,
-           dnn = c("Glasses","Type"))
+           dnn = c("Glasses","Visor/hat"))
 
-pander(ct, caption = "This cross table compares the amount of faces that were captured wearing accessories.")
+pander(ct, caption = "Contingency table comparing the amount of captured faces of players that were wearing accessories.")
 ```
 
 
@@ -884,7 +965,7 @@ c("Yes",
   round(glassesTab[2,5]/glassesTab[2,1],2)))
 
 
-pander(glassesdf, caption = "This cross table contrasts the proportion of faces captured and whether the person was wearing glasses. The first row is the faces that were manually tagged as not wearing glasses, the second row is faces that were. For an API to not have been affected by the prescence of glasses, the proportions for both categorys should be similar. Animetrics had the highest proportion difference,  of the faces it found did not have glasses. Google is the closest proportion,  of the faces it found were wearing glasses.")
+pander(glassesdf, caption = "Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.")
 ```
 
 
