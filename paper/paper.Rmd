@@ -9,7 +9,7 @@ number_sections: false
 fontsize: 11pt
 documentclass: article
 bibliography: references.bib
-biblio-style: apalike
+biblio-style: harvard
 link-citations: true
 ---
 
@@ -154,55 +154,54 @@ VennLists<-data %>%
 
 #Abstract {-}
 
-This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match.
-For training purposes faces were manually tagged in 6406 images, and the APIs were evaluated on their success rate at detecting these faces. The manual tagging also created data recording the scene characteristics and features of individual faces, such as whether a visor or cap or sunglasses were being worn. This enables the performance to be assessed based on conditions. 
+This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The practicality of usage was also assessed via time taken to complete detection within an image.
 
 #Introduction
 
-Many tennis professionals believe that tennis is a game heavily influenced by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the playing and coaching of tennis players by improving their "mental game". 
-By statistically analyzing the faces and expressions of players during a match there is a hope that insight may be gained into the effects of the mental state on the outcome of a match.
-Facial expressions during competition may provide an insight into a player's thoughts. The aim of this project is to begin to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
+Many tennis professionals believe that tennis is a game heavily influenced by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the performance, and coaching of, tennis players by improving their "mental game". 
+By statistically analyzing the faces and expressions of players during a match insight may be gained into the effects of the mental state on the outcome of a match. The aim of this project is to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
 
 
-In this report, we investigate the performance of several popular facial recognition software's through their Application Programming Interfaces (APIs), and evaluate their performance when applied to the broadcast videos of elite tennis matches. Using the broadcast videos gives an objective insight to emotions of a player as they progress through a match.
-While it is difficult to know the thoughts and feelings of a player during a match, professionals may be able to gain information through results produced by a recognition software. This approach to understanding players emotions during a match differs to previous studies that have used player's recollections after a game to understand their emotions.
+The performance of several popular facial recognition software's through their Application Programming Interfaces (APIs) is evaluated based on their performance on still images derived from broadcast videos of elite tennis matches. 
+While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition softwares. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
 
 Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended use.
 Their capabilities are often limited to their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
 
 
-The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. This limited selection was based on accessible APIs believed to produce appropriate and useful facial recognition. The performance of the evaluated software was compared against manual classifications obtained by an annotation tool developed by the authors. In addition to looking at the faces they detected, image factors that influences the performance of each service were also investigated.
+The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. A limited selection of accessible APIs was chosen based on their ability to produce appropriate and useful facial recognition. The performance was evaluated against manual classifications obtained in an annotation tool developed by the authors. 
 
+# Methodology
+
+In this study any reference to a 'face' is considered to be an area designated manually or by an API as an area that encloses a human face. These may or may not be actual faces.
 
 ##Sample and sampling approach
 
-The images used were provided by Tennis Australia for this research, the goal of the sample was to be representative of the video files that will be used for future facial recognition analysis.
+Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample specified below is representative of the video files to be used for future facial recognition analysis:
 
-- 6406 Australian Open images (2.8GB)
-- 800x450px size frames from 105 match broadcast videos
-- Video frames taken every 3 seconds over a 5 minute segment
+- 6406 images, 800x450px 
 
-To produce the set of 6404 images, a still shot of the frame was taken at every three seconds, for the length of each 5 minute segment. These segments were taken from 105 video files, which were the broadcast of the tennis Matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of singles tennis matches played between females and males. The rounds of the competition vary as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
 
-The sample included images that contained the faces of many people, such as players, staff on the court and fans in the crowd. These faces were included in the manual annotations as they were likely to be found by the software selected. We felt including these additional faces would not only increase the sample by which to judge the software's capabilities but also allow provision of information on how to differentiate between players and other people for further research. Therefore the sample was not filtered at this initial stage.
+To produce the set of 6404 images, 5 minute segments were taken from 105 video files a still shot of the video was taken at every three seconds, for the length of each segment. The video file were the broadcast of the tennis Matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
 
-There are many matches played during the Australian Open, and they are played on the range of courts available at Melbourne Olympic Park. Therefore the sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
+The sample included images that contained the faces of many people, such as players, staff on the court and fans in the crowd. All of these faces were included in the manual annotations as they were likely to be found by the software selected. It was decided that including these additional faces would allow better evaluations of the software's capabilities, and provide information to differentiate between players and other faces captured. Therefore the sample was not filtered at this initial stage.
+
+Matches played during the Australian Open are played on a range of courts available at Melbourne Olympic Park. The sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
 
 
 ##Software selection
 
-The choice of the initial software considered for this research was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications.' [@Survey]
+The initial software to be considered was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications' [@Survey, pp.3].
 
-The process of software selection to determine which we would compare was based on several criteria. Considering the availability, speed, feature selection and whether images and/or videos could be preented for detection. The results of Gorodnichy's report, as it considered processing speed and feature selection techniques, as well as the ability to perform both still-to-video and video-to-video recognition.
+The selection criteria included the availability, speed, feature selection and whether images and/or videos could be presented for detection. The results of Gorodnichy, Granger and Radtke's [-@Survey] report considered processing speed, feature selection techniques, and the ability to perform both still-to-video and video-to-video recognition.
 
-From the software analysed we considered availability for use within the time frame of the initial data collection stage. The report outlines that for Animetrics [@Animetrics], 'one requirement is that image/face proportion should be at least 1:8 and that at least 64 pixels between eyes are required'. We realize this could present challenges given the pixel sizes of faces in the image set. Other software considered in this survey were not chosen due to the time needed to initialise them, and the costs associated.
-It will also allow for an extension from detecting to recognizing people in the data set. 
+The report outlined that Animetrics [@Animetrics] required an 'image/face proportion should be at least 1:8 and that at least 64 pixels between eyes are required'. 
 
-This led to SkyBiometry [@Skybiometry], an API that also allows for both detection and recognition. The cloud-based software as a service, is a 'spin-off of Neurotechnology', a software considered by the report. 
+SkyBiometry [@Skybiometry] is a 'spin-off of Neurotechnology' which was considered by Gorodnichy et al. an API that also allows for both detection and recognition.
 
-Companies who have recently expanded their API ranges were considered. Microsoft API[@Microsoft], provided by Microsoft Cognitive Services detects faces and predicts facial features. The final software we chose to analyse was Google Vision API. Due to Google's expansion in many web based solutions including a facial recognition software. 
+Companies who have recently expanded their API ranges were considered. Microsoft API[@Microsoft], provided by Microsoft Cognitive Services, and Google Vision API [@Google].
 
-We were able to try the online demos to see whether these software were viable, we used the following Image displayed in Figure \@ref(fig:Trial-Image):
+Online demos were used to test viablity, Figure \@ref(fig:Trial-Image) depicts Bernard Tomic and the detected areas found.
 
 
 ```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. Each colour represents a different API source. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE, dev="jpeg", dpi=300}
@@ -211,9 +210,6 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 ```
 
 
-# Methodology
-
-In this study any reference to a 'face' is considered to be an area designated manually or by an API as an area that encloses a human face. These may or may not be actual faces.
 
 ## Manual annotations 
 
@@ -490,9 +486,9 @@ knitr::kable(ModelEstimatesTable, format = "latex", align=c("l",
 ```
 
 Table \@ref(tab:ModelEstimates) shows that for all of the APIs are significantly less likely to find a face accessorised with glasses or hats, or obscured by an object.
-All APIs are less likely to find a face if the face was not captured front on to the camera. The faces captured when the situation was match play siginifcantly decreased the likelihood of a hit for all APIs.
+All APIs are less likely to find a face if the face was not captured front on to the camera. The faces captured when the situation was match play significantly decreased the likelihood of a hit for all APIs.
 
-Google was the only API that beneefitted from the interaction that was significant in increasing the likelihood of a hit when a face was captured at an angle level to the face, and had a background of the logo wall.
+Google was the only API that benefited from the interaction that was significant in increasing the likelihood of a hit when a face was captured at an angle level to the face, and had a background of the logo wall.
 
 
 ```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
@@ -651,7 +647,7 @@ createUpSet(aminFaces)
 
 
 Figure \@ref(fig:FaceUpset) helps to understand faces that were found by a combination of APIs, and the manual annotations.
-The black bubbles  the bars show the API combination that detected all the faces counted in the bar above. Faces common to all four API and manual annotations were the fourth largest group, it was obvious that relevant faces were captured more commonly by Google and manually. The fifth group was the most suprising, this captured a lot of faces that were false discoveries.
+The black bubbles  the bars show the API combination that detected all the faces counted in the bar above. Faces common to all four API and manual annotations were the fourth largest group, it was obvious that relevant faces were captured more commonly by Google and manually. The fifth group was the most surprising, this captured a lot of faces that were false discoveries.
 
 
 
@@ -866,9 +862,9 @@ We then considered that there would be an uneven amount of faces with certain im
 
 This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
-The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proprtion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
+The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
 
-The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This porportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
+The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
 
 
 This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
@@ -896,11 +892,11 @@ prop.table(table(ManFaces$glasses, ManFaces$visorhat),1)
 \begin{table}[ht]
 \centering
 %\parbox{.5\linewidth}{
-\caption{Proprotions of faces captured manually tagged as wearing headwear given they wore glasses, or did not.} 
+\caption{Proportions of faces captured manually tagged as wearing headwear given they wore glasses, or did not.} 
 \label{tab:accessories}
 \begin{tabular}{ccc}
 \hline 
- & Headwear & No Headwear\\ 
+ & Head wear & No Head wear\\ 
 \hline
 Glasses & 0.50 & 0.50 \\
 No Glasses & 0.26 & 0.74 \\
@@ -908,7 +904,7 @@ No Glasses & 0.26 & 0.74 \\
 \end{tabular}
 \end{table}
 
-Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without headwear. Of those without glasses only 26% wore headwear. This may be influenced by weather and sunlight on the court during Australian Ope nmatches.
+Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without headwear. Of those without glasses only 26% wore headwear. This may be influenced by weather and sunlight on the court during Australian Ope n matches.
 
 
 
@@ -943,10 +939,10 @@ pander(glassesdf, caption = "Conditional proportions of faces of players wearing
 
 
 # Future Work
-The Long Term goal of this research is to better understand how the emotion's felt by a player during a match affect player performance. Ultimately we would aim to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
+The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. Ultimately we would aim to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
 
-Considering the images used during our study were stills derived from Broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API used in this research which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
+Considering the images used during our study were stills derived from Broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
 
 
 It should also be considered that these are software focused on providing recognition in certain controlled scenarios.
@@ -988,3 +984,6 @@ Data files provided are:
 - ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
 
 # References
+
+<div id="refs"></div>
+
