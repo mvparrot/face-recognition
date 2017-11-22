@@ -213,7 +213,7 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 ## Manual annotations 
 
-An annotation tool was constructed to allow image annotations that would capture the location of areas selected manually. This tool also allowed selections of attributes of each face, and attributes describing the features of the Scenes. 
+A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene.
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
 knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Image descriptions that are associated with the attributes of each image.")
@@ -235,11 +235,12 @@ Situation & Match play, Close up, Not player, Crowd, Off court, Transition\\\hli
 \end{table}
 -->
 
-The aim was to collect specific information on each different face within the scene. To determine which of the sometimes many faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. 
+Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. 
 
-The faces of players were recorded if it showed their face at a minimum of 20 by 20 pixels. The back of the head was not detected as a face by any software, these faces were classified manually but reclassified as other.
-Crowd shots provided difficultly in determining which faces were reasonable to classify. These faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. 
-The same face size standard applied to crowd members, but focus was placed on the most prominent faces. For each of these faces, we collected information on the following attributes:
+
+The faces of players were recorded if it showed their face at a minimum of 20 by 20 pixels. The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
+Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. The same face size standard applied to crowd members, but focus was placed on the most prominent faces. For each of these faces, information was collected regarding the attributes in Table \@ref(tab:Face-Attribute-Tables).
+
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
@@ -248,19 +249,18 @@ knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE,
 
 
 
-To record the details of attributes for each face and scene a Shiny [@shiny] App was created. We called this Application our ManualClassificationProgram. This helped to provide information for all attributes quickly and consistently.
+The web app was created using Shiny [@shiny]. This has been expanded into an R package called taipan. A tool for annotating images in preparation for analysis.
 
 
-If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This changed the display and presented a set of Attributes with radio buttons, this allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the corner points of a box drawn by the mouse, and when the save button was hit it saved all the radio button selections and the 'Face Box' coordinates to a CSV file. 
+If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This selection presented a set of Attributes questions to answer, and allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the box drawn, and saved all the selections and the 'Face Box' coordinates to a CSV file. 
 
-When a face was not selected, the radio buttons showed the Scene attributes and the radio buttons with the possible selections the annotated was able to choose from. When in this display, selecting the save button would then save the Scene selections to a specific CSV file.
+When a face was not visible in the scene only the scene attributes applied for that image. 
 
-If there were issues, the CSV files were able to be edited, this was reserved for extreme circumstances. As a lot of care was taken to ensure the first selections were correctly submitted and applied to the correct Faces and Scenes.
-
-All the annotations for this sample were completed by one author. This was chosen to provide consistency across the sample of faces annotated manually. However the initial choices of what would be reasonably detected were made by several of the authors.
+All the annotations for this sample were completed by one author. This provided consistency across the sample of faces annotated manually. The choices of what would be reasonably detected was made by several of the authors.
 
 
 ##Software interaction
+
 The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics, Microsoft and Skybiometry. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
 One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
 
@@ -953,7 +953,7 @@ Given that Google found many faces that did not match manually annotated face, w
 There is the possibility that we could create another app that shows the Facial Bounding Boxes identified by each program, this would allow the annotator to confirm manually whether or not these are faces.
 
 
-Given that certain Scene attribute combinations produced more facial recognition than other combinations we should consider limiting the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the Scene attributes that provided the most Google faces.
+Given that certain scene attribute combinations produced more facial recognition than other combinations we should consider limiting the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
 
 
 To undertake sentiment analysis, we would take the boxes of faces found in this set of images. Allowing each face a border of pixels, we would crop the images and produce an individual face image that would form the data set for emotion recognition.
