@@ -35,6 +35,8 @@ library(gridExtra)
 library(ggmosaic)
 library(tidyverse)
 library(purrr)
+library(lvplot)
+
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, kfigr.link=TRUE, kfigr.prefix=TRUE, cache=TRUE, fig.env = TRUE, fig.cap=TRUE, fig.height=3)
 
  
@@ -256,15 +258,16 @@ If there was a face in the image the annotator was able to highlight a section o
 
 When a face was not visible in the scene only the scene attributes applied for that image. 
 
-All the annotations for this sample were completed by one author. This provided consistency across the sample of faces annotated manually. The choices of what would be reasonably detected was made by several of the authors.
+All the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
 
 
-##Software interaction
+##Software usage
 
-The software choices allowed for POST requests to be sent via the internet. To access the APIs through R we enlisted the httr package, using functions from this package a script was written for Google, Animetrics, Microsoft and Skybiometry. These scripts contained loops that would move through the images, individually posting a request for each image to be analysed. These scripts included retrieving the information provided and converting it into a usable format for our analysis.
-One interesting anomaly was found when using the Skybiometry software as it limited the amount of requests per minute. We accounted for this by stalling the posts for the amount of waiting time the software notified, and checking until the time lapsed and the script could continue looping.
+The face recognition software allowed for access through a R [@R] script, calling the APIs using the httr[@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis.
 
-The amount of time taken for each software to process facial detection on the individual images is presented in the histogram :
+Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling the requests was incorporated for these APIs.
+
+Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image.
 
 ```{r timeData}
 times <- amin %>% 
@@ -274,23 +277,33 @@ times <- amin %>%
   mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
 ```
 
-```{r timeTable, results='asis', fig.cap="System time taken by the four APIs to finish searching individual images, plotted against number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. The largest variability is when no faces are found.\\label{tab:timeTable}", dev="png", dpi=300}
+```{r timeFigure, fig.cap="System time taken by the four APIs to finish searching individual images, by number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. When there are few faces found there is more variable time taken per image.\\label{fig:timeFigure}"}
+# 
+# t1 <- ggplot(times) +  
+#   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm") + 
+#   xlab("Number of faces detected") + ylab("System time (sec)") +  
+#   scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
 
-t1 <- ggplot(times) +  
-  geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm") + 
-  xlab("Number of faces detected") + ylab("System time (sec)") +  
-  scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
+# t2 <- ggplot(times) +
+#   geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +
+#   facet_wrap(~type) +
+#   ylim(c(0, 0.1)) +
+#   #geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) +
+#   xlab("Number of faces detected") +
+#   scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
 
-t2 <- ggplot(times) +  
-  geom_jitter(aes(x=n, y=time.sys.self, colour=type), alpha=0.2, width=0.3, height=0.01) +  
-  facet_wrap(~type) +  
-  ylim(c(0, 0.1)) +  
-  #geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm", se=FALSE) + 
-  xlab("Number of faces detected") +  
-  scale_colour_manual("API", values=type.colours) + theme(legend.position = "none")
+#grid.arrange(t1,t2,nrow=1)
 
-grid.arrange(t1,t2,nrow=1)
+# letter value plots
+t2 <- ggplot(times, aes(as.factor(n), time.sys.self)) + 
+  geom_lv(aes(fill = ..LV..)) +
+  ylim(c(0, 0.1)) + 
+  facet_wrap(~type) +
+  xlab("Number of faces detected")
+
+t2
 ``` 
+
 
 ```{r eval=FALSE}
 times %>% 
@@ -318,7 +331,7 @@ knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table all
  # add_header_above(c(" " = 1, "Group 1" = 5, "Group 2" = 5))
 ```
 
-It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to manipulate and save the information returned.
+It should be considered that the time taken may be an issue for 'real time' processing. It would depend on the amount of frames sampled. This also does not account for the time taken to process the information returned.
 
 
 ##Data processing
