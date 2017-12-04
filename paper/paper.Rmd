@@ -336,18 +336,12 @@ It should be considered that the time taken may be an issue for 'real time' proc
 
 ##Data processing
 
-The data needed for our analysis was spread across six files. For each software we had the information on the location of the Facial Bounding Boxes, as well as the time taken for the software to find the information. Some of the software also provided a more detailed level of information.
+The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features.
+
+The manual tagging app resulted in two files, one containing information about the image, and the faces.
 
 
-The collation of the results from the Manual Recognition Program created
-two CSVs.
 
-
-A single data set was created to combine all necessary information in the previously mentioned files for our analysis. The information in the data set, was carefully considered. It considers the identify of each face, and all relative face attributes, as well as the image file the face was found in, from this information each face was able to be uniquely identified. Also included was information on the software that found it, and the time it took the software to identify the face. It also has a record of how many faces had been identified in the image by counting each additional recognized face.
-To do so, we gathered the name of the file the face was found in and the API that found it. The automatically determined time values were also included. The minimum and maximum x and y values were drawn from different values in each software's CSV files. This required some processing to align the differing values to be comparable.
-
-To find whether the software were recognizing the same faces a function was created. As the location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software.
-This function uses the information of each face and compares the intersecting regions of the polygons created by the x,y coordinates of Manual Faces and other software's faces, to determine if the same face was recognized. We determined the ratio of intersecting area to total area must be greater than 0.1 to be considered the same face. This allowed us to compare the identification areas, as well as contrast the identified faces of each software. This contributed another variable, boxID, to the data set.  
 
 ##Analysis
 
