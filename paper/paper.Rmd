@@ -343,22 +343,22 @@ The manual tagging app resulted in two files, one containing information about t
 
 
 
-##Analysis
+##Results
 
-Using the data set of the combined API and manual results, we were able to compare the performance of the software.
-Firstly, we considered how many individual faces the software were able to detect in Figure \@ref(fig:FaceData).
+The manual tagging helped to provide a benchamark for faces found by APIs. The
+face detection rate indicated what attributes of an image or face were associated with face detection by an API. 
+Faces that were found by multiply APIs indicated the industry expectations for face presentation. This application allowed for a broader range of angles, backgrounds and accessories that may have impacted detection.
+False discoveries were the instances of faces found by APIs that did not intersect with manually tagged faces. Some of these may actually have been faces or reveal sensitivities in the algorithms of the APIs.
+The analysis of image characteristics and accessories indicates whether the APIs were viable choices for detecting faces in sports environments. 
 
 
-However, individual faces are not beneficial if they do not correspond to the faces manually annotated. Figure \@ref(fig:FaceUpset) was created by defining groups depending on the API that recognized each particular face. The UpSetR [-@UpSetR] package helps visualise set intersections. Where in this circumstance faces boxes may overlap on the same face, each bar shows the number of individual faces that have boxes resulting from each of the APIs highlighted below the bar.
 
 
-### Modeling face detection probabiity 
+### Face detection rate modelled in characteristics
 
-This shows how influential certain attributes are in determining whether a face will be detected, a hit, or not, a miss.
+A logistic regression model was used to assess the characteristics of the face and scene affecting detection.
 
-A step wise method was used to determine the best regression model for predicting a hit or miss. The regression model that provided the best AIC, included the scene attributes: Shot Angle, Background, the interaction between these two; whether the scene was a graphic, and the situation on the court when the image was taken. It also included the lighting on the particular face, and whether the specific face was accessorised with glasses and headwear, a visor or hat.
-
-Regression analysis showed that the situation variable had significant differences between intercept level of "Not player" and the categories of "Match play" and "Court Player Close Up". This would mean that the probability of all the APIs finding the face that had been found manually was significantly less if the situation depicted was "Match play" and "Court Player Close Up" rather than a "Not player". 
+A step wise method was used to determine the best regression model.
 
 
 
@@ -489,13 +489,12 @@ knitr::kable(ModelEstimatesTable, format = "latex", align=c("l",
                                           "r", "l",
                                           "r", "l",
                                           "r", "l"),
-             booktabs = TRUE, longtable=FALSE, caption="The table of regression coefficients denotes the significant variables, and levels, for the four API types. The dashes represent coefficient that were not significant. The symbols to the right of the regression coefficients denote the significance level associated with each coefficient. The background variable, and levels of the interaction between shot angle and background were only significant for Google.")
+             booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition by API. (** 0.01 * 0.05 . 0.01 - NS) Coefficients from logitics regression models shown. Glasses, visorhat, headangle lighting, shotangle and situation all contribute significantly to face detection.")
 ```
 
-Table \@ref(tab:ModelEstimates) shows that for all of the APIs are significantly less likely to find a face accessorised with glasses or hats, or obscured by an object.
-All APIs are less likely to find a face if the face was not captured front on to the camera. The faces captured when the situation was match play significantly decreased the likelihood of a hit for all APIs.
-
-Google was the only API that benefited from the interaction that was significant in increasing the likelihood of a hit when a face was captured at an angle level to the face, and had a background of the logo wall.
+For the most part, the APIs were all affected by the same factors.
+The factors that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google. Situation had different effects on each API.
+Results for Google were most interestng in the shotangle had differing effects on the detection. 
 
 
 ```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
@@ -512,10 +511,6 @@ aminFaces %>% select(file,glasses, headangle, lighting, obscured, shotangle, sit
 
 overlayGgplot(predSet$file)
 ```
-
-
-The variables were kept if they were significant for any level of the variable for any type. Given the significant coefficients above it can be seen that the largest decrease in probability of a face being found by the APIs was the face profile being captured.
-
 
 
 ```{r Regression, fig.width=7.5, fig.cap = "The figure depicts the change in the probability of a face being detected by the APIs given a certain attribute level associated with the face. Wearing either glasses, or headwear, a visor or a hat, significantly decreased the likelihood of a manually annotated face being detected by the APIs.\\label{fig:Regression}", eval=FALSE}
@@ -553,13 +548,9 @@ When forcing no intercept, all variables are significant at the 0 level, and obs
 
 
 
+### Detection rates
 
-
-# Results
-
-## Amount of faces
-
-Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs. The Google Vision API detected a large amount of faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen  in Figure \@ref(fig:FaceData).
+Each API returned areas that indicated the potential location of a face. These areas are defined using the four points returned by the APIs. The Google Vision API detected a large amount of faces, much more than Microsoft, Skybiometry or Animetrics. This can be seen in Figure \@ref(fig:FaceData).
 
 
 ```{r FaceData, fig.cap = "\\label{fig:FaceData}   Face Boxes Per API: The bar chart shows the number of  Face Boxes produced by each API, comparing the height of the bars indicates that Google's Facial Recognition API recognized almost 1000 more faces than the next best API, Microsoft."}
@@ -574,17 +565,13 @@ ggplot(amin, aes(x = type, fill=type)) +
 ```
 
 
-To evaluate the performance in terms of the overall accuracy of each algorithm we considered the amount of faces they classified that matched faces that were selected manually. This sample contains all the manually annotated faces and all the faces recognized by the four APIs.
+Figure \@ref(fig:FaceData) shows a bar chart of faces per API. Manual tagging produced the most faces, more than the four APIs. Google has the highest detection rate, almost twice that of other APIs.
 
-Figure \@ref(fig:FaceData), the bar chart of faces per API shows Google produces the most detections. Having a high volume of detected faces returned is valuable for the future use where faces of the player must be captured over time during sports matches.
+### API intersection 
 
+The faces in Figure  \@ref(fig:FaceData) and Table \@ref(tab:facecounts) found by APIs and manually tagged are compared.
 
-## Comparing faces found 
-
-The individual faces, the specified area of the image, found by each API are compared to those found manually and by the other APIs.
-
-
-
+Figure \@ref(fig:FaceUpset) illustrates the intersection between software over all of the images. Constructed using the UpSetR [@UpSetR] package it shows the faces found by Google 
 ```{r table}
 FacesAPI <- aminFaces %>% 
   filter(!duplicates) %>%
@@ -608,7 +595,7 @@ SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometr
 
 \begin{table}[htp]
 %\parbox{.5\linewidth}{
-\caption{Counts of captures of different APIs against manually tagged faces.}
+\caption{Contingency tables of eaach API capture against manual tagging. Interestingly all APIs reported faces that would not be considered relevant faces by manual inspection}
 \label{tab:facecounts}
 \centering
 \begin{tabular}{ccccccc} \cline{1-3}\cline{5-7} 
