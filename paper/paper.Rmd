@@ -167,7 +167,7 @@ By statistically analyzing the faces and expressions of players during a match i
 
 
 The performance of several popular facial recognition software's through their Application Programming Interfaces (APIs) is evaluated based on their performance on still images derived from broadcast videos of elite tennis matches. 
-While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition softwares. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
+While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition software. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
 
 Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended use.
 Their capabilities are often limited to their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
@@ -181,7 +181,7 @@ In this study any reference to a 'face' is considered to be an area designated m
 
 ##Sample and sampling approach
 
-Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample specified below is representative of the video files to be used for future facial recognition analysis:
+Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample is representative of the video files to be used for future facial recognition analysis:
 
 - 6406 images, 800x450px 
 
@@ -205,7 +205,7 @@ SkyBiometry [@Skybiometry] is a 'spin-off of Neurotechnology' which was consider
 
 Companies who have recently expanded their API ranges were considered. Microsoft API[@Microsoft], provided by Microsoft Cognitive Services, and Google Vision API [@Google].
 
-Online demos were used to test viablity, Figure \@ref(fig:Trial-Image) depicts Bernard Tomic and the detected areas found.
+Online demos were used to test viability, Figure \@ref(fig:Trial-Image) depicts Bernard Tomic and the detected areas found.
 
 
 ```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. Each colour represents a different API source. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE, dev="jpeg", dpi=300}
@@ -269,7 +269,7 @@ The face recognition software allowed for access through a R [@R] script, callin
 
 Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling the requests was incorporated for these APIs.
 
-Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image, as a letter value plot (*** add in reference to Heik'e paper). A letter value plot is like a boxplot, but more suited to skewed data like this. (Both Microsoft and Google have a few eimages each where they have taken a long time to complete and these were removed from this plot.) The times are quite variable between APIs, with Skybiometry being the most consistently fast. Microsoft and Animetrics are quite variable regardless of the number of faces found. Google is variable in time taken when there are few faces present, and then takes a little longer on average to find faces as the number of them in the image increases. 
+Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image, as a letter value plot (*** add in reference to Heik'e paper). A letter value plot is like a box plot, but more suited to skewed data like this. (Both Microsoft and Google have a few images each where they have taken a long time to complete and these were removed from this plot.) The times are quite variable between APIs, with Skybiometry being the most consistently fast. Microsoft and Animetrics are quite variable regardless of the number of faces found. Google is variable in time taken when there are few faces present, and then takes a little longer on average to find faces as the number of them in the image increases. 
 
 ```{r timeData}
 times <- amin %>% 
@@ -332,7 +332,7 @@ times %>%
 
 cbind(usertime, systime) -> timetable
 
-knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table allows comparisons to be made between the  amount of time taken for each API took to detect faces in each image. Most of the images take less than one second to process. Google had the highest maximum time of 4.936", format = "latex") #%>%
+knitr::kable(timetable, booktabs = TRUE, longtable=TRUE, caption="This table allows comparisons to be made between the  amount of time taken for each API took to detect faces in each image. Most of the images take less than one second to process. Google had the highest maximum time of 4.936.", format = "latex") #%>%
  # add_header_above(c(" " = 1, "Group 1" = 5, "Group 2" = 5))
 ```
 
@@ -350,7 +350,7 @@ The manual tagging app resulted in two files, one containing information about t
 
 ##Results
 
-The manual tagging helped to provide a benchamark for faces found by APIs. The
+The manual tagging helped to provide a benchmark for faces found by APIs. The
 face detection rate indicated what attributes of an image or face were associated with face detection by an API. 
 Faces that were found by multiply APIs indicated the industry expectations for face presentation. This application allowed for a broader range of angles, backgrounds and accessories that may have impacted detection.
 False discoveries were the instances of faces found by APIs that did not intersect with manually tagged faces. Some of these may actually have been faces or reveal sensitivities in the algorithms of the APIs.
@@ -361,7 +361,7 @@ The analysis of image characteristics and accessories indicates whether the APIs
 
 ### Modeling detection rate
 
-A logistic regression model was used to assess the characteristics of the face and scene affecting detection, with stepwise variable selection. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. (*** Any other variables considered but not selected for any model?)
+A logistic regression model was used to assess the characteristics of the face and scene affecting detection, with step wise variable selection. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. (*** Any other variables considered but not selected for any model?)
 A separate model was fit for each API.
 
 ```{r RegressionFunctions, cache=FALSE}
@@ -494,10 +494,10 @@ knitr::kable(ModelEstimatesTable, format = "latex", align=c("l",
              booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition for API, as assessed by logistic regression model. Coefficients from the four models shown (significance: ** 0.01 * 0.05 . 0.01 - NS). Most APIs wre affected by similar factors, with glasses, visor or hat, head angle, lighting, shot angle and situation all contributing significantly to face detection.")
 ```
 
-*** The number of digits should be consistent, e.g. "-1" should be "-1.00". I don't know how to force this with the kable printing, but one way or another we have to.
+*** The number of digits should be consistent, e.g. "-1" should be "-1.00". I don't know how to force this with the kale printing, but one way or another we have to.
 
 For the most part, the APIs were all affected by the same factors. Those that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google's detection rate. Situation had different effects on each API.
-Results for Google were most interestng in the shotangle had differing effects on the detection. 
+Results for Google were most interesting in the shot angle had differing effects on the detection. 
 
 
 ```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
@@ -553,7 +553,7 @@ When forcing no intercept, all variables are significant at the 0 level, and obs
 
 ### Detection rates
 
-Each API returned areas in the image that indicated the face location. These are defined using the four points, marking the four corners of a rectangle. Figure \@ref(fig:FaceData) shows a barchart of the number of faces detected by each API. The Google Vision API detected largest number of faces, much more than the other three APIs, and most closely matched the number recorded by manual tagging. 
+Each API returned areas in the image that indicated the face location. These are defined using the four points, marking the four corners of a rectangle. Figure \@ref(fig:FaceData) shows a bar chart of the number of faces detected by each API. The Google Vision API detected largest number of faces, much more than the other three APIs, and most closely matched the number recorded by manual tagging. 
 
 ```{r FaceData, fig.cap = "\\label{fig:FaceData}  The bar chart of the number of faces detected by each API. Google's Facial Recognition API recognized almost 1000 more faces than the next best API, Microsoft."}
 
@@ -607,7 +607,7 @@ Manual & Face & No Face & & Manual & Face & No Face\\
 %heading
 \cline{1-3}\cline{5-7} 
 Face & 434 & 1861 & & Face & 1319 & 976\\
-NoFace &527 & 787 & & NoFace &638 & 676 \\\cline{1-3}\cline{5-7}
+No Face &527 & 787 & & No Face &638 & 676 \\\cline{1-3}\cline{5-7}
 \end{tabular}
 \\[1.5ex]
 \begin{tabular}{ccccccc}\\\cline{1-3}\cline{5-7} 
@@ -632,13 +632,13 @@ createUpSet(aminFaces)
 ```
 
 
-Figure \@ref(fig:FaceUpset) is a set visualisation to examine the intersection of the APIs, and the manual annotations. This is produced with the UpSetR [@UpSetR] package. The black bubbles below the bars indicate the API combination that corresponds to the bar count. The largest count comes from manual tagging, followed by Google and manual tagging, and then Google. Faces detected by all four API and manual annotations were the fourth largest count. This says that the APIs agreed on about a quarter of the faces from the manually tagged collection. The fifth group was the most surprising -- these were faces captured by Animetrics alone, that were false discoveries.
+Figure \@ref(fig:FaceUpset) is a set visualization to examine the intersection of the APIs, and the manual annotations. This is produced with the UpSetR [@UpSetR] package. The black bubbles below the bars indicate the API combination that corresponds to the bar count. The largest count comes from manual tagging, followed by Google and manual tagging, and then Google. Faces detected by all four API and manual annotations were the fourth largest count. This says that the APIs agreed on about a quarter of the faces from the manually tagged collection. The fifth group was the most surprising -- these were faces captured by Animetrics alone, that were false discoveries.
 
 ## False discoveries
 
 Animetrics provided many surprises. Figure \@ref(fig:UnusualImages) shows four images and the captures where non-faces were detected as faces. In image (a) the player's back is detected as a face.
 In image (b) the KIA logo was reported as a face. 
-In image (c), where logos on the player's and ballboy's shirts were returned as faces. In image (d) where there are a lot of crowd faces, if you look closely one of the detections is actully a fist (to the right on the center).
+In image (c), where logos on the player's and ball boy's shirts were returned as faces. In image (d) where there are a lot of crowd faces, if you look closely one of the detections is actually a fist (to the right on the center).
 
 The other APIs also returned some non-faces, but the most egregious mistakes came from Animetrics.
 
@@ -838,18 +838,16 @@ grid.arrange(plots1, plots2, nrow=2)
 
 ## Image characteristics
 
-We then considered the characteristics of the images that the API found Potential Faces in. 
-
-We then considered that there would be an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
+The characteristics of the images that the API found Potential Faces in were considered. For example, there would is an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 
 This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
 The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
 
-The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, from this we learn the situation may not be influencing the APIs rate of detection.
+The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, from this it can be inferred the situation may not be influencing the APIs rate of detection.
 
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot c, allows consideration of the interaction between two image attributes. We are able to see that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+Figure \@ref(fig:ICFigs) Plot c contains a stacked bar chart which allows consideration of the interaction between two image attributes. It can be seen that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
 This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
@@ -921,7 +919,7 @@ pander(glassesdf, caption = "Conditional proportions of faces of players wearing
 
 
 # Future Work
-The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. Ultimately we would aim to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
+The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
 
 Considering the images used during our study were stills derived from Broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
@@ -931,8 +929,7 @@ It should also be considered that these are software focused on providing recogn
 If the study was controlled to focus on certain camera angles that align with the facial angles these security programs are intended to recognize faces in.
 
 
-Given that Google found many faces that did not match manually annotated face, we considered that we should check for manual errors.
-There is the possibility that we could create another app that shows the Facial Bounding Boxes identified by each program, this would allow the annotator to confirm manually whether or not these are faces.
+Given that Google found many faces that did not match manually annotated face,  manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
 
 
 Given that certain scene attribute combinations produced more facial recognition than other combinations we should consider limiting the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
