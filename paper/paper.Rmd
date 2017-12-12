@@ -158,6 +158,8 @@ VennLists<-data %>%
 
 This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The practicality of usage was also assessed via time taken to complete detection within an image.
 
+*** (1) Check caption sentences finish with "." (2) Check spelling (3) Check no referring to tables and figures in the text like "the table below ..." or the "figure above ..." (4) Check all the writing is in third person, remove "We then ..." (5) One sentence paragraphs should be very rarely used, and I suspect there are too many in the current draft. Check if the orphan sentence better belongs with the prior or after paragraph.
+
 #Introduction
 
 Many tennis professionals believe that tennis is a game heavily influenced by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the performance, and coaching of, tennis players by improving their "mental game". 
@@ -218,7 +220,7 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene.
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Image descriptions that are associated with the attributes of each image.")
+knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Characteristics recorded for each image.")
 ```
 
 <!--
@@ -246,7 +248,7 @@ Crowd faces were not the intended targets of the recognition however these faces
 
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
-knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Possible face descriptions for each individual face. Most of the selections were obvious for each image, with the exception of obscured and head angle.")
+knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Characteristics recorded for each  face. Most were easy to assess for each face, with the exception of obscured and head angle.")
 ```
 
 
@@ -357,13 +359,10 @@ The analysis of image characteristics and accessories indicates whether the APIs
 
 
 
-### Face detection rate modelled in characteristics
+### Modeling detection rate
 
-A logistic regression model was used to assess the characteristics of the face and scene affecting detection.
-
-A step wise method was used to determine the best regression model.
-
-
+A logistic regression model was used to assess the characteristics of the face and scene affecting detection, with stepwise variable selection. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. (*** Any other variables considered but not selected for any model?)
+A separate model was fit for each API.
 
 ```{r RegressionFunctions, cache=FALSE}
 # Prepare data
@@ -492,11 +491,12 @@ knitr::kable(ModelEstimatesTable, format = "latex", align=c("l",
                                           "r", "l",
                                           "r", "l",
                                           "r", "l"),
-             booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition by API. (** 0.01 * 0.05 . 0.01 - NS) Coefficients from logitics regression models shown. Glasses, visorhat, headangle lighting, shotangle and situation all contribute significantly to face detection.")
+             booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition for API, as assessed by logistic regression model. Coefficients from the four models shown (significance: ** 0.01 * 0.05 . 0.01 - NS). Most APIs wre affected by similar factors, with glasses, visor or hat, head angle, lighting, shot angle and situation all contributing significantly to face detection.")
 ```
 
-For the most part, the APIs were all affected by the same factors.
-The factors that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google. Situation had different effects on each API.
+*** The number of digits should be consistent, e.g. "-1" should be "-1.00". I don't know how to force this with the kable printing, but one way or another we have to.
+
+For the most part, the APIs were all affected by the same factors. Those that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google's detection rate. Situation had different effects on each API.
 Results for Google were most interestng in the shotangle had differing effects on the detection. 
 
 
