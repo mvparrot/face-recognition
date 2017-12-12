@@ -267,7 +267,7 @@ The face recognition software allowed for access through a R [@R] script, callin
 
 Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling the requests was incorporated for these APIs.
 
-Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image.
+Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image, as a letter value plot (*** add in reference to Heik'e paper). A letter value plot is like a boxplot, but more suited to skewed data like this. (Both Microsoft and Google have a few eimages each where they have taken a long time to complete and these were removed from this plot.) The times are quite variable between APIs, with Skybiometry being the most consistently fast. Microsoft and Animetrics are quite variable regardless of the number of faces found. Google is variable in time taken when there are few faces present, and then takes a little longer on average to find faces as the number of them in the image increases. 
 
 ```{r timeData}
 times <- amin %>% 
@@ -277,7 +277,7 @@ times <- amin %>%
   mutate(n=n(), time.user.self=first(time.user.self), time.sys.self=first(time.sys.self))  
 ```
 
-```{r timeFigure, fig.cap="System time taken by the four APIs to finish searching individual images, by number of faces discovered. Skybiometry is the fastest, and Microsoft is the slowest. When there are few faces found there is more variable time taken per image.\\label{fig:timeFigure}"}
+```{r timeFigure, fig.height=6, fig.cap="System time taken by the four APIs to finish searching individual images, by number of faces discovered, displayed as a letter value plot.  Skybiometry is the most consistently fast.\\label{fig:timeFigure}"}
 # 
 # t1 <- ggplot(times) +  
 #   geom_smooth(aes(x=n, y=time.sys.self, colour=type), method="lm") + 
@@ -297,9 +297,12 @@ times <- amin %>%
 # letter value plots
 t2 <- ggplot(times, aes(as.factor(n), time.sys.self)) + 
   geom_lv(aes(fill = ..LV..)) +
-  ylim(c(0, 0.1)) + 
+  #ylim(c(0, 0.1)) + 
   facet_wrap(~type) +
-  xlab("Number of faces detected")
+  scale_y_continuous("System time (ms)", 
+    breaks=seq(0, .08, .02), limits=c(0, 0.08)) +
+  # somethings funky when try to change axis labels
+  xlab("Number of faces detected") 
 
 t2
 ``` 
@@ -874,7 +877,7 @@ It was assumed that outdoor courts would lead to the use of these accessories an
 
 
 
-```{r accessories, eval=FALSE, fig.cap = "\\label{tab:accessories}"}
+```{r accessories, eval=TRUE, fig.cap = "\\label{tab:accessories}"}
 aminFaces %>%
   filter(type=="Manual") -> ManFaces
 
