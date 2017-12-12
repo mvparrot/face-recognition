@@ -733,7 +733,7 @@ sbbgsit <- ggplot(data=aminFaces) +
 
 
 
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation.\\label{fig:ICFigs}"}
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (a) Angle of face capture, (b) court situation, (c) angle of capture by background, and (d) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall.  \\label{fig:ICFigs}"}
 
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
@@ -817,11 +817,13 @@ lheight2 <- sum(legend2$height)
 plots2 <- arrangeGrob(MosaicShotangle, MosaicSit, ncol=2)
 plots2 <- arrangeGrob(plots2, legend2, nrow=2, heights = unit.c(unit(1, "npc") - lheight2, lheight2))
 
-grid.arrange(plots1, plots2, nrow=2)
+grid.arrange(plots2, plots1, nrow=2)
 
 ```
 
 ## Image characteristics
+
+There were several characteristics of the image recorded during manual tagging, as listed in Table \@ref(tab:Scene-Attributes-Table). This section examines the prevalence of these characteristics in the data collection. 
 
 The characteristics of the images that the API found Potential Faces in were considered. For example, there would is an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 
