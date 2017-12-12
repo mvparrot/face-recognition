@@ -156,21 +156,22 @@ VennLists<-data %>%
 
 #Abstract {-}
 
-This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The practicality of usage was also assessed via time taken to complete detection within an image.
+This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The possible obstacles of real time implementation were also assessed via the time taken to complete detection within an image.
 
 *** (1) Check caption sentences finish with "." (2) Check spelling (3) Check no referring to tables and figures in the text like "the table below ..." or the "figure above ..." (4) Check all the writing is in third person, remove "We then ..." (5) One sentence paragraphs should be very rarely used, and I suspect there are too many in the current draft. Check if the orphan sentence better belongs with the prior or after paragraph.
 
 #Introduction
 
 Many tennis professionals believe that tennis is a game heavily influenced by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the performance, and coaching of, tennis players by improving their "mental game". 
-By statistically analyzing the faces and expressions of players during a match insight may be gained into the effects of the mental state on the outcome of a match. The aim of this project is to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
+By statistically analyzing the faces and expressions of players during a match, insight may be gained about the mental state of a player and the effects changes in the mental state have on the outcome of a match. The aim of this project is to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
 
 
-The performance of several popular facial recognition software's through their Application Programming Interfaces (APIs) is evaluated based on their performance on still images derived from broadcast videos of elite tennis matches. 
+Application Programming Interfaces (APIs) have been used to evaluated the performance of several popular facial recognition software, on the still images derived from broadcast videos of elite tennis matches. 
 While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition software. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
 
-Making use of the recognition software's currently available presents a challenge as high performance sports are not the intended use.
-Their capabilities are often limited to their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' that this paper faces and applies to a sports environment.
+Most facial recoginiton software began with the intention of security applications. There are others, such as Facebook which links images of people with their profiles.
+This means the recognition software currently available was not intended to be used in fast paced, elite sport environment.
+It was believed that the capabilities of the software could be limited by their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' and this survey explores how detection performance is affected by situations that arise in elite tennis matches.
 
 
 The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. A limited selection of accessible APIs was chosen based on their ability to produce appropriate and useful facial recognition. The performance was evaluated against manual classifications obtained in an annotation tool developed by the authors. 
@@ -183,10 +184,10 @@ In this study any reference to a 'face' is considered to be an area designated m
 
 Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample is representative of the video files to be used for future facial recognition analysis:
 
-- 6406 images, 800x450px 
+- 6406 images, 800 $\times$ 450px 
 
 
-To produce the set of 6404 images, 5 minute segments were taken from 105 video files a still shot of the video was taken at every three seconds, for the length of each segment. The video file were the broadcast of the tennis Matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
+To produce the set of 6406 images, 5 minute segments were taken from 105 video files a still shot of the video was taken at every three seconds, for the length of each segment. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
 
 The sample included images that contained the faces of many people, such as players, staff on the court and fans in the crowd. All of these faces were included in the manual annotations as they were likely to be found by the software selected. It was decided that including these additional faces would allow better evaluations of the software's capabilities, and provide information to differentiate between players and other faces captured. Therefore the sample was not filtered at this initial stage.
 
@@ -196,19 +197,15 @@ Matches played during the Australian Open are played on a range of courts availa
 ##Software selection
 
 The initial software to be considered was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications' [@Survey, pp.3].
-
 The selection criteria included the availability, speed, feature selection and whether images and/or videos could be presented for detection. The results of Gorodnichy, Granger and Radtke's [-@Survey] report considered processing speed, feature selection techniques, and the ability to perform both still-to-video and video-to-video recognition.
 
 The report outlined that Animetrics [@Animetrics] required an 'image/face proportion should be at least 1:8 and that at least 64 pixels between eyes are required'. 
-
-SkyBiometry [@Skybiometry] is a 'spin-off of Neurotechnology' which was considered by Gorodnichy et al. an API that also allows for both detection and recognition.
-
-Companies who have recently expanded their API ranges were considered. Microsoft API[@Microsoft], provided by Microsoft Cognitive Services, and Google Vision API [@Google].
-
+SkyBiometry [@Skybiometry] is a 'spin-off of Neurotechnology' which was considered by Gorodnichy et al. [-@Survey].
+Companies who have recently expanded their API ranges were also considered. This search produced two of the software, Microsoft API [@Microsoft], provided by Microsoft Cognitive Services, and Google Vision API [@Google].
 Online demos were used to test viability, Figure \@ref(fig:Trial-Image) depicts Bernard Tomic and the detected areas found.
 
 
-```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. Each colour represents a different API source. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE, dev="jpeg", dpi=300}
+```{r Trial-Image, fig.cap = "This image of Bernard Tomic was chosen as a trial image to be presented to each of the software before they were included in the research. Each colour represents a different detection source. It was expected that the software would be able to find this face, despite the player facing away from the camera.\\label{fig:Trial-Image}", message=TRUE, warning=TRUE, dev="jpeg", dpi=300}
 imagesList0<-as.list("2016_HSA_R01_BTomic_AUS_vs_DIstomin_UZB_MS157_clip.0013.png")
 overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 ```
@@ -217,7 +214,6 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 ## Manual annotations 
 
-A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene.
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
 knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Characteristics recorded for each image.")
@@ -239,9 +235,8 @@ Situation & Match play, Close up, Not player, Crowd, Off court, Transition\\\hli
 \end{table}
 -->
 
+A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene.
 Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. 
-
-
 The faces of players were recorded if it showed their face at a minimum of 20 by 20 pixels. The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
 Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. The same face size standard applied to crowd members, but focus was placed on the most prominent faces. For each of these faces, information was collected regarding the attributes in Table \@ref(tab:Face-Attribute-Tables).
 
@@ -253,23 +248,16 @@ knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE,
 
 
 
-The web app was created using Shiny [@shiny]. This has been expanded into an R package called taipan. A tool for annotating images in preparation for analysis.
-
-
-If there was a face in the image the annotator was able to highlight a section of the image to create a square 'Face Box'. This selection presented a set of Attributes questions to answer, and allowed information to be recorded for the face in the specific 'Face Box'. This recorded the x and y coordinates of the box drawn, and saved all the selections and the 'Face Box' coordinates to a CSV file. 
-
-When a face was not visible in the scene only the scene attributes applied for that image. 
-
-All the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
+The web app was created using the Shiny package for R [@shiny] and has been developed into an R package called taipan, as it is a Tool for Annotating Images in Preparation for ANalysis.
+If there was a face in the image the annotator was able to highlight that section of the image to contain the face. This selection activated a set of attributes questions for the annotator to answer, and allowed information to be recorded for the face. The records included the location of the box in the image, and all appropriate answers. 
+When a face was not visible in the image only the scene attributes were applicable for that image. All of the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
 
 
 ##Software usage
 
-The face recognition software allowed for access through a R [@R] script, calling the APIs using the httr[@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis.
+The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
 
-Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling the requests was incorporated for these APIs.
-
-Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image, as a letter value plot (*** add in reference to Heik'e paper). A letter value plot is like a box plot, but more suited to skewed data like this. (Both Microsoft and Google have a few images each where they have taken a long time to complete and these were removed from this plot.) The times are quite variable between APIs, with Skybiometry being the most consistently fast. Microsoft and Animetrics are quite variable regardless of the number of faces found. Google is variable in time taken when there are few faces present, and then takes a little longer on average to find faces as the number of them in the image increases. 
+Figure \@ref(fig:timeFigure) displays the processing time required by the APIs for each image, as a letter value plot [@letterValue]. A letter value plot is like a box plot, but more suited to skewed data like this. (Both Microsoft and Google have a few images each where they have taken a long time to complete and these were removed from this plot.) The times are quite variable between APIs, with Skybiometry being the most consistently fast. Microsoft and Animetrics are quite variable regardless of the number of faces found. Google is variable in time taken when there are few faces present, and then takes a little longer on average to find faces as the number of them in the image increases. 
 
 ```{r timeData}
 times <- amin %>% 
@@ -341,18 +329,14 @@ It should be considered that the time taken may be an issue for 'real time' proc
 
 ##Data processing
 
-The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features.
-
-The manual tagging app resulted in two files, one containing information about the image, and the faces.
-
-
+The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features. The manual tagging app resulted in two files, one containing information about the scene, and the other contained information regarding the faces.
 
 
 ##Results
 
 The manual tagging helped to provide a benchmark for faces found by APIs. The
 face detection rate indicated what attributes of an image or face were associated with face detection by an API. 
-Faces that were found by multiply APIs indicated the industry expectations for face presentation. This application allowed for a broader range of angles, backgrounds and accessories that may have impacted detection.
+Faces that were found by multiple APIs indicated either obvious facial features were visible or the APIs may be using similar criteria to detect faces. This application allowed for a broader range of angles, backgrounds and accessories that may have impacted detection.
 False discoveries were the instances of faces found by APIs that did not intersect with manually tagged faces. Some of these may actually have been faces or reveal sensitivities in the algorithms of the APIs.
 The analysis of image characteristics and accessories indicates whether the APIs were viable choices for detecting faces in sports environments. 
 
@@ -361,8 +345,9 @@ The analysis of image characteristics and accessories indicates whether the APIs
 
 ### Modeling detection rate
 
-A logistic regression model was used to assess the characteristics of the face and scene affecting detection, with step wise variable selection. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. (*** Any other variables considered but not selected for any model?)
-A separate model was fit for each API.
+A logistic regression model was used to assess the characteristics of the face and scene that may have affected the detection likelihood of the face. A step-wise variable selection method was used to find variables of significance for any of the APIs. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. Variables that were not included denoted whether there was a graphic or live shot visible, the role of the person whose face was captured and whether or not there was a person in the image.
+detect
+A separate model was fit using the faces for each API.
 
 ```{r RegressionFunctions, cache=FALSE}
 # Prepare data
@@ -547,7 +532,7 @@ mod1 <- glm(isplayer ~ 0 +
 ```
 
 
-When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level.
+When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level. 
 
 
 
@@ -932,11 +917,11 @@ If the study was controlled to focus on certain camera angles that align with th
 Given that Google found many faces that did not match manually annotated face,  manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
 
 
-Given that certain scene attribute combinations produced more facial recognition than other combinations we should consider limiting the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
+Given that certain scene attribute combinations produced more facial recognition than other combinations a limit should be implemented for the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
 
 
-To undertake sentiment analysis, we would take the boxes of faces found in this set of images. Allowing each face a border of pixels, we would crop the images and produce an individual face image that would form the data set for emotion recognition.
-We also feel that incorporating audio information from the microphones worn by players may assist in sentiment analysis. By including this information we would be able to define differences between certain emotions that may not be able to be found by facial features only.
+To undertake sentiment analysis, the faces found in this set of images could be used. Allowing each face a border of pixels, images could be cropped and produce an individual face image that would form the data set for emotion recognition.
+Incorporating audio information from the microphones worn by players may assist in sentiment analysis. By including this information differences between certain emotions that may not be able to be found by facial features only.
 
 
 
