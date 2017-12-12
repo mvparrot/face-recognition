@@ -823,7 +823,7 @@ grid.arrange(plots2, plots1, nrow=2)
 
 ## Image characteristics
 
-There were several characteristics of the image recorded during manual tagging, as listed in Table \@ref(tab:Scene-Attributes-Table). This section examines the prevalence of these characteristics in the data collection. 
+There were several characteristics of the image recorded during manual tagging, as listed in Table \@ref(tab:Scene-Attributes-Table). This section examines the prevalence of these characteristics in the data collection. Figure \@ref(fig:ICFigs) shows the relationships of a subset of characteristics, using mosaic plots. 
 
 The characteristics of the images that the API found Potential Faces in were considered. For example, there would is an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 
