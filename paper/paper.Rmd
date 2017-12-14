@@ -717,9 +717,9 @@ The colours in the mosaic \@ref(fig:ICFigs) (a) in Figure \@ref(fig:ICFigs) show
 The mosaic \@ref(fig:ICFigs) (b) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
 
 
-Figure \@ref(fig:ICFigs) Plot c contains a mosaic which allows consideration of the interaction between two image attributes. It can be seen that the background being the logo wall and the angle of level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+Figure \@ref(fig:ICFigs) (c) contains a mosaic which allows consideration of the interaction between two image attributes. It can be seen that the background being the logo wall and the angle of level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
-This mosiac, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
+This mosiac, Figure \@ref(fig:ICFigs) (d), allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
 
@@ -802,17 +802,17 @@ No Glasses & 0.21 & 0.60 & 0.26 & 0.23\\
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
 
-Considering the images used during our study were stills derived from Broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
+Considering the images used during our study were stills derived from broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
 
 
 It should also be considered that these are software focused on providing recognition in certain controlled scenarios.
 If the study was controlled to focus on certain camera angles that align with the facial angles these security programs are intended to recognize faces in.
 
 
-Given that Google found many faces that did not match manually annotated face,  manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
+Google found many faces that did not match manually annotated faces, this showed manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
 
 
-Given that certain scene attribute combinations produced more facial recognition than other combinations a limit should be implemented for the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
+Given that certain scene attribute combinations produced more successful facial recognition than other combinations, a limit should be implemented for the sample of images sent to Google Vision API. This would not help to reduce cost. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided was most successful for Google to return faces.
 
 
 To undertake sentiment analysis, the faces found in this set of images could be used. Allowing each face a border of pixels, images could be cropped and produce an individual face image that would form the data set for emotion recognition.
@@ -829,13 +829,13 @@ The authors wish to thank Tennis Australia for access to the data. The analysis 
 
 The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition/paper](https://github.com/mvparrot/face-recognition/paper). The APIs evaluated were:
 
-- Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
+- Animetrics: Animetrics Face Recognition API, FaceR API by @Animetrics.
 
-- Google: @Google Refers to the Google Cloud Vision API
+- Google: Google Cloud Vision API [-@Google]
 
-- Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
+- Microsoft: Microsoft Azure Cognitive Services Face API, published by @Microsoft.
 
-- Skybiometry: @Skybiometry References the spin off detection and recognition software of Neurotechnology. 
+- Skybiometry: @Skybiometry the spin off detection and recognition software of Neurotechnology. 
 
 Data files provided are:
 
