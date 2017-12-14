@@ -537,27 +537,13 @@ When forcing no intercept, all variables are significant at the 0 level, and obs
 
 ### Detection rates
 
-Each API returned areas in the image that indicated the face location. These are defined using the four points, marking the four corners of a rectangle. Figure \@ref(fig:FaceData) shows a bar chart of the number of faces detected by each API. The Google Vision API detected largest number of faces, much more than the other three APIs, and most closely matched the number recorded by manual tagging. 
-
-```{r FaceData, fig.cap = "\\label{fig:FaceData}  The bar chart of the number of faces detected by each API. Google's Facial Recognition API recognized almost 1000 more faces than the next best API, Microsoft."}
-
-ggplot(amin, aes(x = type, fill=type)) + 
-  geom_bar(position="dodge") +
-  xlab("Facial Recognition APIs") +
-  scale_x_discrete(limits=c("Manual","Google","Microsoft","Skybiometry","Animetrics")) +
-  ylab("Number of Faces") + 
-  guides(fill=FALSE) +
-  labs(caption="") + scale_fill_manual(values=type.colours)
-```
-
-### API comparison
-
-Table \@ref(tab:facecounts) cross-tabulates the faces found by each API relative to the manually tagged faces. For a perfect match with the manually tagged faces, the off-diagonal elements should be zero. Google has the closest match to the manual tagging, and Skybiometry, which was the fastest to run, performed very badly.  It is interesting to see the high proportion of faces detected by the APIs that were not considered to be faces by manual tagging. 
+Table \@ref(tab:facecounts) shows the amount of faces found by each API relative to the manually tagged faces. For a perfect match with the manually tagged faces, the off-diagonal elements should be zero. Google has the closest match to the manual tagging, and Skybiometry, which was the fastest to run, performed very badly.  It is interesting to see the high proportion of faces detected by the APIs that were not considered to be faces by manual tagging. 
 
 
 The mismatches were manually examined, and showed that the `r amin %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces found by Google but not tagged manually were actually faces, but were crowd members. They would need to be used, for the long term purpose of the study, to detect and tag players' emotions during a match.
 
 Comparatively, visual inspection of the `r amin %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were actually very unusual results, which are discussed later.
+
 
 ```{r table}
 FacesAPI <- aminFaces %>% 
