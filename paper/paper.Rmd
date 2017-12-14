@@ -168,7 +168,7 @@ By statistically analyzing the faces and expressions of players during a match, 
 Application Programming Interfaces (APIs) have been used to evaluated the performance of several popular facial recognition software, on the still images derived from broadcast videos of elite tennis matches. 
 While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition software. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
 
-Most facial recoginiton software began with the intention of security applications. There are others, such as Facebook which links images of people with their profiles.
+Most facial recognition software began with the intention of security applications. There are others, such as Facebook which links images of people with their profiles.
 This means the recognition software currently available was not intended to be used in fast paced, elite sport environment.
 It was believed that the capabilities of the software could be limited by their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' and this survey explores how detection performance is affected by situations that arise in elite tennis matches.
 
@@ -839,7 +839,7 @@ No Glasses & 0.26 & 0.74 \\
 \end{tabular}
 \end{table}
 
-Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without headwear. Of those without glasses only 26% wore headwear. This may be influenced by weather and sunlight on the court during Australian Ope n matches.
+Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without headwear. Of those without glasses only 26% wore headwear. This may be influenced by weather and sunlight on the court during Australian Open matches.
 
 
 
