@@ -583,7 +583,7 @@ Animetrics  & 434          & 0.19             & 527                  & 0.40\\ \c
 
 
   
-```{r FaceUpSet, fig.cap = "\\label{fig:FaceUpset} Faces Per API Combination. The Bar Chart shows the faces that were recognised by multiple API or found manually. The largest group, with 809 faces, is faces only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations may give some indication as to the circumstances when some APIs perform better than others."}
+```{r FaceUpSet, fig.cap = "\\label{fig:FaceUpset} Faces Per API Combination. The Bar Chart shows the faces that were recognised by multiple API or found manually. The largest group, with 946 faces, is faces only found by Manual annotations. The following group were the 716 faces recognized both Manually and by the Google API. These combinations give insight to the algorithm specifications as some APIs certain faces when others do not."}
 createUpSet(aminFaces)
 ```
 
