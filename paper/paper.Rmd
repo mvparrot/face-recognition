@@ -328,8 +328,9 @@ It should be considered that the time taken may be an issue for 'real time' proc
 
 ##Data processing
 
-The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features. The manual tagging app resulted in two files, one containing information about the scene, and the other contained information regarding the faces.
+The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images, and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features. The manual tagging app resulted in two files, one containing information about the scene, and the other contained information regarding the faces.
 
+The location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software. Every face found in an image manually, or by any API was compared. From their locations the intersecting area between them was found. When the ratio of this intersecting area to total area was greater than 0.1 the IDs were altered to reflect the two faces would be considered the same face. This allowed comparison of the identification areas on the same face, as well as contrast the identified faces of each software.
 
 ##Results
 
