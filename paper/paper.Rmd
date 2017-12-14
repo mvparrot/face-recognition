@@ -158,7 +158,6 @@ VennLists<-data %>%
 
 This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The possible obstacles of real time implementation were also assessed via the time taken to complete detection within an image.
 
-*** (1) Check caption sentences finish with "." (2) Check spelling (3) Check no referring to tables and figures in the text like "the table below ..." or the "figure above ..." (4) Check all the writing is in third person, remove "We then ..." (5) One sentence paragraphs should be very rarely used, and I suspect there are too many in the current draft. Check if the orphan sentence better belongs with the prior or after paragraph.
 
 #Introduction
 
@@ -289,7 +288,7 @@ t2 <- ggplot(times, aes(as.factor(n), time.sys.self)) +
   geom_lv(aes(fill = ..LV..)) +
   #ylim(c(0, 0.1)) + 
   facet_wrap(~type) +
-  scale_y_continuous("System time (ms)", 
+  scale_y_continuous("System time (seconds)", 
     breaks=seq(0, .08, .02), limits=c(0, 0.08)) +
   # somethings funky when try to change axis labels
   xlab("Number of faces detected") 
@@ -573,42 +572,28 @@ FacesAPI <- aminFaces %>%
          Manual = ifelse(Manual==0, "No Face", "Face"),
          Skybiometry = ifelse(Skybiometry==0, "No Face", "Face")) 
 
-AM <- table(FacesAPI$Manual, FacesAPI$Animetrics, dnn = c("Manual", "Animetrics"))
-GM <- table(FacesAPI$Manual, FacesAPI$Google, dnn = c("Manual", "Google"))
-MM <- table(FacesAPI$Manual, FacesAPI$Microsoft, dnn = c("Manual", "Microsoft"))
-SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometry"))
+GM <- CrossTable(FacesAPI$Manual, FacesAPI$Google)
+MM <- CrossTable(FacesAPI$Manual, FacesAPI$Microsoft)
+SM <- CrossTable(FacesAPI$Manual, FacesAPI$Skybiometry)
+AM <- CrossTable(FacesAPI$Manual, FacesAPI$Animetrics)
 ```
 
 
 
 \begin{table}[htp]
-%\parbox{.5\linewidth}{
-\caption{Contingency tables of each API capture against manual tagging. Interestingly all APIs reported faces that would not be considered faces by manual inspection.}
-\label{tab:facecounts}
 \centering
-\begin{tabular}{ccccccc} \cline{1-3}\cline{5-7} 
-\multicolumn{3}{c}{Animetrics}&&\multicolumn{3}{c}{Google}\\\cline{1-3}\cline{5-7}
-Manual & Face & No Face & & Manual & Face & No Face\\ 
-%heading
-\cline{1-3}\cline{5-7} 
-Face & 434 & 1861 & & Face & 1319 & 976\\
-No Face &527 & 787 & & No Face &638 & 676 \\\cline{1-3}\cline{5-7}
-\end{tabular}
-\\[1.5ex]
-\begin{tabular}{ccccccc}\\\cline{1-3}\cline{5-7} 
-\multicolumn{3}{c}{Microsoft}&&\multicolumn{3}{c}{Skybiometry}\\
-\cline{1-3}\cline{5-7}
-Manual & Face & No Face & & Manual & Face & No Face\\ 
-%heading
-\cline{1-3}\cline{5-7} 
-Face & 565 & 1730 & & Face & 493 & 1802\\
-No Face &505 & 809 & & No Face &512 & 802 \\\cline{1-3}\cline{5-7}
+\caption{Table of the amount and proportion of faces each API captured, by manual tagging.}
+\label{tab:facecounts}
+\begin{tabular}{lllll}\\\cline{1-5}
+            & \multicolumn{2}{l}{Faces found} & \multicolumn{2}{l}{Non-faces detected as faces} \\\cline{1-5}
+            
+            & Count        & Proportion       & Count                & Proportion               \\\cline{1-5}
+Google      & 1319         & 0.57             & 638                  & 0.49                     \\
+Microsoft   & 565          & 0.24             & 505                  & 0.38                     \\
+Skybiometry & 493          & 0.22             & 512                  & 0.39                     \\
+Animetrics  & 434          & 0.19             & 527                  & 0.40\\ \cline{1-5}
 \end{tabular}
 \end{table}
-
-*** I've decided that these should be proportions.
-
-
 
 
   
@@ -849,8 +834,7 @@ It was assumed that outdoor courts would lead to the use of these accessories an
 aminFaces %>%
   filter(type=="Manual") -> ManFaces
 
-prop.table(table(ManFaces$glasses, ManFaces$visorhat),1)
-
+#prop.table(table(ManFaces$glasses, ManFaces$visorhat),1)
 ```
 
 
@@ -883,7 +867,6 @@ aminFaces %>% filter(matchesManual==TRUE) -> afm
 table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
 
 
-
 glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
 c("No", 
   round(glassesTab[1,2]/glassesTab[1,1],2),
@@ -895,12 +878,24 @@ c("Yes",
   round(glassesTab[2,3]/glassesTab[2,1],2),
   round(glassesTab[2,4]/glassesTab[2,1],2),
   round(glassesTab[2,5]/glassesTab[2,1],2)))
-
-
-pander(glassesdf, caption = "Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.")
 ```
 
 
+
+\begin{table}[ht]
+\centering
+%\parbox{.5\linewidth}{
+\caption{Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.} 
+\label{tab:glasses}
+\begin{tabular}{ccccc}
+\hline 
+ & Animetrics & Google & Microsoft & Skybiometry\\ 
+\hline
+Glasses & 0.08 & 0.43 & 0.14 & 0.12 \\
+No Glasses & 0.21 & 0.60 & 0.26 & 0.23\\
+\hline
+\end{tabular}
+\end{table}
 
 
 # Future Work
