@@ -537,12 +537,7 @@ When forcing no intercept, all variables are significant at the 0 level, and obs
 
 ### Detection rates
 
-Table \@ref(tab:facecounts) shows the amount of faces found by each API relative to the manually tagged faces. For a perfect match with the manually tagged faces, the off-diagonal elements should be zero. Google has the closest match to the manual tagging, and Skybiometry, which was the fastest to run, performed very badly.  It is interesting to see the high proportion of faces detected by the APIs that were not considered to be faces by manual tagging. 
-
-
-The mismatches were manually examined, and showed that the `r amin %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces found by Google but not tagged manually were actually faces, but were crowd members. They would need to be used, for the long term purpose of the study, to detect and tag players' emotions during a match.
-
-Comparatively, visual inspection of the `r amin %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were actually very unusual results, which are discussed later.
+Table \@ref(tab:facecounts) shows the amount of faces found by each API relative to whether or not the faces were tagged manually. Google has the closest match to the manual tagging. It is interesting to see the high proportion of faces detected by the APIs that were not considered to be faces by manual tagging. 
 
 
 ```{r table}
@@ -565,7 +560,6 @@ AM <- CrossTable(FacesAPI$Manual, FacesAPI$Animetrics)
 ```
 
 
-
 \begin{table}[htp]
 \centering
 \caption{Table of the amount and proportion of faces each API captured, by manual tagging.}
@@ -580,6 +574,11 @@ Skybiometry & 493          & 0.22             & 512                  & 0.39     
 Animetrics  & 434          & 0.19             & 527                  & 0.40\\ \cline{1-5}
 \end{tabular}
 \end{table}
+
+
+The mismatches were manually examined, and showed that the `r amin %>% filter(type=="Google",!matchesManual) %>% nrow()` potential faces found by Google but not tagged manually were actually faces, but were crowd members. They would need to be used, for the long term purpose of the study, to detect and tag players' emotions during a match.
+
+Comparatively, visual inspection of the `r amin %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` potential faces that did not match manually annotated faces showed the Animetrics results contained many potential faces that were unusual areas to be considered faces, this is discussed in the false discoveries section. 
 
 
   
