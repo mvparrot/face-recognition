@@ -616,13 +616,13 @@ knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=FALSE, format.args
 ```
 
 
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually.\\label{fig:ICFigs}"}
 
-```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}", eval=FALSE}
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
 
-MosaicShotangle <- ggplot(data=aminFaces) + 
+MosSaMm <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   scale_fill_brewer(palette="Dark2") +
@@ -635,11 +635,8 @@ MosaicShotangle <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Angle of face capture") + 
   theme(legend.position = "none") + 
   ggtitle("(a)") 
-```
 
 
-
-```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}", eval=FALSE}
 aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
           "Match play",
           "Off court",
@@ -647,89 +644,7 @@ aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
           "Close-up"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
   
-MosaicSit <- ggplot(data=aminFaces) + 
-  geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
-  scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API match manual"))  +
-  labs(caption="") + 
-  scale_x_productlist(labels=c("Not player"="Not player",
-          "Match play"="Match play",
-          "Off court"="Off court",
-          "Crowd"="Crowd",
-          "Close-up"="Close-up")) +
-  coord_flip() +
-  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
-  ggtitle("(b)")
-```
-
-
-```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}", eval=FALSE}
-
-sbbgshot <- ggplot(data=aminFaces) +
-   geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
-            #position = position_fill(reverse = TRUE), 
-            #na.rm=TRUE) + 
-  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward"="Upward",
-                            "Level" =
-                            "Level"))+
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
-  ggtitle("(c)")
-
-```
-
-
-
-```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}", eval=FALSE}
-
-sbbgsit <- ggplot(data=aminFaces) +
-   geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
-            #position = position_fill(reverse = TRUE), 
-            #na.rm=TRUE) +
-   scale_x_productlist(labels=c("Not player"="Not player",
-          "Match play"="Match play",
-          "Off court"="Off court",
-          "Crowd"="Crowd",
-          "Close-up"="Close-up")) +
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
-  ggtitle("(d)")
-```
-
-
-
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "The mosaic plots indicate the proportion of faces given the angle, or situation, that matched faces found manually. The stacked bar charts show the amount of faces captured at certain angles, or situation.\\label{fig:ICFigs}"}
-
-aminFaces$shotangle <- factor(aminFaces$shotangle, 
-                              levels = c("Birds Eye","Upward","Level"))
-aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
-
-MosaicShotangle <- ggplot(data=aminFaces) + 
-  geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
-  #geom_text(aes(label="test", x=1, y=0.6)) +
-  scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API matches manual"))  +
-  labs(caption="") + 
-  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward"="Upward \nAngle",
-                            "Level" =
-                            "Level")) + coord_flip() +
-  ylab("Proportion of faces") + xlab("Angle of face capture") + 
-  theme(legend.position = "none") + 
-  ggtitle("(a)") 
-aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
-          "Match play",
-          "Off court",
-          "Crowd",
-          "Close-up"))
-aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
-  
-MosaicSit <- ggplot(data=aminFaces) + 
+MosSitMm <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   scale_fill_brewer(palette="Dark2") +
   guides(fill = guide_legend(title="API match manual"))  +
@@ -743,7 +658,7 @@ MosaicSit <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
   ggtitle("(b)")
 
-sbbgshot <- ggplot(data=aminFaces) +
+MosSaBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) + 
@@ -757,7 +672,7 @@ sbbgshot <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
   ggtitle("(c)")
 
-sbbgsit <- ggplot(data=aminFaces) +
+MosSitBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) +
@@ -772,19 +687,19 @@ sbbgsit <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
   ggtitle("(d)")
 
-g1 <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
+g1 <- ggplotGrob(MosSaMm + theme(legend.position="bottom"))$grobs
 legend1 <- g1[[which(sapply(g1, function(x) x$name) == "guide-box")]]
 lheight1 <- sum(legend1$height)
 
-plots1 <- arrangeGrob(sbbgshot, sbbgsit, ncol=2)
+plots1 <- arrangeGrob(MosSaMm, MosSitMm, ncol=2)
 plots1 <- arrangeGrob(plots1, legend1, nrow=2, heights = unit.c(unit(1, "npc") - lheight1, lheight1))
  
 
-g2 <- ggplotGrob(MosaicShotangle + theme(legend.position="bottom"))$grobs
+g2 <- ggplotGrob(MosSaBg + theme(legend.position="bottom"))$grobs
 legend2 <- g2[[which(sapply(g2, function(x) x$name) == "guide-box")]]
 lheight2 <- sum(legend2$height)
 
-plots2 <- arrangeGrob(MosaicShotangle, MosaicSit, ncol=2)
+plots2 <- arrangeGrob(MosSaBg, MosSitBg, ncol=2)
 plots2 <- arrangeGrob(plots2, legend2, nrow=2, heights = unit.c(unit(1, "npc") - lheight2, lheight2))
 
 grid.arrange(plots1, plots2, nrow=2)
@@ -793,18 +708,18 @@ grid.arrange(plots1, plots2, nrow=2)
 
 ## Image characteristics
 
-The characteristics of the images that the API found Potential Faces in were considered. For example, there would is an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
+The characteristics of the images were recorded in the manual tagging process and there are uneven amounts of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was tallied and the combinations of these features were compared to how many potential faces were found with the combination of scene attributes.
 
-This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
+This showed that crowd members faces were often recognized which is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
-The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
+The colours in the mosaic \@ref(fig:ICFigs) (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured level to player's faces, these faces were often recognised by the APIs as well.
 
-The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, from this it can be inferred the situation may not be influencing the APIs rate of detection.
+The mosaic \@ref(fig:ICFigs) (b) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
 
 
-Figure \@ref(fig:ICFigs) Plot c contains a stacked bar chart which allows consideration of the interaction between two image attributes. It can be seen that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+Figure \@ref(fig:ICFigs) Plot c contains a mosaic which allows consideration of the interaction between two image attributes. It can be seen that the background being the logo wall and the angle of level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
+This mosiac, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
 
