@@ -1,12 +1,7 @@
-
 images/
-
 AnimetricsBackup/
-
 MicrosoftBackup/
-
 SkybiometryBackup/
-
 *_cache/
 *_files/
 GoogleBackup/
@@ -20,3 +15,4 @@ presentationETX2550.Rmd
 .Rhistory
 .Rproj.user
 packrat/lib*/
+.RData

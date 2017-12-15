@@ -158,9 +158,8 @@ VennLists<-data %>%
 
 #Abstract {-}
 
-This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as headwear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The possible obstacles of real time implementation were also assessed via the time taken to complete detection within an image.
+This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as head wear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The possible obstacles of real time implementation were also assessed via the time taken to complete detection within an image.
 
-*** (1) Check caption sentences finish with "." (2) Check spelling (3) Check no referring to tables and figures in the text like "the table below ..." or the "figure above ..." (4) Check all the writing is in third person, remove "We then ..." (5) One sentence paragraphs should be very rarely used, and I suspect there are too many in the current draft. Check if the orphan sentence better belongs with the prior or after paragraph.
 
 #Introduction
 
@@ -171,7 +170,7 @@ By statistically analyzing the faces and expressions of players during a match, 
 Application Programming Interfaces (APIs) have been used to evaluated the performance of several popular facial recognition software, on the still images derived from broadcast videos of elite tennis matches. 
 While it is difficult to know the thoughts and feelings of a player during a match, analysts may be able to gain information through results produced by recognition software. This approach to understanding player's emotions during a match differs to previous standards that have used player's recollections after a game to understand their emotions.
 
-Most facial recoginiton software began with the intention of security applications. There are others, such as Facebook which links images of people with their profiles.
+Most facial recognition software began with the intention of security applications. There are others, such as Facebook which links images of people with their profiles.
 This means the recognition software currently available was not intended to be used in fast paced, elite sport environment.
 It was believed that the capabilities of the software could be limited by their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' and this survey explores how detection performance is affected by situations that arise in elite tennis matches.
 
@@ -291,7 +290,7 @@ t2 <- ggplot(times, aes(as.factor(n), time.sys.self)) +
   geom_lv(aes(fill = ..LV..)) +
   #ylim(c(0, 0.1)) + 
   facet_wrap(~type) +
-  scale_y_continuous("System time (ms)", 
+  scale_y_continuous("System time (seconds)", 
     breaks=seq(0, .08, .02), limits=c(0, 0.08)) +
   # somethings funky when try to change axis labels
   xlab("Number of faces detected") 
@@ -331,8 +330,9 @@ It should be considered that the time taken may be an issue for 'real time' proc
 
 ##Data processing
 
-The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features. The manual tagging app resulted in two files, one containing information about the scene, and the other contained information regarding the faces.
+The data needed for our analysis was organised by source, separate files for each of the four APIs. They contained the information on the location of the faces found in the images, and the time taken to find them. Some APIs also provided detailed information such as the estimated head angle, and locations of specific facial features. The manual tagging app resulted in two files, one containing information about the scene, and the other contained information regarding the faces.
 
+The location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software. Every face found in an image manually, or by any API was compared. From their locations the intersecting area between them was found. When the ratio of this intersecting area to total area was greater than 0.1 the IDs were altered to reflect the two faces would be considered the same face. This allowed comparison of the identification areas on the same face, as well as contrast the identified faces of each software.
 
 ##Results
 
@@ -557,6 +557,7 @@ Table \@ref(tab:facecounts) displays the proportion of the manually tagged faces
 
 In comparison, examining the `r amin %>% filter(type=="Animetrics",!matchesManual) %>% nrow()` images in which Animetrics detected faces, not reported manually, revealed surprising results, which are discussed in more detail later.
 
+
 ```{r table}
 FacesAPI <- aminFaces %>% 
   filter(!duplicates) %>%
@@ -570,10 +571,10 @@ FacesAPI <- aminFaces %>%
          Manual = ifelse(Manual==0, "No Face", "Face"),
          Skybiometry = ifelse(Skybiometry==0, "No Face", "Face")) 
 
-AM <- table(FacesAPI$Manual, FacesAPI$Animetrics, dnn = c("Manual", "Animetrics"))
-GM <- table(FacesAPI$Manual, FacesAPI$Google, dnn = c("Manual", "Google"))
-MM <- table(FacesAPI$Manual, FacesAPI$Microsoft, dnn = c("Manual", "Microsoft"))
-SM <- table(FacesAPI$Manual, FacesAPI$Skybiometry, dnn = c("Manual", "Skybiometry"))
+GM <- CrossTable(FacesAPI$Manual, FacesAPI$Google)
+MM <- CrossTable(FacesAPI$Manual, FacesAPI$Microsoft)
+SM <- CrossTable(FacesAPI$Manual, FacesAPI$Skybiometry)
+AM <- CrossTable(FacesAPI$Manual, FacesAPI$Animetrics)
 ```
 
 \begin{table}[htp]
@@ -628,7 +629,7 @@ In image (c), where logos on the player's and ball boy's shirts were returned as
 
 The other APIs also returned some non-faces, but the most egregious mistakes came from Animetrics.
 
-```{r UnusualImages, fig.cap = "Animetrics provided many results that were quite unusual: (a) one of the detected face is a player's back, (b) the KIA logo on the net is detected as a face, (c) is very interesting as the player's face was found, but the shirts of both the player and ball boy were reported as faces, (d) had a lot more faces than many images but Animetrics also found a fist (to the right on the center) that it considered a face. \\label{fig:UnusualImages}", dev="jpeg", dpi=300}
+```{r UnusualImages, fig.cap = "Four images in which Animetrics located unusual faces. \\label{fig:UnusualImages}", dev="jpeg", dpi=300}
 i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(a)")
 i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(b)")
 i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(c)")
@@ -647,13 +648,13 @@ knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=FALSE, format.args
 ```
 
 
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (a) Angle of face capture, (b) court situation, (c) angle of capture by background, and (d) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall. \\label{fig:ICFigs}"}
 
-```{r MosaicShotangle, fig.cap = "\\label{fig:Mosaic}", eval=FALSE}
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
 
-MosaicShotangle <- ggplot(data=aminFaces) + 
+MosSaMm <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
   #geom_text(aes(label="test", x=1, y=0.6)) +
   scale_fill_brewer(palette="Dark2") +
@@ -666,11 +667,8 @@ MosaicShotangle <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Angle of face capture") + 
   theme(legend.position = "none") + 
   ggtitle("(a)") 
-```
 
 
-
-```{r MosaicSit, fig.cap = "\\label{fig:MosaicSit}", eval=FALSE}
 aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
           "Match play",
           "Off court",
@@ -678,89 +676,7 @@ aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
           "Close-up"))
 aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
   
-MosaicSit <- ggplot(data=aminFaces) + 
-  geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
-  scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API match manual"))  +
-  labs(caption="") + 
-  scale_x_productlist(labels=c("Not player"="Not player",
-          "Match play"="Match play",
-          "Off court"="Off court",
-          "Crowd"="Crowd",
-          "Close-up"="Close-up")) +
-  coord_flip() +
-  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
-  ggtitle("(b)")
-```
-
-
-```{r sbbgshot, fig.cap = "\\label{fig:sbbgshot}", eval=FALSE}
-
-sbbgshot <- ggplot(data=aminFaces) +
-   geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
-            #position = position_fill(reverse = TRUE), 
-            #na.rm=TRUE) + 
-  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward"="Upward",
-                            "Level" =
-                            "Level"))+
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
-  ggtitle("(c)")
-
-```
-
-
-
-```{r sbbgsit, fig.cap = "\\label{fig:sbbgsit}", eval=FALSE}
-
-sbbgsit <- ggplot(data=aminFaces) +
-   geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
-            #position = position_fill(reverse = TRUE), 
-            #na.rm=TRUE) +
-   scale_x_productlist(labels=c("Not player"="Not player",
-          "Match play"="Match play",
-          "Off court"="Off court",
-          "Crowd"="Crowd",
-          "Close-up"="Close-up")) +
-  coord_flip() +
-  guides(fill = guide_legend(title="Background")) +
-  labs(caption="") +
-  ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
-  ggtitle("(d)")
-```
-
-
-
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (a) Angle of face capture, (b) court situation, (c) angle of capture by background, and (d) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall.  \\label{fig:ICFigs}"}
-
-aminFaces$shotangle <- factor(aminFaces$shotangle, 
-                              levels = c("Birds Eye","Upward","Level"))
-aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
-
-MosaicShotangle <- ggplot(data=aminFaces) + 
-  geom_mosaic(aes(x=product(shotangle), fill=matchesManual)) +
-  #geom_text(aes(label="test", x=1, y=0.6)) +
-  scale_fill_brewer(palette="Dark2") +
-  guides(fill = guide_legend(title="API matches manual"))  +
-  labs(caption="") + 
-  scale_x_productlist(labels=c("Birds Eye"="Birds \nEye",
-                            "Upward"="Upward \nAngle",
-                            "Level" =
-                            "Level")) + coord_flip() +
-  ylab("Proportion of faces") + xlab("Angle of face capture") + 
-  theme(legend.position = "none") + 
-  ggtitle("(a)") 
-aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
-          "Match play",
-          "Off court",
-          "Crowd",
-          "Close-up"))
-aminFaces$matchesManual <- factor(aminFaces$matchesManual, levels=c(TRUE, FALSE))
-  
-MosaicSit <- ggplot(data=aminFaces) + 
+MosSitMm <- ggplot(data=aminFaces) + 
   geom_mosaic(aes(x=product(situation), fill=matchesManual)) +
   scale_fill_brewer(palette="Dark2") +
   guides(fill = guide_legend(title="API match manual"))  +
@@ -774,7 +690,7 @@ MosaicSit <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
   ggtitle("(b)")
 
-sbbgshot <- ggplot(data=aminFaces) +
+MosSaBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) + 
@@ -788,7 +704,7 @@ sbbgshot <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
   ggtitle("(c)")
 
-sbbgsit <- ggplot(data=aminFaces) +
+MosSitBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
             #position = position_fill(reverse = TRUE), 
             #na.rm=TRUE) +
@@ -803,22 +719,22 @@ sbbgsit <- ggplot(data=aminFaces) +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
   ggtitle("(d)")
 
-g1 <- ggplotGrob(sbbgshot + theme(legend.position="bottom"))$grobs
+g1 <- ggplotGrob(MosSaMm + theme(legend.position="bottom"))$grobs
 legend1 <- g1[[which(sapply(g1, function(x) x$name) == "guide-box")]]
 lheight1 <- sum(legend1$height)
 
-plots1 <- arrangeGrob(sbbgshot, sbbgsit, ncol=2)
+plots1 <- arrangeGrob(MosSaMm, MosSitMm, ncol=2)
 plots1 <- arrangeGrob(plots1, legend1, nrow=2, heights = unit.c(unit(1, "npc") - lheight1, lheight1))
  
 
-g2 <- ggplotGrob(MosaicShotangle + theme(legend.position="bottom"))$grobs
+g2 <- ggplotGrob(MosSaBg + theme(legend.position="bottom"))$grobs
 legend2 <- g2[[which(sapply(g2, function(x) x$name) == "guide-box")]]
 lheight2 <- sum(legend2$height)
 
-plots2 <- arrangeGrob(MosaicShotangle, MosaicSit, ncol=2)
+plots2 <- arrangeGrob(MosSaBg, MosSitBg, ncol=2)
 plots2 <- arrangeGrob(plots2, legend2, nrow=2, heights = unit.c(unit(1, "npc") - lheight2, lheight2))
 
-grid.arrange(plots2, plots1, nrow=2)
+grid.arrange(plots1, plots2, nrow=2)
 
 ```
 
@@ -826,24 +742,25 @@ grid.arrange(plots2, plots1, nrow=2)
 
 There were several characteristics of the image recorded during manual tagging, as listed in Table \@ref(tab:Scene-Attributes-Table). This section examines the prevalence of these characteristics in the data collection. Figure \@ref(fig:ICFigs) shows the relationships of a subset of characteristics, using mosaic plots. 
 
-The characteristics of the images that the API found Potential Faces in were considered. For example, there would is an uneven amount of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was recorded and the combinations were shown to find how many potential faces were found with the combination of scene attributes.
 
-This showed that crowd members faces were often recognized, this is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
+The characteristics of the images were recorded in the manual tagging process and there are uneven amounts of faces with certain image attributes. These relationships can be explored in mosaics for the images that were all considered manually. The scene information was tallied and the combinations of these features were compared to how many potential faces were found with the combination of scene attributes.
 
-The colours in the mosaic (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured Level to player's faces, these faces were often recognised by the APIs as well.
+This showed that crowd members faces were often recognized which is helpful as it shows a strong ability of Google's algorithm to recognize faces, even when these faces are not the goal of the research. It also allowed for an increase in understanding how attributes of a face or image impact on the API detection.
 
-The mosaic (b) in \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest portion of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, from this it can be inferred the situation may not be influencing the APIs rate of detection.
+The colors in the mosaic \@ref(fig:ICFigs) (a) in Figure \@ref(fig:ICFigs) show the proportion of faces that matched those found manually, given the angle the faces were captured from. There is a greater proportion of API faces that matched the faces found manually than those that did not match. However given the face was captured from a birds eye angle there were a lot less faces proportionally that matched those found manually. The most common faces in the set were those captured level to player's faces, these faces were often recognized by the APIs as well.
+
+The mosaic \@ref(fig:ICFigs) (b) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
 
 
-Figure \@ref(fig:ICFigs) Plot c contains a stacked bar chart which allows consideration of the interaction between two image attributes. It can be seen that the background being the Logo Wall and the angle of Level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
+Figure \@ref(fig:ICFigs) (c) contains a mosaic which allows consideration of the interaction between two image attributes. It can be seen that the background being the logo wall and the angle of level is common to the highest amount of faces. There are also no images that were taken at an upward angle with the background of the court.
 
-This stacked bar chart, Figure \@ref(fig:ICFigs) Plot d, allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
+This mosaic, Figure \@ref(fig:ICFigs) (d), allows consideration of the interaction between the background of the image captured and the situation that could possibly be occurring. As seen previously, the logo wall is the most common background, but it is never the background of an image of the crowd. The court is the background of an image only when players are captured, this occurs during close ups and while the court is in play.
 
 
 
 ## Accessories
 
-The use of accessories like glasses and headwear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
+The use of accessories like glasses and head wear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
 It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software.
 
 
@@ -852,15 +769,14 @@ It was assumed that outdoor courts would lead to the use of these accessories an
 aminFaces %>%
   filter(type=="Manual") -> ManFaces
 
-prop.table(table(ManFaces$glasses, ManFaces$visorhat),1)
-
+#prop.table(table(ManFaces$glasses, ManFaces$visorhat),1)
 ```
 
 
 \begin{table}[ht]
 \centering
 %\parbox{.5\linewidth}{
-\caption{Proportions of faces captured manually tagged as wearing headwear given they wore glasses, or did not.} 
+\caption{Proportions of faces captured manually tagged as wearing headgear given they wore glasses, or did not.} 
 \label{tab:accessories}
 \begin{tabular}{ccc}
 \hline 
@@ -872,7 +788,7 @@ No Glasses & 0.26 & 0.74 \\
 \end{tabular}
 \end{table}
 
-Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without headwear. Of those without glasses only 26% wore headwear. This may be influenced by weather and sunlight on the court during Australian Ope n matches.
+Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
 
 
 
@@ -886,7 +802,6 @@ aminFaces %>% filter(matchesManual==TRUE) -> afm
 table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
 
 
-
 glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
 c("No", 
   round(glassesTab[1,2]/glassesTab[1,1],2),
@@ -898,29 +813,41 @@ c("Yes",
   round(glassesTab[2,3]/glassesTab[2,1],2),
   round(glassesTab[2,4]/glassesTab[2,1],2),
   round(glassesTab[2,5]/glassesTab[2,1],2)))
-
-
-pander(glassesdf, caption = "Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.")
 ```
 
 
+
+\begin{table}[ht]
+\centering
+%\parbox{.5\linewidth}{
+\caption{Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.} 
+\label{tab:glasses}
+\begin{tabular}{ccccc}
+\hline 
+ & Animetrics & Google & Microsoft & Skybiometry\\ 
+\hline
+Glasses & 0.08 & 0.43 & 0.14 & 0.12 \\
+No Glasses & 0.21 & 0.60 & 0.26 & 0.23\\
+\hline
+\end{tabular}
+\end{table}
 
 
 # Future Work
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
 
-Considering the images used during our study were stills derived from Broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
+Considering the images used during our study were stills derived from broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
 
 
 It should also be considered that these are software focused on providing recognition in certain controlled scenarios.
 If the study was controlled to focus on certain camera angles that align with the facial angles these security programs are intended to recognize faces in.
 
 
-Given that Google found many faces that did not match manually annotated face,  manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
+Google found many faces that did not match manually annotated faces, this showed manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
 
 
-Given that certain scene attribute combinations produced more facial recognition than other combinations a limit should be implemented for the sample of images sent to Google Vision API. This would not only reduce cost but also provide a greater level of detail of the emotions felt by a player during a match. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided the most Google faces.
+Given that certain scene attribute combinations produced more successful facial recognition than other combinations, a limit should be implemented for the sample of images sent to Google Vision API. This would not help to reduce cost. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided was most successful for Google to return faces.
 
 
 To undertake sentiment analysis, the faces found in this set of images could be used. Allowing each face a border of pixels, images could be cropped and produce an individual face image that would form the data set for emotion recognition.
@@ -937,13 +864,13 @@ The authors wish to thank Tennis Australia for access to the data. The analysis 
 
 The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition/paper](https://github.com/mvparrot/face-recognition/paper). The APIs evaluated were:
 
-- Animetrics: This name used throughout the paper refers to the Animetrics Face Recognition API, FaceR API by @Animetrics.
+- Animetrics: Animetrics Face Recognition API, FaceR API by @Animetrics.
 
-- Google: @Google Refers to the Google Cloud Vision API
+- Google: Google Cloud Vision API [-@Google]
 
-- Microsoft: This has been used to refer to the Microsoft Azure Cognitive Services Face API, published by @Microsoft.
+- Microsoft: Microsoft Azure Cognitive Services Face API, published by @Microsoft.
 
-- Skybiometry: @Skybiometry References the spin off detection and recognition software of Neurotechnology. 
+- Skybiometry: @Skybiometry the spin off detection and recognition software of Neurotechnology. 
 
 Data files provided are:
 
