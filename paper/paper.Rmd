@@ -750,8 +750,10 @@ Plots (c) and (d) show the three way relationship between capture angle, situati
 
 ## Player accessories
 
-The use of accessories like glasses and head wear, visors or hats, was considered as the Australian Open takes place on both indoor and outdoor courts. 
-It was assumed that outdoor courts would lead to the use of these accessories and these accessories may contribute to the performance of a recognition software.
+The use of accessories like glasses and head wear, visors or hats, is common during the Australian Open as play is mostly outdoors during daytime.  Table \@ref(tab:accessories) shows player use of head wear and glasses, as tagged manually. 
+
+of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
+
 
 
 
@@ -766,20 +768,18 @@ aminFaces %>%
 \begin{table}[ht]
 \centering
 %\parbox{.5\linewidth}{
-\caption{Proportions of faces captured manually tagged as wearing headgear given they wore glasses, or did not.} 
+\caption{Usage of head wear and glasses by players. Most players did not wear glasses, and roughly half had hats or visors. } 
 \label{tab:accessories}
-\begin{tabular}{ccc}
+\begin{tabular}{|l|rr|r|}
 \hline 
- & Head wear & No Head wear\\ 
+ & No head wear & Head wear & Total\\ 
 \hline
-Glasses & 0.50 & 0.50 \\
-No Glasses & 0.26 & 0.74 \\
+Glasses & 92 & 260 & 352\\
+No glasses & 981 & 962 & 1943\\\hline
+Total & 1073 & 1222 & 2295 \\
 \hline
 \end{tabular}
 \end{table}
-
-Table \@ref(tab:accessories) of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
-
 
 
 ```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
@@ -812,7 +812,7 @@ c("Yes",
 %\parbox{.5\linewidth}{
 \caption{Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.} 
 \label{tab:glasses}
-\begin{tabular}{ccccc}
+\begin{tabular}{|l|rrrr|}
 \hline 
  & Animetrics & Google & Microsoft & Skybiometry\\ 
 \hline
