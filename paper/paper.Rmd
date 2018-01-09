@@ -452,36 +452,25 @@ select(variable, type, sig) %>%
   select(variable, A.s=Animetrics, G.s=Google, M.s=Microsoft, S.s=Skybiometry) -> ModelEstimatesSign 
 
 
-ModelEstimatesTable <- as.data.frame(cbind(ModelEstimatesTypes, ModelEstimatesSign[,2:5])) %>%
-mutate(A = ifelse(A.s=="   ", "-", A.e),
-       G = ifelse(G.s=="   ", "-", G.e),
-       M = ifelse(M.s=="   ", "-", M.e),
-       S = ifelse(S.s=="   ", "-", S.e))%>% 
-  # unite(Animetrics, A, A.s, sep="") %>% 
-  # unite(Google, G, G.s, sep="") %>% 
-  # unite(Microsoft, M, M.s, sep="") %>% 
-  # unite(Skybiometry, S, S.s, sep="") %>%
-  # select(variable, Animetrics, Google, Microsoft, Skybiometry)
-  mutate(` ` = A.s,
-         `  ` = G.s,
-         `   ` = M.s,
-         `    ` = S.s) %>%
-   select(variable, A, ` `,
-          G, `  `, 
-          M, `   `,
-          S, `    `)
-  
+ModelEstimatesTable <- as.data.frame(cbind((ModelEstimatesTypes), ModelEstimatesSign[,2:5])) %>%
+mutate(A = ifelse(A.s=="   ", "-", format(round(A.e, 2), nsmall = 2)),
+       G = ifelse(G.s=="   ", "-", format(round(G.e, 2), nsmall = 2)),
+       M = ifelse(M.s=="   ", "-", format(round(M.e, 2), nsmall = 2)),
+       S = ifelse(S.s=="   ", "-", format(round(S.e, 2), nsmall = 2))) %>% 
+  select(variable, A, ` ` = A.s,
+         G, `  ` = G.s,
+         M, `   ` = M.s,
+         S, `    ` = S.s)
 
   
-knitr::kable(ModelEstimatesTable, format = "latex", align=c("l", 
-                                          "r", "l",
-                                          "r", "l",
-                                          "r", "l",
-                                          "r", "l"),
+knitr::kable(ModelEstimatesTable, format = "latex", align=c('l', 
+                                           'r', 'l',
+                                           'r', 'l',
+                                           'r', 'l',
+                                           'r', 'l'),
              booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition for API, as assessed by logistic regression model. Coefficients from the four models shown (significance: ** 0.01 * 0.05 . 0.01 - NS). Most APIs wre affected by similar factors, with glasses, visor or hat, head angle, lighting, shot angle and situation all contributing significantly to face detection.")
 ```
 
-*** The number of digits should be consistent, e.g. "-1" should be "-1.00". I don't know how to force this with the kale printing, but one way or another we have to.
 
 For the most part, the APIs were all affected by the same factors. Those that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google's detection rate. Situation had different effects on each API.
 Results for Google were most interesting in the shot angle had differing effects on the detection. 
