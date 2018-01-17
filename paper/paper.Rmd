@@ -257,7 +257,7 @@ When a face was not visible in the image only the scene attributes were applicab
 
 The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
 
-Figure \@ref(fig:timeFigure) displays the distribution of processing time required by the APIs for each image, as a violin plot (REF). Both Microsoft and Google had few images where they had taken a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. 
+Figure \@ref(fig:timeFigure) displays the distribution of processing time required by the APIs for each image, as a violin plot [@Violin]. Both Microsoft and Google had few images where they had taken a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. 
 
 ```{r timeData}
 times <- amin %>% 
@@ -757,45 +757,56 @@ Total & 1073 & 1222 & 2295 \\
 
 
 ```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
-
-ManFaces %>% count(glasses) %>%
-  tally() -> ManGlasses
-
 aminFaces %>% filter(matchesManual==TRUE) -> afm
   
 table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
 
-
-glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+glassesdf <- cbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+                   c("Yes", 
+  round(glassesTab[2,2]/glassesTab[2,1],2),
+  round(glassesTab[2,3]/glassesTab[2,1],2),
+  round(glassesTab[2,4]/glassesTab[2,1],2),
+  round(glassesTab[2,5]/glassesTab[2,1],2)),
 c("No", 
   round(glassesTab[1,2]/glassesTab[1,1],2),
   round(glassesTab[1,3]/glassesTab[1,1],2),
   round(glassesTab[1,4]/glassesTab[1,1],2),
-  round(glassesTab[1,5]/glassesTab[1,1],2)),
-c("Yes", 
-  round(glassesTab[2,2]/glassesTab[2,1],2),
-  round(glassesTab[2,3]/glassesTab[2,1],2),
-  round(glassesTab[2,4]/glassesTab[2,1],2),
-  round(glassesTab[2,5]/glassesTab[2,1],2)))
+  round(glassesTab[1,5]/glassesTab[1,1],2))
+)
+
+# Headwear
+table(afm$visorhat, afm$type) %>% as.matrix() -> headwearTab
+
+headweardf <- cbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+                   c("Yes", 
+  round(headwearTab[2,2]/headwearTab[2,1],2),
+  round(headwearTab[2,3]/headwearTab[2,1],2),
+  round(headwearTab[2,4]/headwearTab[2,1],2),
+  round(headwearTab[2,5]/headwearTab[2,1],2)),
+c("No", 
+  round(headwearTab[1,2]/headwearTab[1,1],2),
+  round(headwearTab[1,3]/headwearTab[1,1],2),
+  round(headwearTab[1,4]/headwearTab[1,1],2),
+  round(headwearTab[1,5]/headwearTab[1,1],2))
+)
 ```
 
 
-
-\begin{table}[ht]
-\centering
+\begin{table}[htp]
 %\parbox{.5\linewidth}{
-\caption{Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.} 
-\label{tab:glasses}
-\begin{tabular}{|l|rrrr|}
-\hline 
- & Animetrics & Google & Microsoft & Skybiometry\\ 
-\hline
-Glasses & 0.08 & 0.43 & 0.14 & 0.12 \\
-No Glasses & 0.21 & 0.60 & 0.26 & 0.23\\
-\hline
+\caption{Conditional proportions of faces of players wearing glassesor headwear or not, captured by the different software, as a proportion of the manually tagged faces. API's unaffected by glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.}
+\bigskip
+\label{tab:glassesheadwear}
+\centering
+\begin{tabular}{|l|rr|rr|}  \hline
+& \multicolumn{2}{r|}{Headwear}&\multicolumn{2}{r|}{Glasses}\\\cline{2-5}
+API & Yes & No & Yes & No \\\hline
+Google & 0.48 & 0.69 & 0.43 & 0.60 \\
+Microsoft & 0.19 & 0.32 & 0.14 & 0.26 \\
+Skybiometry & 0.16 & 0.28 & 0.12 & 0.23 \\
+Animetrics & 0.11 & 0.27 & 0.08 & 0.21 \\\hline
 \end{tabular}
 \end{table}
-
 
 # Future Work
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
