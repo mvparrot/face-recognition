@@ -724,7 +724,7 @@ Plots (c) and (d) show the three way relationship between capture angle, situati
 
 ## Player accessories
 
-The use of accessories like glasses and head wear, visors or hats, is common during the Australian Open as play is mostly outdoors during daytime.  Table \@ref(tab:accessories) shows player use of head wear and glasses, as tagged manually. 
+The use of accessories like glasses and head wear, visors or hats, is common during the Australian Open as play is mostly outdoors during daytime.  Table \@ref(tab:accessories) shows player use of head wear and glasses, as tagged manually. Table \@ref(tab:glasses) compares the face capture rate of the different APIs for the player acessories.
 
 of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
 
@@ -763,7 +763,7 @@ ManFaces %>% count(glasses) %>%
 
 aminFaces %>% filter(matchesManual==TRUE) -> afm
   
-table(afm$glasses, afm$type) %>% as.matrix() -> glassesTab
+table(afm$visorhat, afm$type) %>% as.matrix() -> glassesTab
 
 
 glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
