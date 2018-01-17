@@ -257,7 +257,7 @@ When a face was not visible in the image only the scene attributes were applicab
 
 The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
 
-Figure \@ref(fig:timeFigure) displays the distribution of processing time required by the APIs for each image, as a violin plot [@Violin]. Both Microsoft and Google had few images where they had taken a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. 
+Figure \@ref(fig:timeFigure) displays the distribution of processing time required by the APIs for each image, as a violin plot [@Violin]. Both Microsoft and Google had few images which took a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. The lines overlaid in each plot represent the smoothed linear model of the amount of faces, it can be seen that all APIs take longer to complete detection of faces in an image when there are more faces. As all APIs had more images where only one or two faces were found it resulted in more variability in the amount of time taken.
 
 ```{r timeData}
 times <- amin %>% 
@@ -805,10 +805,10 @@ Animetrics & 0.11 & 0.27 & 0.08 & 0.21 \\\hline
 \end{tabular}
 \end{table}
 
-The conditional proportions are interpretted as the proportion of faces found by the API, that were tagged manually and having the attributes that were tabulated. For example, the value in the first row and first column of table \@ref(tab:glassesheadwear) highlights that Google found 0.48, or 48%, of the faces found manually and tagged as wearing headwear. As the values in the row for Google are the largest amounts in each column, it found more of the manually tagged faces in any situation considered. The next best software, Microsoft, found less than half the amount of manually tagged faces that Google located.
+The conditional proportions are interpreted as the proportion of faces found by the API, that were tagged manually and having the attributes that were tabulated. For example, the value in the first row and first column of table \@ref(tab:glassesheadwear) highlights that Google found 0.48, or 48%, of the faces found manually and tagged as wearing headwear. As the values in the row for Google are the largest amounts in each column, it found more of the manually tagged faces in any situation considered. The next best software, Microsoft, found less than half the amount of manually tagged faces that Google located.
 
 Animetrics may have been impeded by the use of accessories as it located only 0.08, or 8%, of the faces tagged manually as wearing a hat or visor, and 0.11, or 11%, of the faces tagged manually as wearing glasses.
-When acceories are not worn, the proportion of faces found are closer to the next best API, Skybiometry.
+When accessories are not worn, the proportion of faces found are closer to the next best API, Skybiometry.
 
 # Future Work
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
