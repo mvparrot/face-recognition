@@ -728,10 +728,7 @@ Plots (c) and (d) show the three way relationship between capture angle, situati
 
 ## Player accessories
 
-The use of accessories like glasses and head wear, visors or hats, is common during the Australian Open as play is mostly outdoors during daytime.  Table \@ref(tab:accessories) shows player use of head wear and glasses, as tagged manually. Table \@ref(tab:glasses) compares the face capture rate of the different APIs for the player acessories.
-
-of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
-
+The use of accessories like glasses and head wear, visors or hats, is common during the Australian Open as play is mostly outdoors during daytime.  Table \@ref(tab:accessories) shows player use of head wear and glasses, as tagged manually. Most players do not have glasses, but head wear, either visors or hats, are very common. 
 
 ```{r accessories, eval=TRUE, fig.cap = "\\label{tab:accessories}"}
 aminFaces %>%
@@ -744,7 +741,7 @@ aminFaces %>%
 \begin{table}[ht]
 \centering
 %\parbox{.5\linewidth}{
-\caption{Usage of head wear and glasses by players. Most players did not wear glasses, and roughly half had hats or visors. } 
+\caption{Usage of head wear and glasses by players, as manually tagged. Most players did not wear glasses, and roughly half had hats or visors. } 
 \label{tab:accessories}
 \begin{tabular}{|l|rr|r|}
 \hline 
@@ -756,7 +753,6 @@ Total & 1073 & 1222 & 2295 \\
 \hline
 \end{tabular}
 \end{table}
-
 
 ```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
 aminFaces %>% filter(matchesManual==TRUE) -> afm
@@ -796,24 +792,23 @@ c("No",
 
 \begin{table}[ht]
 %\parbox{.5\linewidth}{
-\caption{Conditional proportions of faces of players wearing glasses or headwear or not, captured by the different software, as a proportion of the manually tagged faces. API's will have similar proportions for both categories if they are not affected by the presence of an accessory. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.}
+\caption{Detection rates of the APIs for different accessories, as measured against the manual tagging. Rate is the proportion of detected with the accessory relative to without. Google has higher detection rates than the other APIs when a player is wearing head wear or glasses. }
 \bigskip
 \label{tab:glassesheadwear}
 \centering
-\begin{tabular}{|l|rr|rr|}  \hline
-& \multicolumn{2}{r|}{Headwear}&\multicolumn{2}{r|}{Glasses}\\\cline{2-5}
-API & Yes & No & Yes & No \\\hline
-Google & 0.48 & 0.69 & 0.43 & 0.60 \\
-Microsoft & 0.19 & 0.32 & 0.14 & 0.26 \\
-Skybiometry & 0.16 & 0.28 & 0.12 & 0.23 \\
-Animetrics & 0.11 & 0.27 & 0.08 & 0.21 \\\hline
+\begin{tabular}{|l|rr|r|rr|r|}  \hline
+& \multicolumn{3}{c|}{Head wear}&\multicolumn{3}{c|}{Glasses}\\\cline{2-7}
+API & Yes & No & Rate &  Yes & No & Rate \\\hline
+Google & 0.48 & 0.69 & 0.70 & 0.43  & 0.60 & 0.72 \\
+Microsoft & 0.19 & 0.32 & 0.59 & 0.14  & 0.26 & 0.54 \\
+Skybiometry & 0.16  & 0.28 & 0.57  & 0.12 & 0.23 & 0.52 \\
+Animetrics & 0.11  & 0.27 & 0.41 & 0.08 & 0.21 & 0.38 \\\hline
 \end{tabular}
 \end{table}
 
-The conditional proportions are interpreted as the proportion of faces found by the API, that were tagged manually and having the attributes that were tabulated. For example, the value in the first row and first column of table \@ref(tab:glassesheadwear) highlights that Google found 0.48, or 48%, of the faces found manually and tagged as wearing headwear. As the values in the row for Google are the largest amounts in each column, it found more of the manually tagged faces in any situation considered. The next best software, Microsoft, found less than half the amount of manually tagged faces that Google located.
+Table \@ref(tab:glassesheadwear) compares the face capture rate of the different APIs for the player accessories, as compared to the manually tagged face attributes. Conditional proportions are calculated two ways: (1) proportion of the manually tagged faces, (2) proportion detected with the accessory relative to without. From the former conditional probability it can be seen that Google detects more faces regardless of the accessory, with slightly higher proportion when the player has no head wear or glasses. From the latter calculation, Google has less difference between the accessory or not detection rate. Overall, Google detects a higher proportion of faces, but they also have better detection rates if faces of players wearing head wear and glasses. Animetrics performed the worst when a player was wearing head wear or glasses. 
 
-Animetrics may have been impeded by the use of accessories as it located only 0.08, or 8%, of the faces tagged manually as wearing a hat or visor, and 0.11, or 11%, of the faces tagged manually as wearing glasses.
-When accessories are not worn, the proportion of faces found are closer to the next best API, Skybiometry.
+
 
 # Future Work
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
