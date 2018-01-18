@@ -257,7 +257,11 @@ When a face was not visible in the image only the scene attributes were applicab
 
 The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
 
-Figure \@ref(fig:timeFigure) displays the distribution of processing time required by the APIs for each image, as a violin plot (REF). Both Microsoft and Google had few images where they had taken a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. 
+Figure \@ref(fig:timeFigure) shows the distribution of processing time required by the APIs for each image. The violin plot display created by @Violin 'combines the box plot and the density'. A categorical variable splits the data along the x axis, as would be seen in a box plot display. A density plot is then incorporated on the y axis. This is produced by manipulating a density display; switching the axes allows the continuous variable to increase along on the y axis, then the violin shape is created by mirroring the density. The width of the violin will now be twice the length that would be have been measured vertically in a density plot. 
+
+
+As seen in the facets of Figure \@ref(fig:timeFigure), both Microsoft and Google had few images which took a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. The lines overlaid in each plot represent the smoothed linear model of the amount of faces, it can be seen that all APIs take longer to complete detection of faces in an image when there are more faces. As all APIs had more images where only one or two faces were found it resulted in more variability in the amount of time taken.
+
 
 ```{r timeData}
 times <- amin %>% 
@@ -729,8 +733,6 @@ The use of accessories like glasses and head wear, visors or hats, is common dur
 of the proportions tells that of the faces wearing glasses, there were a similar amount of faces captured with and without head wear. Of those without glasses only 26% wore head wear. This may be influenced by weather and sunlight on the court during Australian Open matches.
 
 
-
-
 ```{r accessories, eval=TRUE, fig.cap = "\\label{tab:accessories}"}
 aminFaces %>%
   filter(type=="Manual") -> ManFaces
@@ -757,45 +759,61 @@ Total & 1073 & 1222 & 2295 \\
 
 
 ```{r glasses, fig.cap = "\\label{tab:glasses}", digit=3}
-
-ManFaces %>% count(glasses) %>%
-  tally() -> ManGlasses
-
 aminFaces %>% filter(matchesManual==TRUE) -> afm
   
 table(afm$visorhat, afm$type) %>% as.matrix() -> glassesTab
 
-
-glassesdf <- rbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+glassesdf <- cbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+                   c("Yes", 
+  round(glassesTab[2,2]/glassesTab[2,1],2),
+  round(glassesTab[2,3]/glassesTab[2,1],2),
+  round(glassesTab[2,4]/glassesTab[2,1],2),
+  round(glassesTab[2,5]/glassesTab[2,1],2)),
 c("No", 
   round(glassesTab[1,2]/glassesTab[1,1],2),
   round(glassesTab[1,3]/glassesTab[1,1],2),
   round(glassesTab[1,4]/glassesTab[1,1],2),
-  round(glassesTab[1,5]/glassesTab[1,1],2)),
-c("Yes", 
-  round(glassesTab[2,2]/glassesTab[2,1],2),
-  round(glassesTab[2,3]/glassesTab[2,1],2),
-  round(glassesTab[2,4]/glassesTab[2,1],2),
-  round(glassesTab[2,5]/glassesTab[2,1],2)))
+  round(glassesTab[1,5]/glassesTab[1,1],2))
+)
+
+# Headwear
+table(afm$visorhat, afm$type) %>% as.matrix() -> headwearTab
+
+headweardf <- cbind(c(" ", "Animetrics","Google","Microsoft","Skybiometry"),
+                   c("Yes", 
+  round(headwearTab[2,2]/headwearTab[2,1],2),
+  round(headwearTab[2,3]/headwearTab[2,1],2),
+  round(headwearTab[2,4]/headwearTab[2,1],2),
+  round(headwearTab[2,5]/headwearTab[2,1],2)),
+c("No", 
+  round(headwearTab[1,2]/headwearTab[1,1],2),
+  round(headwearTab[1,3]/headwearTab[1,1],2),
+  round(headwearTab[1,4]/headwearTab[1,1],2),
+  round(headwearTab[1,5]/headwearTab[1,1],2))
+)
 ```
 
 
-
 \begin{table}[ht]
-\centering
 %\parbox{.5\linewidth}{
-\caption{Conditional proportions of faces of players wearing glasses or not, captured by the different software, in comparison to the manually tagged faces. API's unaffected glasses will have similar proportions for both categories. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.} 
-\label{tab:glasses}
-\begin{tabular}{|l|rrrr|}
-\hline 
- & Animetrics & Google & Microsoft & Skybiometry\\ 
-\hline
-Glasses & 0.08 & 0.43 & 0.14 & 0.12 \\
-No Glasses & 0.21 & 0.60 & 0.26 & 0.23\\
-\hline
+\caption{Conditional proportions of faces of players wearing glasses or headwear or not, captured by the different software, as a proportion of the manually tagged faces. API's will have similar proportions for both categories if they are not affected by the presence of an accessory. Animetrics had the biggest proportion difference, and thus, most affected. Google is the least affected.}
+\bigskip
+\label{tab:glassesheadwear}
+\centering
+\begin{tabular}{|l|rr|rr|}  \hline
+& \multicolumn{2}{r|}{Headwear}&\multicolumn{2}{r|}{Glasses}\\\cline{2-5}
+API & Yes & No & Yes & No \\\hline
+Google & 0.48 & 0.69 & 0.43 & 0.60 \\
+Microsoft & 0.19 & 0.32 & 0.14 & 0.26 \\
+Skybiometry & 0.16 & 0.28 & 0.12 & 0.23 \\
+Animetrics & 0.11 & 0.27 & 0.08 & 0.21 \\\hline
 \end{tabular}
 \end{table}
 
+The conditional proportions are interpreted as the proportion of faces found by the API, that were tagged manually and having the attributes that were tabulated. For example, the value in the first row and first column of table \@ref(tab:glassesheadwear) highlights that Google found 0.48, or 48%, of the faces found manually and tagged as wearing headwear. As the values in the row for Google are the largest amounts in each column, it found more of the manually tagged faces in any situation considered. The next best software, Microsoft, found less than half the amount of manually tagged faces that Google located.
+
+Animetrics may have been impeded by the use of accessories as it located only 0.08, or 8%, of the faces tagged manually as wearing a hat or visor, and 0.11, or 11%, of the faces tagged manually as wearing glasses.
+When accessories are not worn, the proportion of faces found are closer to the next best API, Skybiometry.
 
 # Future Work
 The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
