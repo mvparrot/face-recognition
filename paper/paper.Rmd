@@ -182,12 +182,9 @@ In this study any reference to a 'face' is considered to be an area designated m
 
 ##Sample and sampling approach
 
-Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample is representative of the video files to be used for future facial recognition analysis:
+Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample is representative of the video files to be used for future facial recognition analysis: 6406 images, 800 $\times$ 450px 
 
-- 6406 images, 800 $\times$ 450px 
-
-
-To produce the set of 6406 images, 5 minute segments were taken from 105 video files a still shot of the video was taken at every three seconds, for the length of each segment. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
+To collect the images, 5 minute segments were taken from 105 video files, with a still shot stored every three seconds. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
 
 The sample included images that contained the faces of many people, such as players, staff on the court and fans in the crowd. All of these faces were included in the manual annotations as they were likely to be found by the software selected. It was decided that including these additional faces would allow better evaluations of the software's capabilities, and provide information to differentiate between players and other faces captured. Therefore the sample was not filtered at this initial stage.
 
@@ -235,22 +232,21 @@ Situation & Match play, Close up, Not player, Crowd, Off court, Transition\\\hli
 \end{table}
 -->
 
-A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene.
-Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect a standard was created for reasonable detection. 
-The faces of players were recorded if it showed their face at a minimum of 20 by 20 pixels. The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
-Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. The same face size standard applied to crowd members, but focus was placed on the most prominent faces. For each of these faces, information was collected regarding the attributes in Table \@ref(tab:Face-Attribute-Tables).
+A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene. Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect, and to minimize human labor, some rules were applied to the manual tagging: 
 
+- The faces were recorded if it showed their face at a minimum of 20 by 20 pixels. 
+- The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
+- Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. 
+- The same face size standard applied to crowd members, but focus was placed on the most prominent faces. 
 
+Table \@ref(tab:Face-Attribute-Tables) summarises attribute information recorded for each face.
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
 knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Characteristics recorded for each  face. Most were easy to assess for each face, with the exception of obscured and head angle.")
 ```
 
-
-
-The web app was created using the Shiny package for R [@shiny] and has been developed into an R package called taipan, as it is a Tool for Annotating Images in Preparation for ANalysis.
-If there was a face in the image the annotator was able to highlight that section of the image to contain the face. This selection activated a set of attributes questions for the annotator to answer, and allowed information to be recorded for the face. The records included the location of the box in the image, and all appropriate answers. 
-When a face was not visible in the image only the scene attributes were applicable for that image. All of the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
+The web app was created using the Shiny package for R [@shiny] and has been developed into an R package called taipan, as it is a Tool for Annotating Images in Preparation for ANalysis. The annotator was able to highlight the section of the image containing a face. This selection activated a set of attributes questions for the annotator to answer, and allowed information to be recorded for the face. The records included the location of the box in the image, and answers to the questions providing the attributes of the face. 
+When a face was not visible in the image only the scene attributes were recorded for the image. All of the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
 
 
 ##Software usage
@@ -720,7 +716,7 @@ grid.arrange(plots1, plots2, nrow=2)
 
 Image characteristics (Table \@ref(tab:Scene-Attributes-Table)) were constructed during manual tagging. The scene information was tallied and the most common combinations of these features shown in Table \@ref(tab:Image-Characteristics-Table).
 
-Figure \@ref(fig:ICFigs) examines the relationships between several of the image characteristics, and face detection by the Google API, using mosaic plots. Plot (a) compares the angle of capture by detection rate. Colour is mapped to detection. Most images were taken at a level angle. The highest capture rate occurred when the angle was level, and least with a bird's eye, as might be expected. Plot (b) compares the situation with face detection. Close-up was the most common situation. The detection rate was the same across situations.
+Figure \@ref(fig:ICFigs) examines the relationships between several of the image characteristics, and face detection by the Google API, using mosaic plots. Plot (a) compares the angle of capture by detection rate. Color is mapped to detection. Most images were taken at a level angle. The highest capture rate occurred when the angle was level, and least with a bird's eye, as might be expected. Plot (b) compares the situation with face detection. Close-up was the most common situation. The detection rate was the same across situations.
 
 The mosaic \@ref(fig:ICFigs) (b) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
 
@@ -792,7 +788,7 @@ c("No",
 
 \begin{table}[ht]
 %\parbox{.5\linewidth}{
-\caption{Detection rates of the APIs for different accessories, as measured against the manual tagging. Rate is the proportion of detected with the accessory relative to without. Google has higher detection rates than the other APIs when a player is wearing head wear or glasses. }
+\caption{Detection rates of the APIs for different accessories, as measured against the manual tagging. Rate is the proportion of detected with the accessory relative to without. Google has higher detection rates than the other APIs when a player has head wear or glasses. }
 \bigskip
 \label{tab:glassesheadwear}
 \centering
@@ -811,30 +807,17 @@ Table \@ref(tab:glassesheadwear) compares the face capture rate of the different
 
 
 # Future Work
-The long term goal is to better understand how the emotion's felt by a player during a match affect player performance. A long term aim would be to create a program that automated the collection of player emotion data from throughout a match. This information would be presented in a timeline that allowed match performance, in the form of points won, to be aligned with the emotions felt at certain times throughout. 
 
+This paper has described the results of a survey of commonly available software for face detection when applied to stills from tennis match video. A long term goal is to detect emotional state of the player, and track this through a match, to study the effect on performance. Several of the face recognition APIs also report an emotional state, but our analysis of this data suggests it is unreliable. 
 
-Considering the images used during our study were stills derived from broadcast video files, it would be useful to extend further research to deal with the video files directly. The Google Vision API which produced the best recognition in images does not yet have the potential to detect faces and emotions in a video. 
+One of the problems encountered with the emotion reporting, was that individual player's faces were repeatedly tagged with one emotional state, which looked more related to the basic facial features of the player. To accurately detect an individual player's emotions would require getting something like a baseline measurement on what their face looks like in a neutral emotional state, and then measuring differences from that. To study emotions and performance, we would recommend creating a training data set similar to the face recognition data, where emotional state is manually tagged. It would also be important to take comprehensive video footage, to track a player throughout the tournament, rather than isolated images. 
 
-
-It should also be considered that these are software focused on providing recognition in certain controlled scenarios.
-If the study was controlled to focus on certain camera angles that align with the facial angles these security programs are intended to recognize faces in.
-
-
-Google found many faces that did not match manually annotated faces, this showed manual errors were a possibility. To search for these Taipan could be extended to allow the face identified to be displayed and confirmed this would allow the annotator to confirm manually whether or not these are faces.
-
-
-Given that certain scene attribute combinations produced more successful facial recognition than other combinations, a limit should be implemented for the sample of images sent to Google Vision API. This would not help to reduce cost. To provide a greater level of information at all points in a match it would be beneficial to derive images from a single camera feed. This feed should match the scene attributes that provided was most successful for Google to return faces.
-
-
-To undertake sentiment analysis, the faces found in this set of images could be used. Allowing each face a border of pixels, images could be cropped and produce an individual face image that would form the data set for emotion recognition.
-Incorporating audio information from the microphones worn by players may assist in sentiment analysis. By including this information differences between certain emotions that may not be able to be found by facial features only.
-
+The result of the face recognition survey clearly points to a winner: Google's API. It detected a higher proportion of faces under different conditions and with different accessories. 
 
 
 # Acknowledgements {-}
 
-The authors wish to thank Tennis Australia for access to the data. The analysis was conducted using R, and the following packages: bookdown[@bookdown], descr[@descr], EBImage [@EBImage], ggthemes [@ggthemes], ggmosaic [@ggmosaic], grid [@grid], gridExtra [@gridExtra], gtable [@gtable], kfigr [@kfigr], knitcitations [@knitcitations], knitr [@knitr] , pander [@pander], readr [@readr], RefManager [@RefManager], tidyverse [@tidyverse], UpSetR [@UpSetR], xtable [@xtable].
+The authors wish to thank Tennis Australia for access to the data. The analysis was conducted using R[@R], and the following packages: bookdown [@bookdown], descr [@descr], EBImage [@EBImage], ggthemes [@ggthemes], ggmosaic [@ggmosaic], grid [@R], gridExtra [@gridExtra], gtable [@gtable], kfigr [@kfigr], knitcitations [@knitcitations], knitr [@knitr], pander [@pander], readr [@readr], RefManager [@RefManager], tidyverse [@tidyverse], UpSetR [@UpSetR], xtable [@xtable].
 
 
 # Supplementary material{-}
@@ -851,8 +834,10 @@ The APIs, the scripts used to access them, and the resulting data set are contai
 
 Data files provided are:
 
-- ManualClassifiedFaces.csv resulted from the use of the Manual Annotation Application, it contains information about each face identified manually.
-- ManualClassifiedScenes.csv also resulted from the use of the app, it contains information about each image.
+- ManualClassifiedFaces.csv contains the data collected on each face by manual tagging.
+- ManualClassifiedScenes.csv contains scene information about each image.
+
+The web app for manual tagging, called taipan, is available from https://github.com/srkob1/taipan. It can be installed using the devtools [@devtools] package function `install_github'. 
 
 # References
 
