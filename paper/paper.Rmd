@@ -8,8 +8,11 @@ fig_caption: yes
 number_sections: false
 fontsize: 11pt
 documentclass: article
+geometry: margin=1in
+header-includes:
+    - \usepackage{setspace}\doublespacing
 bibliography: references.bib
-biblio-style: harvard
+biblio-style: chicago
 link-citations: true
 ---
 
@@ -597,17 +600,17 @@ Figure \@ref(fig:FaceUpset) is a set visualization to examine the intersection o
 
 ## False discoveries
 
-Animetrics provided many surprises. Figure \@ref(fig:UnusualImages) shows four images and the captures where non-faces were detected as faces. In image (a) the player's back is detected as a face.
-In image (b) the KIA logo was reported as a face. 
-In image (c), where logos on the player's and ball boy's shirts were returned as faces. In image (d) where there are a lot of crowd faces, if you look closely one of the detections is actually a fist (to the right on the center).
+Animetrics provided many surprises. Figure \@ref(fig:UnusualImages) shows four images and the captures where non-faces were detected as faces. In image (A) the player's back is detected as a face.
+In image (B) the KIA logo was reported as a face. 
+In image (C), where logos on the player's and ball boy's shirts were returned as faces. In image (D) where there are a lot of crowd faces, if you look closely one of the detections is actually a fist (to the right on the center).
 
 The other APIs also returned some non-faces, but the most egregious mistakes came from Animetrics.
 
 ```{r UnusualImages, fig.cap = "Four images in which Animetrics located unusual faces. \\label{fig:UnusualImages}", dev="jpeg", dpi=300}
-i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(a)")
-i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(b)")
-i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(c)")
-i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(d)")
+i1 <- "2016_CT6_R01_CGarcia_FRA_vs_BStrycova_CZE_WS145_clip.0015.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(A)")
+i2 <- "2016_HSA_R03_FDelbonis_ARG_vs_GSimon_FRA_MS302_clip.0072.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(B)")
+i3 <- "2016_CT6_R02_ABeck_GER_vs_TBacsinszky_SUI_WS220_clip.0017.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(C)")
+i4 <- "2016_SC2_R01_ATomljanovic_AUS_vs_KBondarenko_UKR_WS1112_clip.0053.png" %>% overlayGgplot(., legend=FALSE) + ggtitle("(D)")
 
 gridExtra::grid.arrange(i1, i2, i3, i4, nrow=2)
 ```
@@ -622,7 +625,7 @@ knitr::kable(ImageCharacteristics, booktabs = TRUE, longtable=FALSE, format.args
 ```
 
 
-```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (a) Angle of face capture, (b) court situation, (c) angle of capture by background, and (d) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall. \\label{fig:ICFigs}"}
+```{r ICFigs, fig.width = 8, fig.height = 8, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (A) Angle of face capture, (B) court situation, (C) angle of capture by background, and (D) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall. \\label{fig:ICFigs}"}
 
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
@@ -640,7 +643,7 @@ MosSaMm <- ggplot(data=aminFaces) +
                             "Level")) + coord_flip() +
   ylab("Proportion of faces") + xlab("Angle of face capture") + 
   theme(legend.position = "none") + 
-  ggtitle("(a)") 
+  ggtitle("(A)") 
 
 
 aminFaces$situation <- factor(aminFaces$situation, levels = c("Not player",
@@ -662,7 +665,7 @@ MosSitMm <- ggplot(data=aminFaces) +
           "Close-up"="Close-up")) +
   coord_flip() +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none")  +
-  ggtitle("(b)")
+  ggtitle("(B)")
 
 MosSaBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(shotangle), fill = bg)) +#, 
@@ -676,7 +679,7 @@ MosSaBg <- ggplot(data=aminFaces) +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
   ylab("Proportion of faces") + xlab("Angle of face capture") + theme(legend.position = "none") +
-  ggtitle("(c)")
+  ggtitle("(C)")
 
 MosSitBg <- ggplot(data=aminFaces) +
    geom_mosaic(aes(x=product(situation), fill = bg)) + #, 
@@ -691,7 +694,7 @@ MosSitBg <- ggplot(data=aminFaces) +
   guides(fill = guide_legend(title="Background")) +
   labs(caption="") +
   ylab("Proportion of faces") + xlab("Situation") + theme(legend.position = "none") +
-  ggtitle("(d)")
+  ggtitle("(D)")
 
 g1 <- ggplotGrob(MosSaMm + theme(legend.position="bottom"))$grobs
 legend1 <- g1[[which(sapply(g1, function(x) x$name) == "guide-box")]]
@@ -716,11 +719,11 @@ grid.arrange(plots1, plots2, nrow=2)
 
 Image characteristics (Table \@ref(tab:Scene-Attributes-Table)) were constructed during manual tagging. The scene information was tallied and the most common combinations of these features shown in Table \@ref(tab:Image-Characteristics-Table).
 
-Figure \@ref(fig:ICFigs) examines the relationships between several of the image characteristics, and face detection by the Google API, using mosaic plots. Plot (a) compares the angle of capture by detection rate. Color is mapped to detection. Most images were taken at a level angle. The highest capture rate occurred when the angle was level, and least with a bird's eye, as might be expected. Plot (b) compares the situation with face detection. Close-up was the most common situation. The detection rate was the same across situations.
+Figure \@ref(fig:ICFigs) examines the relationships between several of the image characteristics, and face detection by the Google API, using mosaic plots. Plot (A) compares the angle of capture by detection rate. Color is mapped to detection. Most images were taken at a level angle. The highest capture rate occurred when the angle was level, and least with a bird's eye, as might be expected. Plot (B) compares the situation with face detection. Close-up was the most common situation. The detection rate was the same across situations.
 
-The mosaic \@ref(fig:ICFigs) (b) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
+The mosaic \@ref(fig:ICFigs) (B) in Figure \@ref(fig:ICFigs), shows the amount of Faces captured during each possible situation. It contrasts the proportion of the images captured in each situation that either did or did not match the faces annotated manually. It can be seen that the largest amount of the faces were captured in a close up situation and there were more of these faces that were found by the APIs that did match manually derived faces. This proportion is steady across most situations, it can be inferred the situation may not be influencing the APIs rate of detection.
 
-Plots (c) and (d) show the three way relationship between capture angle, situation, background and face detection. In the level capture angle most faces were detected against the logo wall, but with bird's eye most were captured against the court. In close-ups the most faces were detected against the logo wall.
+Plots (C) and (D) show the three way relationship between capture angle, situation, background and face detection. In the level capture angle most faces were detected against the logo wall, but with bird's eye most were captured against the court. In close-ups the most faces were detected against the logo wall.
 
 ## Player accessories
 
