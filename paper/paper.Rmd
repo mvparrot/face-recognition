@@ -548,15 +548,15 @@ FacesAPI <- aminFaces %>%
          Manual = ifelse(Manual==0, "No Face", "Face"),
          Skybiometry = ifelse(Skybiometry==0, "No Face", "Face")) 
 
-GM <- CrossTable(FacesAPI$Manual, FacesAPI$Google)
-MM <- CrossTable(FacesAPI$Manual, FacesAPI$Microsoft)
-SM <- CrossTable(FacesAPI$Manual, FacesAPI$Skybiometry)
-AM <- CrossTable(FacesAPI$Manual, FacesAPI$Animetrics)
+GM <- CrossTable(FacesAPI$Manual, FacesAPI$Google, prop.c = F, prop.t = F, prop.chisq = F)
+MM <- CrossTable(FacesAPI$Manual, FacesAPI$Microsoft, prop.c = F, prop.t = F, prop.chisq = F)
+SM <- CrossTable(FacesAPI$Manual, FacesAPI$Skybiometry, prop.c = F, prop.t = F, prop.chisq = F)
+AM <- CrossTable(FacesAPI$Manual, FacesAPI$Animetrics, prop.c = F, prop.t = F, prop.chisq = F)
 ```
 
 \begin{table}[htp]
 %\parbox{.5\linewidth}{
-\caption{Proportion of API matches with the 2295 manually tagged faces, and faces detected in the 1314 images with no manually tagged faces.}
+\caption{Capture rates of the APIs relative to manually tagged faces. Google tagged twice as many of the manual faces found than the next best API. It also had a larger proportion of Non-faces found, all of these faces were actual faces, usually of crowd members. However many of the faces found by other APIs were not actually faces, instead areas contained the net, clothing and logos.}
 \bigskip
 \label{tab:facecounts}
 \centering
