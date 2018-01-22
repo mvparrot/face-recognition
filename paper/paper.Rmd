@@ -216,24 +216,9 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Characteristics recorded for each image.")
+knitr::kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Characteristics of the scene occuring when the still shot was taken, one option for each category was selected for each image.")
 ```
 
-<!--
-\begin{table}[htp]
-\label{tab:Scene-Attributes-Table}
-\caption{Image descriptions that are associated with the attributes of each image. }
-\centering
-\begin{tabular}{lp{12cm}} \hline
-Attribute & Choices \\\hline
-Graphic & Live Image, 2D Graphic \\
-Background & Crowd, Court, Logo Wall, Not Applicable \\
-Person & Yes, No \\
-Shot Angle & Level, Birds Eye, Upward \\
-Situation & Match play, Close up, Not player, Crowd, Off court, Transition\\\hline
-\end{tabular}
-\end{table}
--->
 
 A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene. Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect, and to minimize human labor, some rules were applied to the manual tagging: 
 
@@ -245,7 +230,7 @@ A web based annotation tool was developed to allow image annotations that would 
 Table \@ref(tab:Face-Attribute-Tables) summarises attribute information recorded for each face.
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
-knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Characteristics recorded for each  face. Most were easy to assess for each face, with the exception of obscured and head angle.")
+knitr::kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Characteristics of the faces captured, one option for each category was selected for each face manually tagged.")
 ```
 
 The web app was created using the Shiny package for R [@shiny] and has been developed into an R package called taipan, as it is a Tool for Annotating Images in Preparation for ANalysis. The annotator was able to highlight the section of the image containing a face. This selection activated a set of attributes questions for the annotator to answer, and allowed information to be recorded for the face. The records included the location of the box in the image, and answers to the questions providing the attributes of the face. 
