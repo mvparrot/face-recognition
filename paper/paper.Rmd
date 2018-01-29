@@ -1,8 +1,15 @@
 ---
-title: "Detecting Facial Expressions in Video Stills from Professional Tennis Matches"
-author: "Stephanie Kobakian, Mitchell O'Hara-Wild, Dianne Cook, Stephanie Kovalchik"
-date: "20 September 2017"
-output: bookdown::pdf_document2
+title: "Performance Comparison of Common Face Detection APIs in Video Stills from Professional Tennis Matches"
+authors: 
+- name: Stephanie Kobakian
+  affiliation: Monash University 
+- name: Mitchell O'Hara-Wild
+  affiliation: Monash University
+- name: Dianne Cook
+  affiliation: Monash University
+- name: Stephanie Kovalchik
+  affiliation: Victoria University and Tennis Australia
+output: rticles::asa_article
 toc: false
 fig_caption: yes
 number_sections: false
