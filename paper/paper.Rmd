@@ -6,7 +6,7 @@ blinded: 0
 
 authors: 
 - name: Stephanie Kobakian
-  thanks: The authors gratefully acknowledge Tennis Australia.
+  thanks: The authors gratefully acknowledge Tennis Australia providing data for this project.
   affiliation: Monash University 
   
 - name: Mitchell O'Hara-Wild
