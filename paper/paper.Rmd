@@ -23,6 +23,9 @@ keywords:
 - sports analytics
 - shiny
 - R
+- statistics
+- glm
+- data visualization
 
 abstract: |
   This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes, faces were manually tagged in 6406 images, using a specially constructed web application, recording the scene characteristics and features of individual faces, such as head wear or sunglasses. API performance was evaluated on their success rate at detecting the tagged faces, and also relative face and scene attributes. 
