@@ -183,9 +183,6 @@ VennLists<-data %>%
 
 ```
 
-#Abstract {-}
-
-This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes faces were manually tagged in 6406 images, recording the scene characteristics and features of individual faces. This included information regarding accessories, such as head wear or sunglasses being worn. This enables the performance to be assessed based on conditions, and the APIs were evaluated on their success rate at detecting these faces. The possible obstacles of real time implementation were also assessed via the time taken to complete detection within an image.
 
 
 #Introduction
@@ -854,7 +851,6 @@ Data files provided are:
 
 The web app for manual tagging, called taipan, is available from https://github.com/srkob1/taipan. It can be installed using the devtools [@devtools] package function `install_github'. 
 
-# References
 
 <div id="refs"></div>
 
