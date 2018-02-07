@@ -23,6 +23,9 @@ keywords:
 - sports analytics
 - shiny
 - R
+- statistics
+- glm
+- data visualization
 
 abstract: |
   This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes, faces were manually tagged in 6406 images, using a specially constructed web application, recording the scene characteristics and features of individual faces, such as head wear or sunglasses. API performance was evaluated on their success rate at detecting the tagged faces, and also relative face and scene attributes. 
@@ -31,9 +34,6 @@ toc: false
 fig_caption: yes
 number_sections: false
 fontsize: 11pt
-header-includes:
-    - \usepackage{booktabs}
-    - \usepackage{longtable}
 bibliography: references.bib
 biblio-style: chicago
 output: rticles::asa_article
@@ -247,10 +247,12 @@ kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, captio
 
 A web based annotation tool was developed to allow image annotations that would capture the location of areas selected manually, and annotation of attributes for each face, and scene. Specific information for each face within each scene was collected. To determine which of the, sometimes many, faces in the scene it would be reasonable for software to detect, and to minimize human labor, some rules were applied to the manual tagging: 
 
-- The faces were recorded if it showed their face at a minimum of 20 by 20 pixels. 
-- The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
-- Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. 
-- The same face size standard applied to crowd members, but focus was placed on the most prominent faces. 
+\begin{itemize}
+\item The faces were recorded if it showed their face at a minimum of 20 by 20 pixels. 
+\item The back of the head was not detected as a face by any software, these areas were classified manually but reclassified as other.
+\item Crowd faces were not the intended targets of the recognition however these faces contributed to our understanding of the software. 
+\item The same face size standard applied to crowd members, but focus was placed on the most prominent faces. 
+\end{itemize}
 
 Table \ref{tab:Face-Attribute-Tables} summarises attribute information recorded for each face.
 
@@ -722,7 +724,6 @@ plots2 <- arrangeGrob(MosSaBg, MosSitBg, ncol=2)
 plots2 <- arrangeGrob(plots2, legend2, nrow=2, heights = unit.c(unit(1, "npc") - lheight2, lheight2))
 
 grid.arrange(plots1, plots2, nrow=2)
-
 ```
 
 ## Image characteristics
@@ -837,18 +838,19 @@ The authors wish to thank Tennis Australia for access to the data. The analysis 
 
 The APIs, the scripts used to access them, and the resulting data set are contained in the supplementary materials, available at [https://github.com/mvparrot/face-recognition/paper](https://github.com/mvparrot/face-recognition/paper). The APIs evaluated were:
 
-- Animetrics: Animetrics Face Recognition API, FaceR API by @Animetrics.
-
-- Google: Google Cloud Vision API [-@Google]
-
-- Microsoft: Microsoft Azure Cognitive Services Face API, published by @Microsoft.
-
-- Skybiometry: @Skybiometry the spin off detection and recognition software of Neurotechnology. 
+\begin{itemize}
+\item Animetrics: Animetrics Face Recognition API, FaceR API by @Animetrics.
+\item Google: Google Cloud Vision API [-@Google]
+\item Microsoft: Microsoft Azure Cognitive Services Face API, published by @Microsoft.
+\item Skybiometry: @Skybiometry the spin off detection and recognition software of Neurotechnology. 
+\end{itemize}
 
 Data files provided are:
 
-- ManualClassifiedFaces.csv contains the data collected on each face by manual tagging.
-- ManualClassifiedScenes.csv contains scene information about each image.
+\begin{itemize}
+\item ManualClassifiedFaces.csv contains the data collected on each face by manual tagging.
+\item ManualClassifiedScenes.csv contains scene information about each image.
+\end{itemize}
 
 The web app for manual tagging, called taipan, is available from https://github.com/srkob1/taipan. It can be installed using the devtools [@devtools] package function `install_github'. 
 
