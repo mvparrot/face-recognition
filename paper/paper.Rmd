@@ -2,7 +2,7 @@
 title: "Performance Comparison of Common Face Detection APIs using Video Stills from Professional Tennis Matches"
 
 # to produce blinded version set to 1
-blinded: 0
+blinded: 1
 
 authors: 
 - name: Stephanie Kobakian
@@ -635,7 +635,7 @@ kable(ImageCharacteristics, booktabs = TRUE, longtable=FALSE, format.args=list(w
 ```
 
 
-```{r ICFigs, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (A) Angle of face capture, (B) court situation, (C) angle of capture by background, and (D) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall. \\label{fig:ICFigs}"}
+```{r ICFigs, fig.height=7, fig.cap = "Relationships between court and face characteristics, and API detection, using mosaic plots: (A) Angle of face capture, (B) court situation, (C) angle of capture by background, and (D) situtation of capture by background. Most face captures occurred at a level angle, and this produces slightly better detection. Most situtation face captures are close up, but the detection rate is identical regardless of situation. Most level angles had the logo wall in the background, while most birds-eye had the court as background, as we would expect. Close ups were mostly against the logo wall. \\label{fig:ICFigs}"}
 
 aminFaces$shotangle <- factor(aminFaces$shotangle, 
                               levels = c("Birds Eye","Upward","Level"))
