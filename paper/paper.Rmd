@@ -187,8 +187,10 @@ VennLists<-data %>%
 
 #Introduction
 
-Many tennis professionals believe that tennis is a game heavily influenced by the mental states of the players. The opportunity for researching this "inner game" presents itself with the hope of improving the performance, and coaching of, tennis players by improving their "mental game". 
-By statistically analyzing the faces and expressions of players during a match, insight may be gained about the mental state of a player and the effects changes in the mental state have on the outcome of a match. The aim of this project is to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
+The presence of emotions during professional tennis matches and the influence they have on athletes is often discussed in commentary, by players and coaches alike.
+However there is little quantitative evidence to support the theories and suggestions that the presence of emotions improves or impedes the performance of players. 
+As many tennis professionals believe it is a game heavily influenced by the mental states of the players there is an opportunity to analyse this "inner game", with the hope of improving the performance, and coaching of, tennis players.
+By statistically analyzing the faces and expressions of players during a match, insights may be gained about the mental state of a player and the effects changes in the mental state have on the outcome of a match. The aim of this study is to develop methods to collect accurate information about the facial expressions of elite tennis athletes during match play.
 
 
 Application Programming Interfaces (APIs) have been used to evaluated the performance of several popular facial recognition software, on the still images derived from broadcast videos of elite tennis matches. 
@@ -199,7 +201,7 @@ This means the recognition software currently available was not intended to be u
 It was believed that the capabilities of the software could be limited by their intended security and surveillance purposes. @Boston addresses the 'lack of robustness of current tools in unstructured environments' and this survey explores how detection performance is affected by situations that arise in elite tennis matches.
 
 
-The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches by comparing the performance of several popular facial recognition APIs. A limited selection of accessible APIs was chosen based on their ability to produce appropriate and useful facial recognition. The performance was evaluated against manual classifications obtained in an annotation tool developed by the authors. 
+The aims of the present study were to determine the feasibility of using currently available APIs for extracting facial information of players during broadcasts of professional matches, by comparing the performance of several popular facial recognition APIs. A limited selection of accessible APIs was chosen based on their ability to produce appropriate and useful facial recognition. The performance was evaluated against manual classifications obtained in an annotation tool developed by the authors. 
 
 # Methodology
 
