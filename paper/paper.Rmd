@@ -209,12 +209,10 @@ In this study any reference to a 'face' is considered to be an area designated m
 
 ##Sample and sampling approach
 
-Images from the Australian Open 2016 were provided by Tennis Australia, with goal being that the sample is representative of the video files to be used for future facial recognition analysis: 6406 images, 800 $\times$ 450px 
+Images from the Australian Open 2016 were provided by Tennis Australia, with the following specs: 6406 images, 800 $\times$ 450px 
 
-To collect the images, 5 minute segments were taken from 105 video files, with a still shot stored every three seconds. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches. The rounds of the competition vary so as to not limit the pool of players to only those who progressed, though there was a higher chance of advancing players reappearing. 
-
-The sample included images that contained the faces of many people, such as players, staff on the court and fans in the crowd. All of these faces were included in the manual annotations as they were likely to be found by the software selected. It was decided that including these additional faces would allow better evaluations of the software's capabilities, and provide information to differentiate between players and other faces captured. Therefore the sample was not filtered at this initial stage.
-
+Images were derived from, 5 minute segments taken from 105 video files, with a still shot stored every three seconds. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches.
+Images contained the faces of many people, such as players, staff on the court and fans in the crowd. The sample was not filtered at this initial stage.
 Matches played during the Australian Open are played on a range of courts available at Melbourne Olympic Park. The sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
 
 
@@ -240,7 +238,7 @@ overlayGgplot(imagesList0, aminFaces, matchBox = FALSE)
 
 
 ```{r Scene-Attributes-Table, fig.cap ="\\label{tab:Scene-Attributes-Table}"}
-kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Characteristics of the scene occuring when the still shot was taken, one option for each category was selected for each image.")
+kable(SceneAttributes, format = "latex", longtable=FALSE, booktabs =TRUE, caption = "Summary of extracted scene information for match images.")
 ```
 
 
@@ -256,7 +254,7 @@ A web based annotation tool was developed to allow image annotations that would 
 Table \ref{tab:Face-Attribute-Tables} summarises attribute information recorded for each face.
 
 ```{r Face-Attribute-Tables, results='asis', fig.cap = "\\label{tab:Face-Attribute-Tables}"}
-kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Characteristics of the faces captured, one option for each category was selected for each face manually tagged.")
+kable(FaceAttributes, format = "latex", longtable=FALSE, booktabs = TRUE, caption = "Summary of extracted face information for match images")
 ```
 
 The web app was created using the Shiny package for R [@shiny] and has been developed into an R package called taipan, as it is a Tool for Annotating Images in Preparation for ANalysis. The annotator was able to highlight the section of the image containing a face. This selection activated a set of attributes questions for the annotator to answer, and allowed information to be recorded for the face. The records included the location of the box in the image, and answers to the questions providing the attributes of the face. 
