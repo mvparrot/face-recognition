@@ -207,16 +207,14 @@ The aims of the present study were to determine the feasibility of using current
 
 In this study any reference to a 'face' is considered to be an area designated manually or by an API as an area that encloses a human face. These may or may not be actual faces.
 
-##Sample and sampling approach
+## Sample and sampling approach
 
-Images from the Australian Open 2016 were provided by Tennis Australia, with the following specs: 6406 images, 800 $\times$ 450px 
-
-Images were derived from, 5 minute segments taken from 105 video files, with a still shot stored every three seconds. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches.
-Images contained the faces of many people, such as players, staff on the court and fans in the crowd. The sample was not filtered at this initial stage.
-Matches played during the Australian Open are played on a range of courts available at Melbourne Olympic Park. The sample was selected to be representative of the seven courts that have the Hawk Eye technology enabled.
+Images from the Australian Open 2016 were provided by Tennis Australia. There were 6406 images, 800 $\times$ 450px.
+The images were derived from 5 minute segments taken from 105 video files, with a still shot stored every three seconds. The video files used were the broadcasts of the tennis matches shown on the Seven Network during the Australian Open 2016. The sample included an equal amount of females and males singles tennis matches.
+Images contained the faces of many people, such as players, staff on the court and fans in the crowd. 
 
 
-##Software selection
+## Software selection
 
 The initial software to be considered was informed by a report that reviewed 'commercial off-the-shelf (COTS) solutions and related patents for face recognition in video surveillance applications' [@Survey, pp.3].
 The selection criteria included the availability, speed, feature selection and whether images and/or videos could be presented for detection. The results of Gorodnichy, Granger and Radtke's [-@Survey] report considered processing speed, feature selection techniques, and the ability to perform both still-to-video and video-to-video recognition.
@@ -261,14 +259,14 @@ The web app was created using the Shiny package for R [@shiny] and has been deve
 When a face was not visible in the image only the scene attributes were recorded for the image. All of the annotations for this sample were completed by one annotator to provide a consistent sample of faces annotated manually. The initial decisions of what would be reasonably detected was made by several people.
 
 
-##Software usage
+##Software Processing Time
 
-The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. The scripts looped through the images, individually posting a request to retrieve information provided and convert it into an appropriate format for analysis. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
+The face recognition software APIs were accessed via a R [@R] script, calling the APIs relied on the httr [@httr] package. Special handling was required due to the limits on requests per minute of Skybiometry and Microsoft, time-controlling and error management of the requests was incorporated for these APIs.
 
-Figure \ref{fig:timeFigure} shows the distribution of processing time required by the APIs for each image. The violin plot display created by @Violin 'combines the box plot and the density'. A categorical variable splits the data along the x axis, as would be seen in a box plot display. A density plot is then incorporated on the y axis. This is produced by manipulating a density display; switching the axes allows the continuous variable to increase along on the y axis, then the violin shape is created by mirroring the density. The width of the violin will now be twice the length that would be have been measured vertically in a density plot. 
+Figure \ref{fig:timeFigure} shows the distribution of processing time required by the APIs for each image. The violin plot display created by @Violin 'combines the box plot and the density'. A categorical variable splits the data along the x axis, as would be seen in a box plot display. A density plot is then incorporated on the y axis. This is produced by manipulating a density display; switching the axes allows the continuous variable to increase along on the y axis, then the violin shape is created by mirroring the density. The width of the violin will now be twice the length that would be have been measured vertically in a density plot. The lines overlaid in each plot represent the smoothed linear model of the amount of faces, it can be seen that all APIs take longer to complete detection of faces in an image when there are more faces.
 
 
-As seen in the facets of Figure \ref{fig:timeFigure}, both Microsoft and Google had few images which took a significant amount of time to complete, and these were removed from this plot due to concerns regarding the network. The times taken to search are quite variable between APIs, with Skybiometry consistently spending less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. The lines overlaid in each plot represent the smoothed linear model of the amount of faces, it can be seen that all APIs take longer to complete detection of faces in an image when there are more faces. As all APIs had more images where only one or two faces were found it resulted in more variability in the amount of time taken.
+As seen in the facets of Figure \ref{fig:timeFigure} times taken to search are varied between APIs, but Skybiometry consistently spent less time than other APIs. Microsoft and Google's times vary regardless of the number of faces found. 
 
 
 ```{r timeData}
