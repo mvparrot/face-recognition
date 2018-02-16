@@ -329,10 +329,20 @@ The data needed for our analysis was organised by source, separate files for eac
 
 The location and size of the boxes around the faces were recorded, these values were used to see if a particular identified face box matched a manually identified face, or a region found by another software. Every face found in an image manually, or by any API was compared. From their locations the intersecting area between them was found. When the ratio of this intersecting area to total area was greater than 0.1 the IDs were altered to reflect the two faces would be considered the same face. This allowed comparison of the identification areas on the same face, as well as contrast the identified faces of each software.
 
-##Results
+##  Validation
 
-The manual tagging helped to provide a benchmark for faces found by APIs. The
-face detection rate indicated what attributes of an image or face were associated with face detection by an API. 
+Descriptive statistics were used to discern differences in the performance of the four APIs. These are presented in tables and plots and discussed in the results section.
+A logistic regression was used to study the effect of conditions and accessories on the detection performance of the APIs.
+
+## Regression Analysis
+
+A logistic regression model was used to assess the characteristics of the face and scene that may have affected the detection likelihood of the face. A step-wise variable selection method was used to find variables of significance for any of the APIs. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. Variables that were not included denoted whether there was a graphic or live shot visible, the role of the person whose face was captured and whether or not there was a person in the image. 
+A separate model was fit using the faces for each API.
+
+
+# Results
+
+The manual tagging helped to provide a benchmark for faces found by APIs. The face detection rate indicated what attributes of an image or face were associated with face detection by an API. 
 Faces that were found by multiple APIs indicated either obvious facial features were visible or the APIs may be using similar criteria to detect faces. This application allowed for a broader range of angles, backgrounds and accessories that may have impacted detection.
 False discoveries were the instances of faces found by APIs that did not intersect with manually tagged faces. Some of these may actually have been faces or reveal sensitivities in the algorithms of the APIs.
 The analysis of image characteristics and accessories indicates whether the APIs were viable choices for detecting faces in sports environments. 
@@ -340,11 +350,8 @@ The analysis of image characteristics and accessories indicates whether the APIs
 
 
 
-### Modeling detection rate
+## Modeling detection rate
 
-A logistic regression model was used to assess the characteristics of the face and scene that may have affected the detection likelihood of the face. A step-wise variable selection method was used to find variables of significance for any of the APIs. The binary response was whether the face was detected or not, using the manually tagged data as the benchmark, and characteristics included the setting, angle of shot and player, background, lighting and player adornments. Variables that were not included denoted whether there was a graphic or live shot visible, the role of the person whose face was captured and whether or not there was a person in the image.
-detect
-A separate model was fit using the faces for each API.
 
 ```{r RegressionFunctions, cache=FALSE}
 # Prepare data
@@ -467,11 +474,12 @@ kable(ModelEstimatesTable, format = "latex", align=c('l',
 ```
 
 
-For the most part, the APIs were all affected by the same factors. Those that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google's detection rate. Situation had different effects on each API.
-Results for Google were most interesting in the shot angle had differing effects on the detection. 
+For the most part, the APIs were all affected by the same factors.
+The factors that negatively affected all APIs were glasses, visor or hat. Background only negatively affected Google's detection rate. Situation had different effects on each API.
+When the shot angle was considered in conjunction with the background the results for Google showed there was a positive effect on detection rate of faces in all circumstances. There was no significant impact on the other APIs.
 
 
-```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match all contribute to the struggle of the APIs.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
+```{r UnlikelyFace, fig.cap = "The face captured manually in this image was not captured by any API. The head angle, shot angle, lighting, wearing the visor and being captured across the court during the match are all associated with lower rates of detection.\\label{fig:UnlikelyFace}", dev="jpeg", dpi=300}
 
 predSet <-
 aminFaces %>% select(file,glasses, headangle, lighting, obscured, shotangle, situation, visorhat, bg) %>%
@@ -518,11 +526,10 @@ mod1 <- glm(isplayer ~ 0 +
 ```
 
 
-When forcing no intercept, all variables are significant at the 0 level, and obscured is only significant at the 0.001 level. 
+When forcing no intercept, all variables are significant at the 0 level, and obscured was significant for all four up to the 0.01 level. 
 
 
-
-### Detection rates and API comparison
+## Detection rates and API comparison
 
 Each API returned areas in the image that indicated the face location. These are defined using the four points, marking the four corners of a rectangle.  
 
