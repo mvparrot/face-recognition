@@ -28,7 +28,7 @@ keywords:
 - data visualization
 
 abstract: |
-  This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The goal is to determine the best API to use for face detection of players throughout a match. For training purposes, faces were manually tagged in 6406 images, using a specially constructed web application, recording the scene characteristics and features of individual faces, such as head wear or sunglasses. API performance was evaluated on their success rate at detecting the tagged faces, and also relative face and scene attributes. 
+  This paper examines the effectiveness of facial detection APIs on broadcast video stills of Australian Open tennis matches. The aim was to evaluate the performance of several APIs to determine the best API to use for face detection of players throughout a match. For training purposes, faces were manually tagged in 6406 images, using a specially constructed web application, recording the scene characteristics and features of individual faces, such as head wear or sunglasses. API performance was evaluated on their success rate at detecting the tagged faces, and also relative face and scene attributes. Google found 1319 faces, this amount is 0.57 of the manually tagged faces, it also found an additional 638 relevant faces that were not tagged manually. A logistic regression was used to determine the effects of the scene characteristics and features of individual faces on the likelihood of an API detecting the face. It showed all APIs were significantly affected by features of individual faces, and not all were significantly impacted by scene attributes. It would be expected that, in future, utilising cameras with a focus on the player's faces would be necessary to improve detection of faces and minimise impacts of features of individual faces.
 
 toc: false
 fig_caption: yes
@@ -331,8 +331,10 @@ The location and size of the boxes around the faces were recorded, these values 
 
 ##  Validation
 
-Descriptive statistics were used to discern differences in the performance of the four APIs. These are presented in tables and plots and discussed in the results section.
-A logistic regression was used to study the effect of conditions and accessories on the detection performance of the APIs.
+Descriptive statistics were used to discern differences in the performance of the four APIs. These are presented in tables and plots and discussed in the results section. A logistic regression was used to study the effect of conditions and accessories on the detection performance of the APIs. The estimates shown indicate the magnitude of the impact on the detection rate, and the symbols shown indicate the significance, or reliability, of the estimated impact.
+Proportions were used a simplistic comparison to indicate the amount of the total faces that were detected by the software. Faces were grouped by the softwares that detected them, these groups and the attributes of the faces within them show the common features that contributed to a face being detected.
+Mosaic plots also examine faces that posessed a combination of features. Two way feature intersections show the common intersections of manually tagged faces.
+Some examples of intersections across four variables are displayed in a table format, only the most common feature combinations were displayed.
 
 ## Regression Analysis
 
@@ -394,15 +396,6 @@ GlmModelEstimates <- function(model, data = GlmModelCreation(model)){
 }
 
 
-# SignificancePlot <- function(model, data = GlmModelEstimates(model)) {
-#   data %>%
-#   mutate(significant = `Pr(>|z|)` < 0.05) %>%
-#   ggplot(aes(x=type, y=`Pr(>|z|)`)) +
-#   geom_col(aes(fill=significant)) + 
-#   facet_wrap(~ variable) +
-#   coord_flip()
-# }
-
 EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
   data %>%
   mutate(significant = `Pr(>|z|)` < 0.05) %>%
@@ -415,15 +408,14 @@ EstimatesPlot <- function(model, data = GlmModelEstimates(model)) {
 
 ModelPlotResults<-function(model, data = GlmModelEstimates(model)){
   ep<-EstimatesPlot(model, data)
-  #sp<- SignificancePlot(model, data) 
-  grid.arrange(ep)#, sp)
+  grid.arrange(ep)
 }
 ```
 
 
 
 ```{r ModelEstimates, fig.cap ="\\label{tab:ModelEstimates}"}
-TypeModel <- hit ~ 0 + 
+TypeModel <- hit ~ 0 +
               shotangle + 
               bg + 
               bg*shotangle + 
@@ -435,6 +427,9 @@ TypeModel <- hit ~ 0 +
               visorhat
 
 TypeGlms <- GlmModelCreation(model=TypeModel)
+
+#modSummaries <- map(TypeGlms, broom::glance)
+
 ModelEstimates <- GlmModelEstimates(data=TypeGlms)
 
 #Create estimates columns
@@ -470,7 +465,7 @@ kable(ModelEstimatesTable, format = "latex", align=c('l',
                                            'r', 'l',
                                            'r', 'l',
                                            'r', 'l'),
-             booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition for API, as assessed by logistic regression model. Coefficients from the four models shown (significance: ** 0.01 * 0.05 . 0.01 - NS). Most APIs wre affected by similar factors, with glasses, visor or hat, head angle, lighting, shot angle and situation all contributing significantly to face detection.")
+             booktabs = TRUE, longtable=FALSE, caption="Evaluation of factors affecting face recognition for API, as assessed by logistic regression model. Coefficients from the four models shown (significance: ** 0.01 * 0.05 . 0.01 - NS). Most APIs were affected by similar factors, with glasses, visor or hat, head angle, lighting, shot angle and situation all contributing significantly to face detection.")
 ```
 
 
@@ -822,9 +817,13 @@ Table \ref{tab:glassesheadwear} compares the face capture rate of the different 
 
 
 
-# Future Work
+# Discussion
 
-This paper has described the results of a survey of commonly available software for face detection when applied to stills from tennis match video. A long term goal is to detect emotional state of the player, and track this through a match, to study the effect on performance. Several of the face recognition APIs also report an emotional state, but our analysis of this data suggests it is unreliable. 
+This paper has compiled results from applying commonly available software for face detection to a set of stills from tennis match video. The set of detected faces from each software were able to be contrasted against manually tagged faces and those found by other software. This combined set has allowed the performance of the software to be analysed under a range of circumstances. The varying accessories, camera angles and scene attributes noted for each manually tagged face allow a reference point to determine how the detection rates of the software are influenced. If an image set shows similar features to those exhibited in the Australian Open broadcast stills this will highlight the impacts the features will have on the software's ability to produce relevant detections.
+
+If an image set utilised a camera angle that captured a person's profile, using Animetrics, Microsoft or Skybiometry would significantly reduce the rate of detection. The logistic regression contributed to understanding the impacts of face and scene features in a measurable way. For each software it utilised the set of manually tagged faces to analyse impacts on detection. This analysis showed 
+
+A long term goal is to detect emotional state of the player, and track this through a match, to study the effect on performance. Several of the face recognition APIs also report an emotional state, but our analysis of this data suggests it is unreliable. 
 
 One of the problems encountered with the emotion reporting, was that individual player's faces were repeatedly tagged with one emotional state, which looked more related to the basic facial features of the player. To accurately detect an individual player's emotions would require getting something like a baseline measurement on what their face looks like in a neutral emotional state, and then measuring differences from that. To study emotions and performance, we would recommend creating a training data set similar to the face recognition data, where emotional state is manually tagged. It would also be important to take comprehensive video footage, to track a player throughout the tournament, rather than isolated images. 
 
